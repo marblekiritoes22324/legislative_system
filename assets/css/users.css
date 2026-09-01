@@ -1,0 +1,135 @@
+/* Public User Specific Government Styling */
+:root {
+  --gov-blue: #0B2E59;
+  --gov-accent: #1D4ED8;
+  --gov-gold: #D4AF37;
+  --gov-bg: #F8FAFC;
+}
+
+body {
+  background-color: var(--gov-bg);
+}
+
+.badge-read-only {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.policy-card {
+  transition: all 0.25s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.policy-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(11, 46, 89, 0.08);
+  border-color: #cbd5e1;
+}
+
+.announcement-banner {
+  background: linear-gradient(135deg, #E0F2FE 0%, #EFF6FF 50%, #E0E7FF 100%);
+  color: #0F172A;
+  border-radius: 20px;
+  padding: 36px 40px;
+  border: 1px solid #DBEAFE;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-circle-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.bg-icon-blue {
+  background-color: #2563EB;
+}
+
+.bg-icon-green {
+  background-color: #16A34A;
+}
+
+.bg-icon-orange {
+  background-color: #EA580C;
+}
+
+.bg-icon-purple {
+  background-color: #9333EA;
+}
+
+.policy-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid #F1F5F9;
+  gap: 16px;
+}
+
+.policy-item-row:last-child {
+  border-bottom: none;
+}
+
+.tag-cat-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.tag-env {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.tag-soc {
+  background: #FFEDD5;
+  color: #C2410C;
+}
+
+.tag-infra {
+  background: #DBEAFE;
+  color: #1D4ED8;
+}
+
+.btn-read-ord-blue {
+  border: 1px solid #2563EB;
+  color: #2563EB;
+  background: #FFFFFF;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.btn-read-ord-blue:hover {
+  background: #2563EB;
+  color: #FFFFFF;
+}
+
+.timeline-dot-sm {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
