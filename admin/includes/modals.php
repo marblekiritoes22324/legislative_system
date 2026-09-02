@@ -204,16 +204,8 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-semibold small">LGU / City Origin <span class="text-danger">*</span></label>
-              <select name="city_origin" class="form-select" required>
-                <option value="City of Manila" selected>🏛️ City of Manila (Local)</option>
-                <option value="Quezon City (QC Benchmark)">🏙️ Quezon City (QC Benchmark)</option>
-                <option value="Pasig City (Benchmark)">🏙️ Pasig City (Benchmark)</option>
-                <option value="Makati City (Benchmark)">🏙️ Makati City (Benchmark)</option>
-                <option value="Taguig City (Benchmark)">🏙️ Taguig City (Benchmark)</option>
-                <option value="Valenzuela City (Benchmark)">🏙️ Valenzuela City (Benchmark)</option>
-                <option value="Other LGU / National Benchmark">🌐 Other LGU / National Benchmark</option>
-              </select>
+              <label class="form-label fw-semibold small">Publication Date</label>
+              <input type="date" name="publication_date" class="form-control" min="<?= date('Y-m-d') ?>">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Author(s) <span class="text-danger">*</span></label>
@@ -223,10 +215,6 @@
               <label class="form-label fw-semibold small">Department/Office <span class="text-danger">*</span></label>
               <input type="text" name="department" class="form-control" placeholder="Enter department"
                 required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold small">Publication Date</label>
-              <input type="date" name="publication_date" class="form-control" min="<?= date('Y-m-d') ?>">
             </div>
             <div class="col-md-12">
               <label class="form-label fw-semibold small">Research Description</label>
@@ -285,16 +273,9 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-semibold small">LGU / City Origin <span class="text-danger">*</span></label>
-              <select name="city_origin" id="edit_city_origin" class="form-select" required>
-                <option value="City of Manila">🏛️ City of Manila (Local)</option>
-                <option value="Quezon City (QC Benchmark)">🏙️ Quezon City (QC Benchmark)</option>
-                <option value="Pasig City (Benchmark)">🏙️ Pasig City (Benchmark)</option>
-                <option value="Makati City (Benchmark)">🏙️ Makati City (Benchmark)</option>
-                <option value="Taguig City (Benchmark)">🏙️ Taguig City (Benchmark)</option>
-                <option value="Valenzuela City (Benchmark)">🏙️ Valenzuela City (Benchmark)</option>
-                <option value="Other LGU / National Benchmark">🌐 Other LGU / National Benchmark</option>
-              </select>
+              <label class="form-label fw-semibold small">Publication Date</label>
+              <input type="date" name="publication_date" id="edit_publication_date" class="form-control"
+                min="<?= date('Y-m-d') ?>">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Author(s) <span class="text-danger">*</span></label>
@@ -303,11 +284,6 @@
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Department/Office <span class="text-danger">*</span></label>
               <input type="text" name="department" id="edit_department" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold small">Publication Date</label>
-              <input type="date" name="publication_date" id="edit_publication_date" class="form-control"
-                min="<?= date('Y-m-d') ?>">
             </div>
             <div class="col-md-12">
               <label class="form-label fw-semibold small">Research Description</label>
@@ -544,7 +520,7 @@
           </div>
         </div>
         <div class="d-flex align-items-center gap-2" style="font-family: sans-serif;">
-          <button type="button" id="evalModalApproveBtn" class="btn btn-success text-white rounded-3 px-3.5 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-1.5 border-0"
+          <button type="button" id="evalModalApproveBtn" class="btn btn-success text-white rounded-3 px-3.5 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-1.5 border-0 d-none"
             style="background-color: #16a34a;"
             onclick="approveCurrentEvaluation()">
             <i class="bi bi-check-circle-fill" id="evalApproveIcon"></i><span id="evalApproveText">Approve</span>

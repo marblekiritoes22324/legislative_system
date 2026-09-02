@@ -159,6 +159,7 @@ if (isset($_POST['login'])) {
         }
 
         $userRole = strtolower($user['role'] ?? 'user');
+        $createdAtFormatted = !empty($user['created_at']) ? date('F d, Y', strtotime($user['created_at'])) : date('F d, Y');
         if ($userRole === 'admin' || $userRole === 'administrator') {
           echo "<script>
                   localStorage.setItem('admin_logged_in', 'true');
@@ -166,7 +167,10 @@ if (isset($_POST['login'])) {
                   localStorage.setItem('current_user', " . json_encode(json_encode([
                     'username' => $_SESSION['username'],
                     'name' => $user['full_name'],
-                    'role' => 'admin'
+                    'email' => $user['email'] ?? 'admin@manila.gov.ph',
+                    'department' => $user['department'] ?? 'City Administration',
+                    'role' => 'admin',
+                    'created_at' => $createdAtFormatted
                   ])) . ");
                   window.location.href = '../admin/admin_dashboard.php';
                 </script>";
@@ -178,19 +182,27 @@ if (isset($_POST['login'])) {
                   localStorage.setItem('current_user', " . json_encode(json_encode([
                     'username' => $_SESSION['username'],
                     'name' => $user['full_name'],
-                    'role' => 'staff'
+                    'email' => $user['email'] ?? 'staff@manila.gov.ph',
+                    'department' => $user['department'] ?? 'Secretariat & Legal Affairs',
+                    'role' => 'staff',
+                    'created_at' => $createdAtFormatted
                   ])) . ");
                   window.location.href = '../staff/staff_dashboard.php';
                 </script>";
           exit();
         } else {
-          $redirect_url = "../users/user_dashboard.php?username=" . urlencode($_SESSION['username']) . "&name=" . urlencode($user['full_name']) . "&email=" . urlencode($user['email'] ?? '');
+          $redirect_url = "../users/user_dashboard.php?username=" . urlencode($_SESSION['username']) . "&name=" . urlencode($user['full_name']) . "&email=" . urlencode($user['email'] ?? '') . "&department=" . urlencode($user['department'] ?? 'City Council Secretariat') . "&role=" . urlencode($user['role'] ?? 'Councilor');
           echo "<script>
                   localStorage.setItem('user_logged_in', 'true');
+                  localStorage.removeItem('staff_logged_in');
+                  localStorage.removeItem('admin_logged_in');
                   localStorage.setItem('current_user', " . json_encode(json_encode([
                     'username' => $_SESSION['username'],
                     'name' => $user['full_name'],
-                    'role' => $userRole
+                    'email' => $user['email'] ?? '',
+                    'department' => $user['department'] ?? 'City Council Secretariat',
+                    'role' => $userRole,
+                    'created_at' => $createdAtFormatted
                   ])) . ");
                   window.location.href = " . json_encode($redirect_url) . ";
                 </script>";

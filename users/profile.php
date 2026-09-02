@@ -25,16 +25,16 @@
           <input type="file" id="userAvatarFileInput" accept="image/*" class="d-none" onchange="handleUserAvatarUpload(this)">
         </div>
         <div>
-          <h3 class="h4 fw-bold text-dark mb-1" id="userProfileHeaderName">Christian M. Caspe</h3>
+          <h3 class="h4 fw-bold text-dark mb-1" id="userProfileHeaderName">User</h3>
           <div class="text-secondary fw-medium" style="font-size: 0.92rem;">
-            <i class="bi bi-at text-muted me-0.5"></i><span id="userProfileHeaderUsername">Christianpogi</span> &bull; 
-            <i class="bi bi-envelope text-muted ms-1 me-1"></i><span id="userProfileHeaderEmail">Christianpogi@gmail.com</span> &bull; 
+            <i class="bi bi-at text-muted me-0.5"></i><span id="userProfileHeaderUsername">username</span> &bull; 
+            <i class="bi bi-envelope text-muted ms-1 me-1"></i><span id="userProfileHeaderEmail">user@manila.gov.ph</span> &bull; 
             <i class="bi bi-award text-muted ms-1 me-1"></i><span id="userProfileHeaderRole">Councilor / Member</span>
           </div>
         </div>
       </div>
 
-      <!-- Redesigned Modern Action Buttons -->
+      <!-- Action Buttons -->
       <div class="d-flex flex-wrap align-items-center gap-2.5">
         <button type="button" class="btn btn-action-photo rounded-3 px-3.5 py-2 shadow-2xs d-inline-flex align-items-center gap-2"
           onclick="document.getElementById('userAvatarFileInput').click()">
@@ -60,7 +60,7 @@
     </div>
   </div>
 
-  <!-- Card: Account Details (Spacious, Larger Form/Table) -->
+  <!-- Card: Account Details -->
   <div class="card border shadow-sm rounded-4 p-4 p-md-5 bg-white mb-4">
     <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
       <div class="d-flex align-items-center gap-3">
@@ -87,25 +87,25 @@
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark mb-2" style="font-size: 0.95rem;">Account Holder Name</label>
           <input type="text" id="userProfInputName" class="form-control form-control-lg bg-light py-2.5 px-3 fs-6 rounded-3"
-            value="Christian M. Caspe" readonly required style="font-size: 0.98rem;">
+            value="" readonly required style="font-size: 0.98rem;" placeholder="Enter name">
         </div>
 
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark mb-2" style="font-size: 0.95rem;">Username</label>
           <input type="text" id="userProfInputUsername" class="form-control form-control-lg bg-light py-2.5 px-3 fs-6 rounded-3"
-            value="Christianpogi" readonly disabled style="font-size: 0.98rem;">
+            value="" readonly disabled style="font-size: 0.98rem;" placeholder="Username">
         </div>
 
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark mb-2" style="font-size: 0.95rem;">Official Email Address</label>
           <input type="email" id="userProfInputEmail" class="form-control form-control-lg bg-light py-2.5 px-3 fs-6 rounded-3"
-            value="Christianpogi@gmail.com" readonly required style="font-size: 0.98rem;">
+            value="" readonly required style="font-size: 0.98rem;" placeholder="Email address">
         </div>
 
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark mb-2" style="font-size: 0.95rem;">Assigned Department / Office</label>
           <input type="text" id="userProfInputDept" class="form-control form-control-lg bg-light py-2.5 px-3 fs-6 rounded-3"
-            value="City Council Secretariat" readonly required style="font-size: 0.98rem;">
+            value="" readonly required style="font-size: 0.98rem;" placeholder="Department / Office">
         </div>
 
         <div class="col-12 col-md-6">
@@ -117,7 +117,7 @@
         <div class="col-12 col-md-6">
           <label class="form-label fw-semibold text-dark mb-2" style="font-size: 0.95rem;">Date Provisioned</label>
           <input type="text" id="userProfInputDate" class="form-control form-control-lg bg-light py-2.5 px-3 fs-6 rounded-3"
-            value="August 19, 2026" readonly disabled style="font-size: 0.98rem;">
+            value="" readonly disabled style="font-size: 0.98rem;">
         </div>
       </div>
     </form>
@@ -126,6 +126,16 @@
 </section>
 
 <script>
+function getUserProfileStorageKey() {
+  try {
+    const curr = JSON.parse(localStorage.getItem('current_user') || '{}');
+    const u = curr.username || curr.id || 'default';
+    return 'user_profile_data_' + u;
+  } catch (e) {
+    return 'user_profile_data_default';
+  }
+}
+
 function toggleUserEditProfileForm(isEditing) {
   const editableIds = ['userProfInputName', 'userProfInputEmail', 'userProfInputDept'];
   const actions = document.getElementById('userProfileEditActions');
@@ -173,9 +183,10 @@ function handleUserAvatarUpload(input) {
 
 function saveUserAvatarData(dataUrl) {
   try {
-    const saved = JSON.parse(localStorage.getItem('user_profile_data') || '{}');
+    const key = getUserProfileStorageKey();
+    const saved = JSON.parse(localStorage.getItem(key) || '{}');
     saved.avatar = dataUrl;
-    localStorage.setItem('user_profile_data', JSON.stringify(saved));
+    localStorage.setItem(key, JSON.stringify(saved));
 
     const curr = JSON.parse(localStorage.getItem('current_user') || '{}');
     curr.avatar = dataUrl;
@@ -187,9 +198,10 @@ function saveUserAvatarData(dataUrl) {
 
 function removeUserAvatar() {
   try {
-    const saved = JSON.parse(localStorage.getItem('user_profile_data') || '{}');
+    const key = getUserProfileStorageKey();
+    const saved = JSON.parse(localStorage.getItem(key) || '{}');
     delete saved.avatar;
-    localStorage.setItem('user_profile_data', JSON.stringify(saved));
+    localStorage.setItem(key, JSON.stringify(saved));
 
     const curr = JSON.parse(localStorage.getItem('current_user') || '{}');
     delete curr.avatar;
@@ -212,13 +224,14 @@ function saveUserProfileDetails() {
     return;
   }
 
-  // Persist to localStorage
+  // Persist to user-scoped localStorage
   try {
-    const saved = JSON.parse(localStorage.getItem('user_profile_data') || '{}');
+    const key = getUserProfileStorageKey();
+    const saved = JSON.parse(localStorage.getItem(key) || '{}');
     saved.name = name;
     saved.email = email;
     saved.dept = dept;
-    localStorage.setItem('user_profile_data', JSON.stringify(saved));
+    localStorage.setItem(key, JSON.stringify(saved));
 
     const curr = JSON.parse(localStorage.getItem('current_user') || '{}');
     curr.name = name;
@@ -233,31 +246,24 @@ function saveUserProfileDetails() {
 }
 
 function syncUserProfileUI() {
-  let userName = 'Christian M. Caspe';
-  let username = 'Christianpogi';
-  let email = 'Christianpogi@gmail.com';
-  let dept = 'City Council Secretariat';
-  let role = 'Councilor';
-  let avatar = '';
-
+  let currUser = {};
   try {
-    const currUser = JSON.parse(localStorage.getItem('current_user') || '{}');
-    const saved = JSON.parse(localStorage.getItem('user_profile_data') || '{}');
-
-    if (saved.name) userName = saved.name;
-    else if (currUser.name && currUser.name !== 'Admin' && currUser.name !== 'admin') userName = currUser.name;
-
-    if (saved.email) email = saved.email;
-    else if (currUser.email) email = currUser.email;
-
-    if (saved.dept) dept = saved.dept;
-    else if (currUser.department) dept = currUser.department;
-
-    if (currUser.username) username = currUser.username;
-
-    if (saved.avatar) avatar = saved.avatar;
-    else if (currUser.avatar) avatar = currUser.avatar;
+    currUser = JSON.parse(localStorage.getItem('current_user') || '{}');
   } catch (e) { }
+
+  const key = getUserProfileStorageKey();
+  let saved = {};
+  try {
+    saved = JSON.parse(localStorage.getItem(key) || '{}');
+  } catch (e) { }
+
+  const username = currUser.username || 'user';
+  const userName = saved.name || currUser.name || currUser.full_name || username;
+  const email = saved.email || currUser.email || (username ? username + '@manila.gov.ph' : 'user@manila.gov.ph');
+  const dept = saved.dept || currUser.department || 'City Council Secretariat';
+  const role = currUser.role ? (currUser.role.charAt(0).toUpperCase() + currUser.role.slice(1)) : 'Councilor';
+  const dateProvisioned = currUser.created_at || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const avatar = saved.avatar || currUser.avatar || '';
 
   // Update Topbar User Dropdown Button Text & Image
   const topbarNameEl = document.getElementById('topbarUserName');
@@ -293,6 +299,9 @@ function syncUserProfileUI() {
   const profHeaderEmail = document.getElementById('userProfileHeaderEmail');
   if (profHeaderEmail) profHeaderEmail.textContent = email;
 
+  const profHeaderRole = document.getElementById('userProfileHeaderRole');
+  if (profHeaderRole) profHeaderRole.textContent = role + ' / Member';
+
   const profInputName = document.getElementById('userProfInputName');
   if (profInputName && (document.getElementById('userProfileEditActions')?.classList.contains('d-none') || !profInputName.value)) {
     profInputName.value = userName;
@@ -310,6 +319,12 @@ function syncUserProfileUI() {
   if (profInputDept && (document.getElementById('userProfileEditActions')?.classList.contains('d-none') || !profInputDept.value)) {
     profInputDept.value = dept;
   }
+
+  const profInputRole = document.getElementById('userProfInputRole');
+  if (profInputRole) profInputRole.value = role;
+
+  const profInputDate = document.getElementById('userProfInputDate');
+  if (profInputDate) profInputDate.value = dateProvisioned;
 
   // Update Profile Section Avatar Card
   const profHeaderAvatarImg = document.getElementById('userProfileHeaderAvatarImg');
@@ -330,7 +345,7 @@ function syncUserProfileUI() {
       profHeaderAvatarImg.src = '';
       profHeaderAvatarImg.style.display = 'none';
       profHeaderAvatarImg.classList.add('d-none');
-      profHeaderAvatarFallback.style.display = 'block';
+      profHeaderAvatarFallback.style.display = 'flex';
       profHeaderAvatarFallback.classList.remove('d-none');
       if (removeAvatarBtn) {
         removeAvatarBtn.style.display = 'none';

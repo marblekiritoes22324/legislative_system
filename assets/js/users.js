@@ -36,10 +36,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (urlParams.has('username')) {
         const queryUser = {
             username: urlParams.get('username'),
-            name: urlParams.get('name'),
-            email: urlParams.get('email') || 'user@manila.gov.ph',
-            position: 'Policy Analyst',
-            department: 'Legislative Research',
+            name: urlParams.get('name') || urlParams.get('username'),
+            email: urlParams.get('email') || (urlParams.get('username') + '@manila.gov.ph'),
+            position: urlParams.get('role') || 'City Councilor',
+            department: urlParams.get('department') || 'City Council Secretariat',
+            role: urlParams.get('role') || 'Councilor',
             status: 'approved'
         };
         localStorage.setItem('current_user', JSON.stringify(queryUser));
@@ -49,10 +50,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Populate user info from localStorage
     const user = JSON.parse(localStorage.getItem('current_user') || '{}');
-    if (user.name) {
-        if (document.getElementById('topbarUserName')) document.getElementById('topbarUserName').innerText = user.name;
-        if (document.getElementById('profileFullName')) document.getElementById('profileFullName').value = user.name;
-        if (document.getElementById('profileEmail')) document.getElementById('profileEmail').value = user.email || 'user@manila.gov.ph';
+    if (user.name || user.username) {
+        const displayName = user.name || user.username;
+        if (document.getElementById('topbarUserName')) document.getElementById('topbarUserName').innerText = displayName;
+        if (document.getElementById('topbarUserRole')) document.getElementById('topbarUserRole').innerText = user.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'Councilor';
+        if (document.getElementById('userWelcomeHeading')) document.getElementById('userWelcomeHeading').innerText = 'Welcome, ' + (displayName.startsWith('Hon.') ? displayName : 'Hon. ' + displayName);
+        if (document.getElementById('profileFullName')) document.getElementById('profileFullName').value = displayName;
+        if (document.getElementById('profileEmail')) document.getElementById('profileEmail').value = user.email || (user.username ? user.username + '@manila.gov.ph' : 'user@manila.gov.ph');
         if (document.getElementById('profileUsername')) document.getElementById('profileUsername').value = user.username || 'user';
     }
 
@@ -424,7 +428,10 @@ function openEvaluationModal(evaluation) {
     const details = typeof evaluation === 'string' ? { title: evaluation } : evaluation;
     window.currentActiveEvaluation = details;
 
-    const isCompleted = (details.status === 'Completed' || (details.evaluationDate && details.evaluationDate !== '—'));
+    const rawStatus = (details.status || '').trim();
+    const hasEvaluationDate = Boolean(details.evaluationDate && details.evaluationDate !== '—' && details.evaluationDate.trim() !== '');
+    const hasEvaluation = details.has_evaluation === true || (details.has_evaluation !== false && hasEvaluationDate && (rawStatus === 'Approved' || rawStatus === 'Completed' || rawStatus === 'Evaluated'));
+    const isCompleted = hasEvaluation;
 
     // Update button text: Evaluate Policy vs Re-evaluate Policy
     const btn = document.getElementById('evalModalRunBtn');

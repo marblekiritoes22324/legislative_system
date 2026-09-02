@@ -17,8 +17,36 @@
   </script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/Manila City Hall.css">
-  <link rel="stylesheet" href="../assets/css/Admin.css">
+  <link rel="stylesheet" href="../assets/css/Manila City Hall.css?v=<?= time() ?>">
+  <link rel="stylesheet" href="../assets/css/Admin.css?v=<?= time() ?>">
+  <style>
+    body:not(.sidebar-collapsed) .sidebar {
+      flex: 0 0 310px !important;
+      width: 310px !important;
+    }
+    body:not(.sidebar-collapsed) .main-panel {
+      width: calc(100% - 310px) !important;
+      max-width: calc(100% - 310px) !important;
+      margin-left: 310px !important;
+    }
+    .sidebar-nav .nav-link {
+      display: flex !important;
+      align-items: center !important;
+      white-space: nowrap !important;
+      font-size: 0.88rem !important;
+      padding: 10px 14px !important;
+    }
+    .sidebar-nav .nav-link i {
+      min-width: 1.2rem !important;
+      margin-right: 0.6rem !important;
+      flex-shrink: 0 !important;
+    }
+    .sidebar-nav .nav-link .nav-text {
+      white-space: nowrap !important;
+      font-size: 0.88rem !important;
+      letter-spacing: normal !important;
+    }
+  </style>
 </head>
 
 <body>
@@ -73,7 +101,7 @@
           ['href' => 'admin_dashboard.php?section=policyResearchSection', 'icon' => 'bi-file-earmark-text', 'label' => 'Policy Research'],
           ['href' => 'admin_dashboard.php?section=dataCollectionSection', 'icon' => 'bi-database-fill-gear', 'label' => 'Data Collection'],
           ['href' => 'admin_dashboard.php?section=impactAssessmentSection', 'icon' => 'bi-bar-chart-line', 'label' => 'Evaluation'],
-          ['href' => 'admin_dashboard.php?section=comparativeAnalysisSection', 'icon' => 'bi-layout-sidebar-inset-reverse', 'label' => 'Comparison'],
+          ['href' => 'admin_dashboard.php?section=comparativeAnalysisSection', 'icon' => 'bi-layout-sidebar-inset-reverse', 'label' => 'Benchmarks & Comparison'],
         ];
         foreach ($leg_nav as $item):
           $is_active = ($active_page === $item['label']) ? 'active' : '';

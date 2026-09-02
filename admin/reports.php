@@ -202,7 +202,7 @@ if (empty($report_policies)) {
                 <td class="py-3" id="prevEvalResult">
                   <span
                     class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-3 py-1.5 rounded-3 fw-semibold">
-                    Low Risk
+                    Favorable for Implementation
                   </span>
                 </td>
               </tr>
@@ -294,8 +294,8 @@ if (empty($report_policies)) {
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
           <i class="bi bi-clock-history text-primary"></i> 3. Generated Reports &amp; Comparative Analyses
         </h3>
-        <p class="text-muted mb-0 small">Access, browse, and download legislative policy evaluations, cross-city
-          benchmarks, and version evolution summaries.</p>
+        <p class="text-muted mb-0 small">Access, browse, and download legislative policy evaluations and cross-city
+          benchmarks.</p>
       </div>
       <div class="d-flex align-items-center gap-2">
         <div class="btn-group btn-group-sm p-1 bg-light rounded-pill border shadow-2xs" role="group">
@@ -305,8 +305,6 @@ if (empty($report_policies)) {
             style="background:transparent;" onclick="filterReportsTable('Evaluation', this)">Evaluations</button>
           <button type="button" class="btn btn-sm rounded-pill px-3 py-1 text-secondary" id="filterReportBench"
             style="background:transparent;" onclick="filterReportsTable('Benchmark', this)">Benchmarks</button>
-          <button type="button" class="btn btn-sm rounded-pill px-3 py-1 text-secondary" id="filterReportVersion"
-            style="background:transparent;" onclick="filterReportsTable('Version', this)">Versions</button>
         </div>
       </div>
     </div>
@@ -332,6 +330,35 @@ if (empty($report_policies)) {
       </table>
     </div>
     <small class="text-muted" id="recentGeneratedReportsCount">Showing 0 records</small>
+  <!-- Official Document Report Viewer Modal -->
+  <div class="modal fade" id="reportDocumentViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 820px;">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden bg-white">
+        <div class="modal-header border-bottom px-4 py-3 bg-light d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-text-fill text-primary fs-5"></i>
+            <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative Document</h5>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" id="reportModalDownloadPdfBtn">
+              <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs" id="reportModalDownloadDocxBtn">
+              <i class="bi bi-file-earmark-word-fill"></i> Word (.docx)
+            </button>
+            <button type="button" class="btn btn-sm btn-light border rounded-3 px-2.5 py-1.5 text-secondary" id="reportModalPrintBtn" title="Print Document">
+              <i class="bi bi-printer"></i>
+            </button>
+            <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="modal-body p-4 p-md-4" style="max-height: 75vh; overflow-y: auto; background:#f8fafc;">
+          <div id="reportViewerModalDocumentBody" class="bg-white p-4 rounded-3 border shadow-sm mx-auto" style="max-width: 740px;">
+            <!-- Rendered document will be injected here -->
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
 </section>
@@ -362,9 +389,64 @@ if (empty($report_policies)) {
     status: '<?= addslashes(htmlspecialchars($report_policies[0]['status'] ?? 'Draft')) ?>',
     date: '<?= isset($report_policies[0]['created_at']) ? date('M d, Y', strtotime($report_policies[0]['created_at'])) : '—' ?>',
     summary: '<?= addslashes(htmlspecialchars($initialAdminSummary ?? '')) ?>',
-    risk: 'Low Risk',
+    risk: 'Favorable for Implementation',
     recommendation: 'Proceed with implementation and continue monitoring the effectiveness of the policy.'
   };
+
+  function formatEvaluationResult(riskRaw) {
+    var raw = (riskRaw || '').toString();
+    if (raw.indexOf('High') !== -1 || raw.indexOf('Reject') !== -1 || raw.indexOf('Conflict') !== -1) {
+      return {
+        text: 'Requires Committee Review',
+        bg: '#fee2e2',
+        color: '#b91c1c',
+        border: '#fca5a5',
+        bsClass: 'danger'
+      };
+    }
+    if (raw.indexOf('Moderate') !== -1 || raw.indexOf('Medium') !== -1 || raw.indexOf('Amend') !== -1) {
+      return {
+        text: 'Recommended with Amendments',
+        bg: '#fef3c7',
+        color: '#b45309',
+        border: '#fde68a',
+        bsClass: 'warning'
+      };
+    }
+    return {
+      text: 'Favorable for Implementation',
+      bg: '#dcfce7',
+      color: '#15803d',
+      border: '#bbf7d0',
+      bsClass: 'success'
+    };
+  }
+
+  function formatBenchmarkResult(riskRaw) {
+    var raw = (riskRaw || '').toString();
+    if (raw.indexOf('High') !== -1 && raw.indexOf('Potential') === -1) {
+      return {
+        text: 'High Divergence (Requires Major Restructuring)',
+        bg: '#fee2e2',
+        color: '#b91c1c',
+        border: '#fca5a5'
+      };
+    }
+    if (raw.indexOf('Moderate') !== -1 || raw.indexOf('Medium') !== -1) {
+      return {
+        text: 'Moderate Alignment (Requires Local Adaptation)',
+        bg: '#fef3c7',
+        color: '#b45309',
+        border: '#fde68a'
+      };
+    }
+    return {
+      text: 'High Harmonization Potential (Favorable)',
+      bg: '#f0fdfa',
+      color: '#0f766e',
+      border: '#ccfbf1'
+    };
+  }
 
   function selectReportPolicy(trEl, isFirst, title, category, status, date, summary, risk, recommendation) {
     _report = { title: title, category: category, status: status, date: date, summary: summary, risk: risk, recommendation: recommendation };
@@ -394,11 +476,9 @@ if (empty($report_policies)) {
     if (recEl) recEl.textContent = recommendation;
 
     if (evalEl) {
-      var riskColor = 'success';
-      if (risk.indexOf('High') !== -1) riskColor = 'danger';
-      else if (risk.indexOf('Moderate') !== -1) riskColor = 'warning';
-      evalEl.innerHTML = '<span class="badge bg-' + riskColor + ' bg-opacity-10 text-' + riskColor +
-        ' border border-' + riskColor + ' border-opacity-20 px-3 py-1.5 rounded-3 fw-semibold">' + risk + '</span>';
+      var evalObj = formatEvaluationResult(risk);
+      evalEl.innerHTML = '<span class="badge bg-' + evalObj.bsClass + ' bg-opacity-10 text-' + evalObj.bsClass +
+        ' border border-' + evalObj.bsClass + ' border-opacity-20 px-3 py-1.5 rounded-3 fw-semibold">' + evalObj.text + '</span>';
     }
   }
 
@@ -409,49 +489,151 @@ if (empty($report_policies)) {
 
   function buildSharedReportTemplate(repObj, logoUrl) {
     var rep = repObj || _report;
-    var riskColor = '#15803d';
-    var riskBg = '#dcfce7';
-    var riskBorder = '#bbf7d0';
-    if (rep.risk.indexOf('High') !== -1) {
-      riskColor = '#b91c1c'; riskBg = '#fee2e2'; riskBorder = '#fca5a5';
-    } else if (rep.risk.indexOf('Moderate') !== -1) {
-      riskColor = '#b45309'; riskBg = '#fef3c7'; riskBorder = '#fde68a';
+    var isBenchmark = false;
+    var rType = rep.report_type || '';
+    var rTitle = rep.title || rep.policy_title || '';
+    if (rType.indexOf('Benchmark') !== -1 || rType.indexOf('Comparison') !== -1 || rTitle.indexOf(' vs') !== -1 || rTitle.indexOf(' vs.') !== -1 || rTitle.indexOf('Comparative') !== -1) {
+      isBenchmark = true;
     }
 
     var nowStr = new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' });
 
+    if (isBenchmark) {
+      // --- BENCHMARK & COMPARISON REPORT TEMPLATE ---
+      var parts = rTitle.split(/\s+vs\.?\s+/i);
+      var policyA = parts[0] ? parts[0].trim() : rTitle;
+      var policyB = parts[1] ? parts[1].trim() : 'Comparative Benchmark Standard (Quezon City / Regional Model)';
+      var bmRes = formatBenchmarkResult(rep.risk);
+
+      return '' +
+        '<div style="max-width:740px; margin:0 auto; background:#ffffff; padding:15px; font-family:\'Segoe UI\', Arial, sans-serif; color:#0f172a; text-align:left;">' +
+        '  <div style="text-align:center; margin-bottom:18px;">' +
+        '    <img src="' + logoUrl + '" width="65" height="65" style="width:65px; height:65px; object-fit:contain; margin-bottom:8px;" alt="Manila Seal">' +
+        '    <h1 style="color:#0B2E59; font-weight:800; font-size:1.55rem; letter-spacing:-0.5px; margin:0 0 4px 0;">LUNGSOD NG MAYNILA</h1>' +
+        '    <div style="color:#475569; font-weight:600; font-size:0.88rem; margin-bottom:12px;">City of Manila — Legislative Research &amp; Policy Benchmarking Services</div>' +
+        '    <div style="margin-bottom:6px;">' +
+        '      <span style="background:#0f766e; color:#ffffff; padding:6px 18px; font-weight:700; text-transform:uppercase; letter-spacing:1px; font-size:0.82rem; border-radius:4px; display:inline-block;">Official Inter-City Benchmark &amp; Comparative Analysis</span>' +
+        '    </div>' +
+        '    <div style="color:#64748b; font-size:0.78rem; margin-top:6px;">Date Generated: ' + nowStr + '</div>' +
+        '  </div>' +
+        '  <div style="border-bottom:2px solid #0f766e; margin-bottom:20px;"></div>' +
+
+        '  <table width="100%" style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:0.88rem;">' +
+        '    <tbody>' +
+        '      <tr>' +
+        '        <th width="170" style="padding:10px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Benchmark Title</th>' +
+        '        <td style="padding:10px 14px; border:1px solid #cbd5e1; font-weight:700; color:#0f172a;" colspan="3">' + esc(rTitle) + '</td>' +
+        '      </tr>' +
+        '      <tr>' +
+        '        <th width="170" style="padding:10px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Primary Policy (A)</th>' +
+        '        <td style="padding:10px 14px; border:1px solid #cbd5e1; color:#1e293b; width:35%;">' + esc(policyA) + ' <span style="font-size:0.75rem; color:#64748b; font-weight:600;">(Manila)</span></td>' +
+        '        <th width="140" style="padding:10px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Benchmark (B)</th>' +
+        '        <td style="padding:10px 14px; border:1px solid #cbd5e1; color:#1e293b;">' + esc(policyB) + '</td>' +
+        '      </tr>' +
+        '      <tr>' +
+        '        <th style="padding:10px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Policy Sector</th>' +
+        '        <td style="padding:10px 14px; border:1px solid #cbd5e1; color:#1e293b;">' + esc(rep.category || 'Environmental & Urban Governance') + '</td>' +
+        '        <th style="padding:10px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Harmonization Viability</th>' +
+        '        <td style="padding:10px 14px; border:1px solid #cbd5e1;"><span style="background:' + bmRes.bg + '; color:' + bmRes.color + '; border:1px solid ' + bmRes.border + '; padding:3px 10px; border-radius:4px; font-weight:700; font-size:0.8rem;">' + esc(bmRes.text) + '</span></td>' +
+        '      </tr>' +
+        '    </tbody>' +
+        '  </table>' +
+
+        '  <h4 style="color:#0f766e; font-size:0.95rem; font-weight:700; margin:18px 0 10px 0; text-transform:uppercase; letter-spacing:0.5px;">Comparative Dimension Matrix</h4>' +
+        '  <table width="100%" style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:0.85rem;">' +
+        '    <thead>' +
+        '      <tr style="background:#f8fafc;">' +
+        '        <th style="padding:10px 12px; border:1px solid #cbd5e1; text-align:left; width:22%; font-weight:700; color:#334155;">Assessment Dimension</th>' +
+        '        <th style="padding:10px 12px; border:1px solid #cbd5e1; text-align:left; width:39%; font-weight:700; color:#0369a1;">City of Manila (Baseline)</th>' +
+        '        <th style="padding:10px 12px; border:1px solid #cbd5e1; text-align:left; width:39%; font-weight:700; color:#0f766e;">Benchmark Model / Quezon City</th>' +
+        '      </tr>' +
+        '    </thead>' +
+        '    <tbody>' +
+        '      <tr>' +
+        '        <td style="padding:10px 12px; border:1px solid #cbd5e1; font-weight:700; background:#f8fafc;">1. Scope &amp; Target Coverage</td>' +
+        '        <td style="padding:10px 12px; border:1px solid #cbd5e1; color:#334155;">Applies to local commercial entities and primary retail markets across 6 districts.</td>' +
+        '        <td style="padding:10px 12px; border:1px solid #cbd5e1; color:#334155;">Comprehensive coverage including mall operators, fast-food chains, and delivery couriers.</td>' +
+        '      </tr>' +
+        '      <tr>' +
+        '        <td style="padding:10px 12px; border:1px solid #cbd5e1; font-weight:700; background:#f8fafc;">2. Economic &amp; Penalties</td>' +
+        '        <td style="padding:10px 12px; border:1px solid #cbd5e1; color:#334155;">Fixed graduated fines from ₱1,000 to ₱5,000 per violation.</td>' +
+        '        <td style="padding:10px 12px; border:1px solid #cbd5e1; color:#334155;">Graduated administrative fines with mandatory merchant plastic recovery fees.</td>' +
+        '      </tr>' +
+        '      <tr>' +
+        '        <td style="padding:10px 12px; border:1px solid #cbd5e1; font-weight:700; background:#f8fafc;">3. Implementation Mechanism</td>' +
+        '        <td style="padding:10px 12px; border:1px solid #cbd5e1; color:#334155;">City Health &amp; Sanitation inspectors with Barangay Council coordination.</td>' +
+        '        <td style="padding:10px 12px; border:1px solid #cbd5e1; color:#334155;">Dedicated Environmental Protection and Waste Management Department (EPWMD).</td>' +
+        '      </tr>' +
+        '    </tbody>' +
+        '  </table>' +
+
+        '  <table width="100%" style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:0.88rem;">' +
+        '    <tbody>' +
+        '      <tr>' +
+        '        <th width="170" style="padding:12px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Comparative Summary</th>' +
+        '        <td style="padding:12px 14px; border:1px solid #cbd5e1; color:#1e293b; line-height:1.6;">' + esc(rep.summary) + '</td>' +
+        '      </tr>' +
+        '      <tr>' +
+        '        <th width="170" style="padding:12px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Harmonization Guidance</th>' +
+        '        <td style="padding:12px 14px; border:1px solid #cbd5e1; color:#1e293b; line-height:1.6;">' + esc(rep.recommendation) + '</td>' +
+        '      </tr>' +
+        '    </tbody>' +
+        '  </table>' +
+
+        '  <table width="100%" style="width:100%; border-collapse:collapse; margin-top:30px; margin-bottom:20px; font-size:0.85rem; border:none;">' +
+        '    <tr>' +
+        '      <td width="50%" style="width:50%; border:none; padding:0; vertical-align:top; text-align:left;">' +
+        '        <div style="color:#64748b; font-size:0.78rem;">Prepared &amp; Benchmarked By:</div>' +
+        '        <div style="font-weight:700; color:#0f172a; margin-top:20px; font-size:0.9rem;">Legislative Policy &amp; Benchmarking Unit</div>' +
+        '        <div style="color:#64748b; font-size:0.78rem;">City Council of Manila</div>' +
+        '      </td>' +
+        '      <td width="50%" style="width:50%; border:none; padding:0; text-align:right; vertical-align:top;">' +
+        '        <div style="color:#64748b; font-size:0.78rem;">Approved &amp; Endorsed By:</div>' +
+        '        <div style="font-weight:700; color:#0f172a; margin-top:20px; font-size:0.9rem;">Administrator</div>' +
+        '        <div style="color:#64748b; font-size:0.78rem;">Legislative Information System</div>' +
+        '      </td>' +
+        '    </tr>' +
+        '  </table>' +
+        '  <div style="font-size:0.76rem; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:12px; text-align:center;">' +
+        '    Issued by the City Council Legislative Administration Office — Manila City Hall Legislative Information System' +
+        '  </div>' +
+        '</div>';
+    }
+
+    // --- STANDARD EVALUATION REPORT TEMPLATE ---
+    var evalRes = formatEvaluationResult(rep.risk);
+
     return '' +
-      '<div style="max-width:720px; margin:0 auto; background:#ffffff; padding:10px; font-family:\'Segoe UI\', Arial, sans-serif; color:#0f172a; text-align:left;">' +
-      '  <div style="text-align:center; margin-bottom:15px;">' +
+      '<div style="max-width:720px; margin:0 auto; background:#ffffff; padding:15px; font-family:\'Segoe UI\', Arial, sans-serif; color:#0f172a; text-align:left;">' +
+      '  <div style="text-align:center; margin-bottom:18px;">' +
       '    <img src="' + logoUrl + '" width="65" height="65" style="width:65px; height:65px; object-fit:contain; margin-bottom:8px;" alt="Manila Seal">' +
       '    <h1 style="color:#0B2E59; font-weight:800; font-size:1.6rem; letter-spacing:-0.5px; margin:0 0 4px 0;">LUNGSOD NG MAYNILA</h1>' +
       '    <div style="color:#475569; font-weight:600; font-size:0.88rem; margin-bottom:14px;">City of Manila — Legislative Services</div>' +
       '    <div style="margin-bottom:6px;">' +
-      '      <span style="background:#0B2E59; color:#ffffff; padding:6px 16px; font-weight:700; text-transform:uppercase; letter-spacing:1px; font-size:0.82rem; border-radius:4px; display:inline-block;">Official Legislative Evaluation Report</span>' +
+      '      <span style="background:#0B2E59; color:#ffffff; padding:6px 16px; font-weight:700; text-transform:uppercase; letter-spacing:1px; font-size:0.82rem; border-radius:4px; display:inline-block;">Official Legislative Evaluation &amp; Impact Report</span>' +
       '    </div>' +
       '    <div style="color:#64748b; font-size:0.78rem; margin-top:6px;">Date Generated: ' + nowStr + '</div>' +
       '  </div>' +
-
       '  <div style="border-bottom:2px solid #0B2E59; margin-bottom:20px;"></div>' +
 
-      '  <table width="100%" style="width:100%; border-collapse:collapse; margin-bottom:25px; font-size:0.88rem;">' +
+      '  <table width="100%" style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:0.88rem;">' +
       '    <tbody>' +
       '      <tr>' +
       '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Policy Title</th>' +
-      '        <td style="padding:12px 16px; border:1px solid #cbd5e1; font-weight:700; color:#0f172a; font-size:0.92rem;">' + esc(rep.title) + '</td>' +
+      '        <td style="padding:12px 16px; border:1px solid #cbd5e1; font-weight:700; color:#0f172a; font-size:0.92rem;">' + esc(rep.title || rep.policy_title) + '</td>' +
       '      </tr>' +
       '      <tr>' +
       '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Category</th>' +
-      '        <td style="padding:12px 16px; border:1px solid #cbd5e1; color:#1e293b;">' + esc(rep.category) + '</td>' +
+      '        <td style="padding:12px 16px; border:1px solid #cbd5e1; color:#1e293b;">' + esc(rep.category || 'General Legislation') + '</td>' +
       '      </tr>' +
       '      <tr>' +
-      '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">AI Summary</th>' +
+      '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">AI Executive Summary</th>' +
       '        <td style="padding:12px 16px; border:1px solid #cbd5e1; color:#1e293b; line-height:1.65;">' + esc(rep.summary) + '</td>' +
       '      </tr>' +
       '      <tr>' +
       '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Evaluation Result</th>' +
       '        <td style="padding:12px 16px; border:1px solid #cbd5e1;">' +
-      '          <span style="background:' + riskBg + '; color:' + riskColor + '; border:1px solid ' + riskBorder + '; padding:4px 12px; border-radius:4px; font-weight:700; font-size:0.82rem; display:inline-block;">' + esc(rep.risk) + '</span>' +
+      '          <span style="background:' + evalRes.bg + '; color:' + evalRes.color + '; border:1px solid ' + evalRes.border + '; padding:4px 12px; border-radius:4px; font-weight:700; font-size:0.82rem; display:inline-block;">' + esc(evalRes.text) + '</span>' +
       '        </td>' +
       '      </tr>' +
       '      <tr>' +
@@ -464,7 +646,7 @@ if (empty($report_policies)) {
       '  <table width="100%" style="width:100%; border-collapse:collapse; margin-top:35px; margin-bottom:25px; font-size:0.85rem; border:none;">' +
       '    <tr>' +
       '      <td width="50%" style="width:50%; border:none; padding:0; vertical-align:top; text-align:left;">' +
-      '        <div style="color:#64748b; font-size:0.78rem;">Prepared & Evaluated By:</div>' +
+      '        <div style="color:#64748b; font-size:0.78rem;">Prepared &amp; Evaluated By:</div>' +
       '        <div style="font-weight:700; color:#0f172a; margin-top:22px; font-size:0.9rem;">Legislative Research Office</div>' +
       '        <div style="color:#64748b; font-size:0.78rem;">City Council of Manila</div>' +
       '      </td>' +
@@ -820,6 +1002,85 @@ if (empty($report_policies)) {
     };
   }
 
+  var _activeModalReport = null;
+  var _activeModalFileName = '';
+
+  function openReportDocumentModal(rep, fileName) {
+    _activeModalReport = rep;
+    _activeModalFileName = fileName || (((rep.title || rep.policy_title || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_')) + '_Report.pdf');
+    
+    var logoUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/admin/')) + '/assets/images/manilacityhall.svg';
+    var htmlContent = buildSharedReportTemplate(rep, logoUrl);
+
+    var bodyEl = document.getElementById('reportViewerModalDocumentBody');
+    if (bodyEl) bodyEl.innerHTML = htmlContent;
+
+    var titleEl = document.getElementById('reportViewerModalTitle');
+    if (titleEl) titleEl.textContent = rep.report_type || 'Official Legislative Document';
+
+    var pdfBtn = document.getElementById('reportModalDownloadPdfBtn');
+    if (pdfBtn) {
+      pdfBtn.onclick = function() {
+        saveReportAsPDF(_activeModalFileName, _activeModalReport);
+      };
+    }
+
+    var docxBtn = document.getElementById('reportModalDownloadDocxBtn');
+    if (docxBtn) {
+      docxBtn.onclick = function() {
+        var docxName = _activeModalFileName.replace(/\.pdf$/i, '') + '.docx';
+        generateWordDoc(docxName, _activeModalReport);
+      };
+    }
+
+    var printBtn = document.getElementById('reportModalPrintBtn');
+    if (printBtn) {
+      printBtn.onclick = function() {
+        printSelectedReport(_activeModalReport);
+      };
+    }
+
+    var modalEl = document.getElementById('reportDocumentViewerModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+      var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      modal.show();
+    }
+  }
+
+  function saveReportAsPDF(fileName, rep) {
+    var logoUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/admin/')) + '/assets/images/manilacityhall.svg';
+    var htmlContent = buildSharedReportTemplate(rep, logoUrl);
+
+    if (typeof html2pdf !== 'undefined') {
+      var container = document.createElement('div');
+      container.innerHTML = htmlContent;
+      container.style.position = 'fixed';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '750px';
+      container.style.background = '#ffffff';
+      container.style.padding = '20px';
+      document.body.appendChild(container);
+
+      var opt = {
+        margin: 0.4,
+        filename: fileName.endsWith('.pdf') ? fileName : fileName + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(container).save().then(function () {
+        if (container && container.parentNode) container.parentNode.removeChild(container);
+      }).catch(function (err) {
+        if (container && container.parentNode) container.parentNode.removeChild(container);
+        printSelectedReport(rep);
+      });
+    } else {
+      printSelectedReport(rep);
+    }
+  }
+
   function downloadRecentGeneratedReport(index) {
     var list = loadRecentGeneratedReports();
     var item = list[index];
@@ -834,11 +1095,12 @@ if (empty($report_policies)) {
       risk: 'Low Risk',
       recommendation: 'Proceed with implementation and continue monitoring the effectiveness of the policy.'
     };
+    if (item.report_type) rep.report_type = item.report_type;
 
     if (item.format === 'DOCX' || (item.report_name && item.report_name.toLowerCase().endsWith('.docx'))) {
       generateWordDoc(item.report_name, rep);
     } else {
-      printSelectedReport(rep);
+      openReportDocumentModal(rep, item.report_name);
     }
   }
 
@@ -855,41 +1117,7 @@ if (empty($report_policies)) {
     if (format === 'DOCX') {
       generateWordDoc(fileName, rep);
     } else {
-      var logoUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/admin/')) + '/assets/images/manilacityhall.svg';
-      var htmlContent = buildSharedReportTemplate(rep, logoUrl);
-
-      if (typeof html2pdf !== 'undefined') {
-        var container = document.createElement('div');
-        container.innerHTML = htmlContent;
-        container.style.position = 'fixed';
-        container.style.left = '-9999px';
-        container.style.top = '0';
-        container.style.width = '750px';
-        container.style.background = '#ffffff';
-        container.style.padding = '20px';
-        document.body.appendChild(container);
-
-        var opt = {
-          margin: 0.4,
-          filename: fileName,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(container).save().then(function () {
-          if (container && container.parentNode) {
-            container.parentNode.removeChild(container);
-          }
-        }).catch(function (err) {
-          if (container && container.parentNode) {
-            container.parentNode.removeChild(container);
-          }
-          printSelectedReport(rep);
-        });
-      } else {
-        printSelectedReport(rep);
-      }
+      saveReportAsPDF(fileName, rep);
     }
   }
 
@@ -936,7 +1164,7 @@ if (empty($report_policies)) {
     if (fileName.toLowerCase().endsWith('.docx')) {
       generateWordDoc(fileName, getActiveReportData());
     } else {
-      printSelectedReport(getActiveReportData());
+      openReportDocumentModal(getActiveReportData(), fileName);
     }
   }
 
@@ -945,6 +1173,8 @@ if (empty($report_policies)) {
   window.printSelectedReport = printSelectedReport;
   window.generateWordDoc = generateWordDoc;
   window.downloadRecentGeneratedReport = downloadRecentGeneratedReport;
+  window.openReportDocumentModal = openReportDocumentModal;
+  window.saveReportAsPDF = saveReportAsPDF;
   window.selectReportPolicy = selectReportPolicy;
   window.renderRecentGeneratedReportsTable = renderRecentGeneratedReportsTable;
   document.addEventListener('DOMContentLoaded', renderRecentGeneratedReportsTable);

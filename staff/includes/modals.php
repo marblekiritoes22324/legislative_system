@@ -233,16 +233,8 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-semibold small">LGU / City Origin <span class="text-danger">*</span></label>
-              <select name="city_origin" class="form-select" required>
-                <option value="City of Manila" selected>🏛️ City of Manila (Local)</option>
-                <option value="Quezon City (QC Benchmark)">🏙️ Quezon City (QC Benchmark)</option>
-                <option value="Pasig City (Benchmark)">🏙️ Pasig City (Benchmark)</option>
-                <option value="Makati City (Benchmark)">🏙️ Makati City (Benchmark)</option>
-                <option value="Taguig City (Benchmark)">🏙️ Taguig City (Benchmark)</option>
-                <option value="Valenzuela City (Benchmark)">🏙️ Valenzuela City (Benchmark)</option>
-                <option value="Other LGU / National Benchmark">🌐 Other LGU / National Benchmark</option>
-              </select>
+              <label class="form-label fw-semibold small">Publication Date</label>
+              <input type="date" name="publication_date" class="form-control" min="<?= date('Y-m-d') ?>">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Author(s) <span class="text-danger">*</span></label>
@@ -251,10 +243,6 @@
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Department/Office <span class="text-danger">*</span></label>
               <input type="text" name="department" class="form-control" placeholder="Enter department" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold small">Publication Date</label>
-              <input type="date" name="publication_date" class="form-control" min="<?= date('Y-m-d') ?>">
             </div>
             <div class="col-md-12">
               <label class="form-label fw-semibold small">Research Description</label>
@@ -314,16 +302,9 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-semibold small">LGU / City Origin <span class="text-danger">*</span></label>
-              <select name="city_origin" id="edit_city_origin" class="form-select" required>
-                <option value="City of Manila">🏛️ City of Manila (Local)</option>
-                <option value="Quezon City (QC Benchmark)">🏙️ Quezon City (QC Benchmark)</option>
-                <option value="Pasig City (Benchmark)">🏙️ Pasig City (Benchmark)</option>
-                <option value="Makati City (Benchmark)">🏙️ Makati City (Benchmark)</option>
-                <option value="Taguig City (Benchmark)">🏙️ Taguig City (Benchmark)</option>
-                <option value="Valenzuela City (Benchmark)">🏙️ Valenzuela City (Benchmark)</option>
-                <option value="Other LGU / National Benchmark">🌐 Other LGU / National Benchmark</option>
-              </select>
+              <label class="form-label fw-semibold small">Publication Date</label>
+              <input type="date" name="publication_date" id="edit_publication_date" class="form-control"
+                min="<?= date('Y-m-d') ?>">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Author(s) <span class="text-danger">*</span></label>
@@ -332,11 +313,6 @@
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Department/Office <span class="text-danger">*</span></label>
               <input type="text" name="department" id="edit_department" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold small">Publication Date</label>
-              <input type="date" name="publication_date" id="edit_publication_date" class="form-control"
-                min="<?= date('Y-m-d') ?>">
             </div>
             <div class="col-md-12">
               <label class="form-label fw-semibold small">Research Description</label>

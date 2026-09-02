@@ -18,6 +18,34 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/Manila City Hall.css?v=<?= time() ?>">
   <link rel="stylesheet" href="../assets/css/staff.css?v=<?= time() ?>">
+  <style>
+    body:not(.sidebar-collapsed) .sidebar {
+      flex: 0 0 310px !important;
+      width: 310px !important;
+    }
+    body:not(.sidebar-collapsed) .main-panel {
+      width: calc(100% - 310px) !important;
+      max-width: calc(100% - 310px) !important;
+      margin-left: 310px !important;
+    }
+    .sidebar-nav .nav-link {
+      display: flex !important;
+      align-items: center !important;
+      white-space: nowrap !important;
+      font-size: 0.88rem !important;
+      padding: 10px 14px !important;
+    }
+    .sidebar-nav .nav-link i {
+      min-width: 1.2rem !important;
+      margin-right: 0.6rem !important;
+      flex-shrink: 0 !important;
+    }
+    .sidebar-nav .nav-link .nav-text {
+      white-space: nowrap !important;
+      font-size: 0.88rem !important;
+      letter-spacing: normal !important;
+    }
+  </style>
 </head>
 
 <body>
@@ -91,7 +119,7 @@
           ['target' => 'policyResearchSection', 'icon' => 'bi-journal-bookmark-fill', 'label' => 'Policy Research'],
           ['target' => 'dataCollectionSection', 'icon' => 'bi-database-fill-gear', 'label' => 'Data Collection'],
           ['target' => 'impactAssessmentSection', 'icon' => 'bi-bar-chart-line', 'label' => 'Evaluation'],
-          ['target' => 'comparativeAnalysisSection', 'icon' => 'bi-layout-sidebar-inset-reverse', 'label' => 'Comparison'],
+          ['target' => 'comparativeAnalysisSection', 'icon' => 'bi-layout-sidebar-inset-reverse', 'label' => 'Benchmarks & Comparison'],
         ];
         foreach ($leg_nav as $item):
           $is_active = (($active_section ?? '') === $item['target']) ? 'active' : '';
@@ -149,12 +177,11 @@
             }
           }
           $staff_notif_count = count($staff_notifs);
-          $staff_latest_id = !empty($staff_notifs) ? (int)$staff_notifs[0]['id'] : 0;
+          $staff_latest_id = !empty($staff_notifs) ? (int) $staff_notifs[0]['id'] : 0;
           ?>
           <div class="dropdown">
             <button class="header-notif-btn" id="staffNotifButton" type="button" data-bs-toggle="dropdown"
-              data-latest-id="<?= $staff_latest_id ?>"
-              aria-expanded="false" title="Notifications">
+              data-latest-id="<?= $staff_latest_id ?>" aria-expanded="false" title="Notifications">
               <i class="bi bi-bell fs-5 text-dark"></i>
               <span class="header-notif-badge" id="staffNotifBadge" style="display:none;"></span>
             </button>
@@ -164,8 +191,7 @@
                 style="background: linear-gradient(120deg, #0B2E59, #1a4a8a);">
                 <div>
                   <strong class="fs-6 d-block">Notifications</strong>
-                  <small class="opacity-75">You have <span
-                      id="staffNotifUnread">0</span> new
+                  <small class="opacity-75">You have <span id="staffNotifUnread">0</span> new
                     updates</small>
                 </div>
                 <span id="staffNotifHeaderBadge"
@@ -176,15 +202,14 @@
                   <?php if (!empty($staff_notifs)): ?>
                     <?php foreach ($staff_notifs as $upd): ?>
                       <?php
-                      $upd_id = (int)$upd['id'];
+                      $upd_id = (int) $upd['id'];
                       $upd_title = htmlspecialchars($upd['title']);
                       $upd_cat = htmlspecialchars($upd['category'] ?? 'Policy');
                       $upd_date = !empty($upd['publication_date']) ? date('M d, Y', strtotime($upd['publication_date'])) : (!empty($upd['created_at']) ? date('M d, Y', strtotime($upd['created_at'])) : 'Recent');
                       ?>
                       <li
                         class="notif-item list-group-item p-2 mb-1 border rounded-3 d-flex justify-content-between align-items-start"
-                        data-notif-id="<?= $upd_id ?>"
-                        style="cursor: pointer;"
+                        data-notif-id="<?= $upd_id ?>" style="cursor: pointer;"
                         onclick="handleStaffNotifItemClick('policyResearchSection', <?= $upd_id ?>);">
                         <div class="d-flex gap-2">
                           <span class="notif-dot unread mt-1.5"

@@ -35,8 +35,8 @@ body {
 }
 
 .sidebar {
-  flex: 0 0 280px;
-  width: 280px;
+  flex: 0 0 310px;
+  width: 310px;
   height: 100vh;
   position: fixed;
   left: 0;
@@ -207,8 +207,8 @@ body {
 
 .main-panel {
   flex: 1;
-  margin-left: 280px;
-  width: calc(100% - 280px);
+  margin-left: 310px;
+  width: calc(100% - 310px);
   padding: 24px 32px 40px;
   min-height: 100vh;
 }

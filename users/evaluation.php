@@ -19,7 +19,7 @@ if (!empty($conn)) {
       e.risk_level,
       e.ai_recommendation,
       COALESCE(e.updated_at, e.created_at) AS evaluation_date,
-      CASE WHEN e.id IS NULL THEN 'Draft' ELSE COALESCE(e.status, 'Completed') END AS evaluation_status
+      CASE WHEN e.id IS NULL OR e.status = 'Draft' THEN 'Draft' ELSE COALESCE(e.status, 'Completed') END AS evaluation_status
     FROM policy_records p
     LEFT JOIN evaluations e ON p.id = e.policy_id
     WHERE (p.status IS NULL OR p.status != 'Archived')
@@ -67,10 +67,10 @@ if (!empty($conn)) {
             <?php foreach ($user_evaluations as $eval): ?>
               <?php
               $title = $eval['policy_title'];
-              $has_evaluation = !empty($eval['evaluation_id']);
-              $status = !empty($eval['evaluation_status']) && $eval['evaluation_status'] !== '0' ? $eval['evaluation_status'] : ($has_evaluation ? 'Completed' : 'Draft');
+              $has_evaluation = !empty($eval['evaluation_id']) && !empty($eval['evaluation_date']) && $eval['evaluation_status'] !== 'Draft' && $eval['evaluation_status'] !== 'Pending';
+              $status = $has_evaluation ? (!empty($eval['evaluation_status']) && $eval['evaluation_status'] !== '0' ? $eval['evaluation_status'] : 'Completed') : 'Draft';
               $eval_date_fmt = '—';
-              if (!empty($eval['evaluation_date'])) {
+              if ($has_evaluation && !empty($eval['evaluation_date'])) {
                 $eval_date_fmt = date('M d, Y h:i A', strtotime($eval['evaluation_date']));
               }
 
@@ -107,12 +107,14 @@ if (!empty($conn)) {
                 ];
               }
 
-              $ai_analysis = !empty($notes_data['ai_analysis']) ? $notes_data['ai_analysis'] : (
-                'The AI analyzed the proposed policy and determined that it supports statutory governance objectives across economic, social, environmental, and legal criteria.'
+              $ai_analysis = !empty($notes_data['ai_analysis']) ? $notes_data['ai_analysis'] : ($has_evaluation
+                ? 'The AI analyzed the proposed policy and determined that it supports statutory governance objectives across economic, social, environmental, and legal criteria.'
+                : 'No evaluation has been performed yet.'
               );
 
-              $reason = !empty($notes_data['reason']) ? $notes_data['reason'] : (
-                'The proposed policy aligns with its intended objectives and demonstrates measurable benefits across the evaluated criteria.'
+              $reason = !empty($notes_data['reason']) ? $notes_data['reason'] : ($has_evaluation
+                ? 'The proposed policy aligns with its intended objectives and demonstrates measurable benefits across the evaluated criteria.'
+                : ''
               );
 
               $evaluator_name = (!empty($eval['evaluator']) && $eval['evaluator'] !== 'Administration' && $eval['evaluator'] !== 'System Administrator') ? $eval['evaluator'] : 'Admin';
@@ -124,6 +126,7 @@ if (!empty($conn)) {
               $evaluation_data = [
                 'policy_id' => (int) $eval['policy_id'],
                 'title' => $title,
+                'has_evaluation' => $has_evaluation,
                 'status' => $status,
                 'approved_by' => $eval['approved_by'] ?? null,
                 'approved_at' => $approved_at_fmt,

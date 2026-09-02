@@ -34,6 +34,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
   if ($action === 'add') {
     $title = trim($_POST['title'] ?? '');
+    $origFileName = isset($_FILES['research_file']['name']) ? pathinfo($_FILES['research_file']['name'], PATHINFO_FILENAME) : '';
+    if (!empty($origFileName)) {
+      $cleanOrig = trim(preg_replace('/[-_]+/', ' ', $origFileName));
+      if (strcasecmp($title, 'Public Transportation') === 0 || strcasecmp($title, 'Public Transportation Efficiency') === 0 || stripos($cleanOrig, 'Public Transportation') !== false) {
+        $title = 'Public Transportation Efficiency Improvement Plan for Manila City';
+      } elseif (strcasecmp($title, 'Community Safety') === 0 || strcasecmp($title, 'Crime Prevention') === 0 || stripos($cleanOrig, 'Community Safety') !== false) {
+        $title = 'Community Safety and Crime Prevention Strategy for Manila City';
+      } elseif (strcasecmp($title, 'Improvement Strategy') === 0 || strcasecmp($title, 'Improvement Strategy - Public Health & Wellness Action Plan') === 0 || stripos($cleanOrig, 'Improvement Strategy') !== false || stripos($title, 'Improvement Strategy') !== false) {
+        $title = 'Improvement Strategy for Public Health Services in Manila City';
+      } elseif (strlen($title) < 15 && strlen($cleanOrig) >= 15) {
+        $title = ucwords(strtolower($cleanOrig));
+      }
+    }
     $category = trim($_POST['category'] ?? 'Health and Sanitation');
     $author = trim($_POST['author'] ?? 'Staff Officer');
     $department = trim($_POST['department'] ?? 'Legislative Secretariat');
@@ -397,25 +410,48 @@ if (array_sum($cat_data_map) === 0) {
   $cat_data_map['Health and Sanitation'] = 2;
 }
 
-// Fetch Monthly Uploads Timeline for Councilor Dashboard Line Chart
-$timeline_labels = [];
-$timeline_data = [];
+// Fetch Monthly Uploads Timeline for Councilor Dashboard Line Chart (excludes future dates)
+$cur_m_name = date('M');
+$cur_m_prefix = date('Y-m');
+$today_day = (int) date('j');
 
+$days_sample = [];
+if ($today_day <= 7) {
+  for ($i = 1; $i <= $today_day; $i++) {
+    $days_sample[] = $i;
+  }
+} else {
+  $step = max(1, (int) floor($today_day / 6));
+  for ($i = 1; $i < $today_day; $i += $step) {
+    $days_sample[] = $i;
+  }
+  if (!in_array($today_day, $days_sample)) {
+    $days_sample[] = $today_day;
+  }
+}
+
+$daily_counts_map = [];
+$total_month_uploads = 0;
 if (!empty($conn)) {
-  $tq = mysqli_query($conn, "SELECT DATE(COALESCE(publication_date, created_at)) as up_date, COUNT(*) as cnt FROM $policy_tbl WHERE (status IS NULL OR status != 'Archived') GROUP BY up_date ORDER BY up_date ASC LIMIT 10");
+  $tq = mysqli_query($conn, "SELECT DAY(COALESCE(publication_date, created_at)) as up_day, COUNT(*) as cnt FROM $policy_tbl WHERE (status IS NULL OR status != 'Archived') AND (COALESCE(publication_date, created_at) LIKE '$cur_m_prefix%') GROUP BY up_day");
   if ($tq && mysqli_num_rows($tq) > 0) {
     while ($tRow = mysqli_fetch_assoc($tq)) {
-      if (!empty($tRow['up_date'])) {
-        $timeline_labels[] = date('M d', strtotime($tRow['up_date']));
-        $timeline_data[] = (int) $tRow['cnt'];
-      }
+      $daily_counts_map[(int)$tRow['up_day']] = (int)$tRow['cnt'];
+      $total_month_uploads += (int)$tRow['cnt'];
     }
   }
 }
 
-if (empty($timeline_labels)) {
-  $timeline_labels = ['Aug 12', 'Aug 15', 'Aug 19', 'Aug 26'];
-  $timeline_data = [1, 1, 2, 3];
+$timeline_labels = [];
+$timeline_data = [];
+
+foreach ($days_sample as $day_num) {
+  $timeline_labels[] = "$cur_m_name $day_num";
+  $cnt = $daily_counts_map[$day_num] ?? 0;
+  if ($cnt === 0 && $day_num === 1 && $total_month_uploads === 0 && !empty($recent_updates) && array_sum($timeline_data) === 0) {
+    $cnt = count($recent_updates);
+  }
+  $timeline_data[] = $cnt;
 }
 
 // ---------------------------------------------------------------
@@ -424,6 +460,8 @@ if (empty($timeline_labels)) {
 $pl_search = trim($_GET['pl_search'] ?? '');
 $pl_category = trim($_GET['pl_category'] ?? '');
 $pl_timeframe = trim($_GET['pl_timeframe'] ?? '');
+$pl_date_from = trim($_GET['pl_date_from'] ?? '');
+$pl_date_to = trim($_GET['pl_date_to'] ?? '');
 
 $pl_policies = [];
 if (!empty($conn)) {
@@ -432,9 +470,10 @@ if (!empty($conn)) {
   $bind_values = [];
 
   if ($pl_search !== '') {
-    $where_clauses[] = '(title LIKE ? OR description LIKE ? OR author LIKE ?)';
+    $where_clauses[] = '(title LIKE ? OR description LIKE ? OR keywords LIKE ? OR author LIKE ?)';
     $like = '%' . $pl_search . '%';
-    $bind_types .= 'sss';
+    $bind_types .= 'ssss';
+    $bind_values[] = $like;
     $bind_values[] = $like;
     $bind_values[] = $like;
     $bind_values[] = $like;
@@ -445,7 +484,24 @@ if (!empty($conn)) {
     $bind_values[] = $pl_category;
   }
 
-  if ($pl_timeframe === 'today') {
+  if (!empty($pl_date_from) && !empty($pl_date_to)) {
+    $where_clauses[] = "((DATE(publication_date) BETWEEN ? AND ?) OR (DATE(created_at) BETWEEN ? AND ?))";
+    $bind_types .= 'ssss';
+    $bind_values[] = $pl_date_from;
+    $bind_values[] = $pl_date_to;
+    $bind_values[] = $pl_date_from;
+    $bind_values[] = $pl_date_to;
+  } elseif (!empty($pl_date_from)) {
+    $where_clauses[] = "(DATE(publication_date) >= ? OR DATE(created_at) >= ?)";
+    $bind_types .= 'ss';
+    $bind_values[] = $pl_date_from;
+    $bind_values[] = $pl_date_from;
+  } elseif (!empty($pl_date_to)) {
+    $where_clauses[] = "(DATE(publication_date) <= ? OR DATE(created_at) <= ?)";
+    $bind_types .= 'ss';
+    $bind_values[] = $pl_date_to;
+    $bind_values[] = $pl_date_to;
+  } elseif ($pl_timeframe === 'today') {
     $where_clauses[] = "(DATE(publication_date) = CURDATE() OR DATE(created_at) = CURDATE())";
   } elseif ($pl_timeframe === 'last_7_days') {
     $where_clauses[] = "(publication_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) OR created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY))";
@@ -463,10 +519,7 @@ if (!empty($conn)) {
     $where_clauses[] = "(YEAR(publication_date) = 2024 OR publication_date LIKE '2024%' OR YEAR(created_at) = 2024)";
   }
 
-  $where_sql = '';
-  if (!empty($where_clauses)) {
-    $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
-  }
+  $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
 
   $pl_sql = "SELECT id, title, category, author, status, department, keywords, related_record, publication_date, description, file_path, ai_summary FROM $policy_tbl $where_sql ORDER BY id DESC";
   $pl_stmt = mysqli_prepare($conn, $pl_sql);
@@ -626,10 +679,15 @@ if (!empty($conn)) {
       border: 1px solid #BFDBFE !important;
     }
 
+    body:not(.sidebar-collapsed) .sidebar {
+      flex: 0 0 310px !important;
+      width: 310px !important;
+    }
+
     body:not(.sidebar-collapsed) .main-panel {
-      width: calc(100% - 280px);
-      max-width: calc(100% - 280px);
-      margin-left: 280px;
+      width: calc(100% - 310px) !important;
+      max-width: calc(100% - 310px) !important;
+      margin-left: 310px !important;
     }
 
     html.sidebar-collapsed .main-panel,
@@ -715,8 +773,8 @@ if (!empty($conn)) {
         </a>
         <a class="nav-link <?= ($active_section === 'policyComparisonSection') ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="#" data-target="policyComparisonSection" onclick="showSection('policyComparisonSection');return false;"
-          title="Comparison">
-          <i class="bi bi-layout-split me-2"></i><span class="nav-text">Comparison</span>
+          title="Benchmarks & Comparison">
+          <i class="bi bi-layout-split me-2"></i><span class="nav-text">Benchmarks & Comparison</span>
         </a>
 
         <div class="sidebar-section-label mt-3">REPORTING</div>
@@ -747,12 +805,11 @@ if (!empty($conn)) {
           <!-- User / Councilor Notifications Dropdown -->
           <?php
           $user_notif_count = !empty($recent_updates) ? count($recent_updates) : 0;
-          $user_latest_id = !empty($recent_updates) ? (int)$recent_updates[0]['id'] : 0;
+          $user_latest_id = !empty($recent_updates) ? (int) $recent_updates[0]['id'] : 0;
           ?>
           <div class="dropdown">
             <button class="header-notif-btn" id="userNotifButton" type="button" data-bs-toggle="dropdown"
-              data-latest-id="<?= $user_latest_id ?>"
-              aria-expanded="false" title="Notifications">
+              data-latest-id="<?= $user_latest_id ?>" aria-expanded="false" title="Notifications">
               <i class="bi bi-bell fs-5 text-dark"></i>
               <span class="header-notif-badge" id="userNotifBadge" style="display:none;"></span>
             </button>
@@ -762,27 +819,26 @@ if (!empty($conn)) {
                 style="background: linear-gradient(120deg, #0B2E59, #1a4a8a);">
                 <div>
                   <strong class="fs-6 d-block">Notifications</strong>
-                  <small class="opacity-75">You have <span
-                      id="userNotifUnread">0</span> new
+                  <small class="opacity-75">You have <span id="userNotifUnread">0</span> new
                     updates</small>
                 </div>
-                <span id="userNotifHeaderBadge"
-                  class="badge rounded-pill bg-warning text-dark"><?= $user_notif_count ?> Updates</span>
+                <span id="userNotifHeaderBadge" class="badge rounded-pill bg-warning text-dark"><?= $user_notif_count ?>
+                  Updates</span>
               </div>
               <div class="p-2" style="max-height: 290px; overflow-y: auto;">
                 <ul class="list-group list-group-flush" id="userNotifList">
                   <?php if (!empty($recent_updates)): ?>
                     <?php foreach ($recent_updates as $upd): ?>
                       <?php
-                      $upd_id = (int)$upd['id'];
+                      $upd_id = (int) $upd['id'];
                       $upd_title = htmlspecialchars($upd['title']);
                       $upd_cat = htmlspecialchars($upd['category'] ?? 'Policy');
                       $upd_date = !empty($upd['publication_date']) ? date('M d, Y', strtotime($upd['publication_date'])) : (!empty($upd['created_at']) ? date('M d, Y', strtotime($upd['created_at'])) : 'Recent');
                       ?>
                       <li
                         class="notif-item list-group-item p-2 mb-1 border rounded-3 d-flex justify-content-between align-items-start"
-                        data-notif-id="<?= $upd_id ?>"
-                        style="cursor: pointer;" onclick="handleUserNotifItemClick('policyLibrarySection', <?= $upd_id ?>);">
+                        data-notif-id="<?= $upd_id ?>" style="cursor: pointer;"
+                        onclick="handleUserNotifItemClick('policyLibrarySection', <?= $upd_id ?>);">
                         <div class="d-flex gap-2">
                           <span class="notif-dot unread mt-1.5"
                             style="background:#EF4444; width:8px; height:8px; border-radius:50%; flex-shrink:0;"></span>
@@ -865,9 +921,9 @@ if (!empty($conn)) {
                 </div>
               </div>
               <span class="header-admin-text">
-                <span class="header-admin-role">Councilor</span>
+                <span class="header-admin-role" id="topbarUserRole">Councilor</span>
                 <span class="header-admin-pipe">|</span>
-                <span id="topbarUserName" class="header-admin-name">Christian M. Caspe</span>
+                <span id="topbarUserName" class="header-admin-name">Council Member</span>
               </span>
               <i class="bi bi-chevron-down ms-1"></i>
             </button>
@@ -907,7 +963,7 @@ if (!empty($conn)) {
                     Council Session Active
                   </span>
                 </div>
-                <h2 class="h4 fw-bold text-dark mb-1">Welcome, Hon. Christian M. Caspe</h2>
+                <h2 class="h4 fw-bold text-dark mb-1" id="userWelcomeHeading">Welcome, Councilor</h2>
                 <p class="text-secondary small mb-0" style="font-size: 0.88rem;">
                   Official executive decision hub &bull; Review ordinances, policy evaluations, and legislative reports.
                 </p>
@@ -1336,7 +1392,8 @@ if (!empty($conn)) {
                       </tr>
                       <tr>
                         <td style="padding: 10px 14px;" class="fw-bold text-dark">Environmental Impact</td>
-                        <td style="padding: 10px 14px;" class="text-dark" id="evalCriteriaEnvReason">The policy satisfies
+                        <td style="padding: 10px 14px;" class="text-dark" id="evalCriteriaEnvReason">The policy
+                          satisfies
                           urban environmental standards and sustainability requirements.</td>
                       </tr>
                       <tr>
@@ -1360,7 +1417,8 @@ if (!empty($conn)) {
               <div class="ps-4">
                 <p class="mb-0 text-dark" id="evalModalAnalysis"
                   style="font-size: 0.95rem; line-height: 1.7; text-align: justify;">
-                  The proposed policy measure demonstrates strong statutory alignment with municipal priorities across Economic Feasibility, Social Impact, Environmental Protection, and Legal Compliance criteria.
+                  The proposed policy measure demonstrates strong statutory alignment with municipal priorities across
+                  Economic Feasibility, Social Impact, Environmental Protection, and Legal Compliance criteria.
                 </p>
               </div>
             </div>

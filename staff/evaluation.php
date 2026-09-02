@@ -36,8 +36,8 @@ if (!isset($evaluations) || !is_array($evaluations)) {
             <?php foreach ($evaluations as $eval): ?>
               <?php
               $title = $eval['policy_title'];
-              $has_evaluation = !empty($eval['evaluation_id']);
-              $status = !empty($eval['evaluation_status']) && $eval['evaluation_status'] !== '0' ? $eval['evaluation_status'] : ($has_evaluation ? 'Completed' : 'Draft');
+              $has_evaluation = !empty($eval['evaluation_id']) && !empty($eval['evaluation_date']) && $eval['evaluation_status'] !== 'Draft' && $eval['evaluation_status'] !== 'Pending';
+              $status = $has_evaluation ? (!empty($eval['evaluation_status']) && $eval['evaluation_status'] !== '0' ? $eval['evaluation_status'] : 'Completed') : 'Draft';
               $overall_score = $has_evaluation ? number_format((float) $eval['overall_score'], 1) : null;
               $risk_level = 'N/A';
 
@@ -98,6 +98,7 @@ if (!isset($evaluations) || !is_array($evaluations)) {
               $evaluation_data = [
                 'policy_id' => (int) $eval['policy_id'],
                 'title' => $title,
+                'has_evaluation' => $has_evaluation,
                 'status' => $status,
                 'approved_by' => $eval['approved_by'] ?? null,
                 'approved_at' => $approved_at_fmt,
