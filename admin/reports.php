@@ -330,6 +330,8 @@ if (empty($report_policies)) {
       </table>
     </div>
     <small class="text-muted" id="recentGeneratedReportsCount">Showing 0 records</small>
+  </div>
+
   <!-- Official Document Report Viewer Modal -->
   <div class="modal fade" id="reportDocumentViewerModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 820px;">

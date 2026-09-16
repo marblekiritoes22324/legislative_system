@@ -324,6 +324,13 @@ if (empty($report_policies)) {
           </tr>
         </thead>
         <tbody id="recentGeneratedReportsBody">
+          <!-- Dynamically populated when reports are generated -->
+        </tbody>
+      </table>
+    </div>
+    <small class="text-muted" id="recentGeneratedReportsCount">Showing 0 records</small>
+  </div>
+
   <!-- Official Document Report Viewer Modal -->
   <div class="modal fade" id="reportDocumentViewerModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 820px;">
@@ -640,6 +647,7 @@ if (empty($report_policies)) {
       '  <div style="font-size:0.78rem; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:14px; text-align:center;">' +
       '    Issued by the City Council Legislative Staff Office — Manila City Hall Legislative Information System' +
       '  </div>' +
+      '</div>';
   }
 
   function printSelectedReport(customReport) {

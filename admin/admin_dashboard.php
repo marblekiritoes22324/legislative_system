@@ -1270,7 +1270,6 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
                   <tr>
                     <th>Date &amp; Time</th>
                     <th>Activity</th>
-                    <th>Module</th>
                     <th>Status</th>
                     <th>Role</th>
                     <th>Performed By</th>
@@ -1286,7 +1285,6 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
                     while ($act = mysqli_fetch_assoc($recent_activities_query)):
                       $dt_fmt = !empty($act['created_at']) ? date('M d, Y h:i A', strtotime($act['created_at'])) : 'May 14, 2026 10:15 AM';
                       $act_title = htmlspecialchars($act['activity'] ?? ($act['action'] ?? ($act['description'] ?? 'System activity')));
-                      $mod_name = htmlspecialchars($act['module'] ?? 'System');
                       $user_name = htmlspecialchars($act['user'] ?? 'Admin');
                       if ($user_name === 'System Administrator' || $user_name === 'Administration' || empty($user_name)) {
                         $user_name = 'Admin';
@@ -1307,23 +1305,6 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
 
                       $stat_name = htmlspecialchars($act['status'] ?? 'Completed');
 
-                      $mod_lower = strtolower($mod_name);
-                      $mod_class = 'module-pill-policy';
-                      $mod_icon = 'bi-file-earmark-text';
-                      if (strpos($mod_lower, 'research') !== false || strpos($mod_lower, 'data') !== false) {
-                        $mod_class = 'module-pill-research';
-                        $mod_icon = 'bi-database-fill-gear';
-                      } elseif (strpos($mod_lower, 'evaluat') !== false || strpos($mod_lower, 'impact') !== false) {
-                        $mod_class = 'module-pill-evaluations';
-                        $mod_icon = 'bi-bar-chart-line';
-                      } elseif (strpos($mod_lower, 'report') !== false) {
-                        $mod_class = 'module-pill-reports';
-                        $mod_icon = 'bi-journal-text';
-                      } elseif (strpos($mod_lower, 'system') !== false || strpos($mod_lower, 'auth') !== false || strpos($mod_lower, 'login') !== false || strpos($mod_lower, 'user') !== false) {
-                        $mod_class = 'module-pill-system';
-                        $mod_icon = 'bi-gear-wide-connected';
-                      }
-
                       $stat_lower = strtolower($stat_name);
                       $dot_class = '';
                       if ($stat_lower === 'pending' || $stat_lower === 'draft' || $stat_lower === 'under review') {
@@ -1335,8 +1316,6 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
                       <tr>
                         <td><span class="activity-datetime"><?= $dt_fmt ?></span></td>
                         <td><span class="activity-title"><?= $act_title ?></span></td>
-                        <td><span class="module-pill <?= $mod_class ?>"><i class="bi <?= $mod_icon ?>"></i>
-                            <?= $mod_name ?></span></td>
                         <td><span class="status-pill"><span class="status-dot-indicator <?= $dot_class ?>"></span>
                             <?= $stat_name ?></span></td>
                         <td><span class="badge <?= $role_class ?> rounded-pill"><i

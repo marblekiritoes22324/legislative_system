@@ -461,6 +461,7 @@ if (empty($u_report_policies)) {
     </div>
   </div>
 </div>
+<script>
   // Selected Report State
   var _selectedUserReport = {
     title: '<?= addslashes(htmlspecialchars($u_report_policies[0]['title'] ?? '')) ?>',

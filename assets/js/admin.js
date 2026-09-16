@@ -901,7 +901,7 @@ function classifyDocumentMetadata(fileName, fileText) {
 
   // Extract clean title from file name or document text
   const cleanBaseName = (fileName || '').replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
-  
+
   function formatProperTitle(str) {
     if (!str) return '';
     const lowerWords = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'in', 'nor', 'of', 'on', 'or', 'so', 'the', 'to', 'up', 'yet', 'with'];
@@ -1209,7 +1209,7 @@ function openEvaluationModal(evaluation) {
   const rawStatus = (details.status || '').trim();
   const hasEvaluationDate = Boolean(details.evaluationDate && details.evaluationDate !== '—' && details.evaluationDate.trim() !== '');
   const hasEvaluation = details.has_evaluation === true || (details.has_evaluation !== false && hasEvaluationDate && (rawStatus === 'Approved' || rawStatus === 'Completed' || rawStatus === 'Evaluated'));
-  
+
   const isApproved = (rawStatus === 'Approved' && hasEvaluation);
   const isCompleted = hasEvaluation;
   const currentStatus = isApproved ? 'Approved' : (isCompleted ? (rawStatus === 'Evaluated' ? 'Evaluated' : 'Completed') : (rawStatus && rawStatus !== 'Completed' && rawStatus !== 'Approved' ? rawStatus : 'Draft'));
@@ -2419,7 +2419,7 @@ function loadRecentActivities() {
     .then(data => {
       if (data && data.success && Array.isArray(data.activities)) {
         if (data.activities.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No recent activities found.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No recent activities found.</td></tr>';
           return;
         }
 
@@ -2427,7 +2427,6 @@ function loadRecentActivities() {
         data.activities.forEach(act => {
           const dateTime = act.date_time || '—';
           const activity = act.activity || 'Activity performed';
-          const module = act.module || 'System';
           const status = act.status || 'Completed';
           let user = act.user || 'Admin';
           if (user === 'System Administrator' || user === 'Administration') user = 'Admin';
@@ -2436,7 +2435,6 @@ function loadRecentActivities() {
           html += `<tr>
             <td><span class="activity-datetime">${escapeHtml(dateTime)}</span></td>
             <td><span class="activity-title">${escapeHtml(activity)}</span></td>
-            <td>${getModuleBadgeHtml(module)}</td>
             <td>${getStatusBadgeHtml(status)}</td>
             <td>${getRoleBadgeHtml(role, user)}</td>
             <td><span class="activity-user">${escapeHtml(user)}</span></td>
