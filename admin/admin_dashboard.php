@@ -4,22 +4,6 @@ if (file_exists(__DIR__ . '/../backend/log_activity.php')) {
   require_once __DIR__ . '/../backend/log_activity.php';
 }
 
-function get_policy_table_name($conn)
-{
-  static $cached = null;
-  if ($cached !== null)
-    return $cached;
-  $res = @mysqli_query($conn, "SHOW TABLES LIKE 'policy_records'");
-  if ($res && mysqli_num_rows($res) > 0) {
-    $cached = 'policy_records';
-  } else {
-    $cached = 'policy_research';
-  }
-  return $cached;
-}
-
-$policy_tbl = get_policy_table_name($conn);
-
 // Auto-ensure policy_records table exists with proper schema
 mysqli_query($conn, "CREATE TABLE IF NOT EXISTS `policy_records` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -39,6 +23,27 @@ mysqli_query($conn, "CREATE TABLE IF NOT EXISTS `policy_records` (
   `ai_summary` longtext DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+function get_policy_table_name($conn)
+{
+  static $cached = null;
+  if ($cached !== null)
+    return $cached;
+  $res = @mysqli_query($conn, "SHOW TABLES LIKE 'policy_records'");
+  if ($res && mysqli_num_rows($res) > 0) {
+    $cached = 'policy_records';
+  } else {
+    $res2 = @mysqli_query($conn, "SHOW TABLES LIKE 'policy_research'");
+    if ($res2 && mysqli_num_rows($res2) > 0) {
+      $cached = 'policy_research';
+    } else {
+      $cached = 'policy_records';
+    }
+  }
+  return $cached;
+}
+
+$policy_tbl = get_policy_table_name($conn);
 
 $col = mysqli_query($conn, "SHOW COLUMNS FROM $policy_tbl LIKE 'ai_summary'");
 if ($col && mysqli_num_rows($col) === 0) {
