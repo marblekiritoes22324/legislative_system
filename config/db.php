@@ -1,17 +1,18 @@
 <?php
 
-// Database Configuration
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "legislative_management_db";
+// Database Configuration (supports Cloud Environment Variables with local fallbacks)
+$host = getenv('DB_HOST') ?: (getenv('MYSQL_HOST') ?: 'localhost');
+$username = getenv('DB_USER') ?: (getenv('MYSQL_USER') ?: 'root');
+$password = getenv('DB_PASS') !== false ? getenv('DB_PASS') : (getenv('MYSQL_PASSWORD') !== false ? getenv('MYSQL_PASSWORD') : '');
+$database = getenv('DB_NAME') ?: (getenv('MYSQL_DATABASE') ?: 'legislative_management_db');
+$port = (int)(getenv('DB_PORT') ?: (getenv('MYSQL_PORT') ?: 3306));
 
 // Disable default PHP mysqli uncaught exception throwing for graceful error display
 mysqli_report(MYSQLI_REPORT_OFF);
 
 try {
     // Create Database Connection
-    $conn = @mysqli_connect($host, $username, $password, $database);
+    $conn = @mysqli_connect($host, $username, $password, $database, $port);
 
     if (!$conn) {
         throw new Exception(mysqli_connect_error());
