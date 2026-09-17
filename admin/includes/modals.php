@@ -420,6 +420,8 @@
           </div>
           <hr style="border-color: #e5e7eb; opacity: 0.8;" class="my-4">
 
+
+
           <!-- SECTION 2: EVALUATION CRITERIA -->
           <div class="mb-4">
             <h5 class="fw-bold text-uppercase mb-3" style="font-size: 0.95rem; letter-spacing: 1px;">EVALUATION CRITERIA</h5>
@@ -495,37 +497,22 @@
               </p>
             </div>
           </div>
-          <hr style="border-color: #e5e7eb; opacity: 0.8;" class="my-4">
 
-          <!-- SECTION 4: RECOMMENDATION -->
-          <div class="mb-4">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <i class="bi bi-check-circle-fill fs-5 text-dark"></i>
-              <h5 class="fw-bold text-uppercase mb-0" style="font-size: 0.95rem; letter-spacing: 1px;">RECOMMENDATION</h5>
-            </div>
-            <div class="ps-2 ps-md-3">
-              <div class="mb-2">
-                <span id="evalModalRecommendationType" class="badge bg-secondary-subtle text-secondary px-3 py-1.5 rounded-pill fw-semibold">Awaiting evaluation</span>
-              </div>
-              <h6 class="fw-bold text-dark mb-2" id="evalModalRecommendationTitle" style="font-size: 0.98rem; line-height: 1.4;">
-                Awaiting evaluation.
-              </h6>
-              <p class="text-dark mb-0" id="evalModalReason" style="font-size: 0.92rem; line-height: 1.7; text-align: justify;"></p>
-            </div>
-          </div>
-          <hr style="border-color: #e5e7eb; opacity: 0.8;" class="my-4">
-
-          <!-- SECTION 5: SUGGESTED IMPROVEMENTS -->
-          <div class="mb-4">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <i class="bi bi-lightbulb-fill fs-5 text-dark"></i>
-              <h5 class="fw-bold text-uppercase mb-0" style="font-size: 0.95rem; letter-spacing: 1px;">SUGGESTED IMPROVEMENTS</h5>
-            </div>
-            <div class="ps-2 ps-md-3">
-              <div class="text-dark" id="evalModalImprovements" style="font-size: 0.92rem; line-height: 1.7;">
-                <p class="text-muted mb-0 fst-italic">Awaiting evaluation.</p>
+          <!-- FULL DOCUMENT ACCESS (Bottom-Left of Report) -->
+          <div class="mt-4 pt-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-3" id="evalModalDocumentAccessBlock">
+            <div class="d-flex align-items-center gap-2">
+              <span class="p-2 rounded-2 bg-primary bg-opacity-10 text-primary">
+                <i class="bi bi-file-earmark-text-fill fs-5"></i>
+              </span>
+              <div>
+                <div class="fw-bold text-dark small" style="font-size:0.88rem;">Original Ordinance Document</div>
+                <div class="text-muted" style="font-size:0.75rem;">Direct source reference for factual verification</div>
               </div>
             </div>
+            <a id="evalModalDocLink" href="#" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs" style="font-size:0.82rem;">
+              <i class="bi bi-box-arrow-up-right"></i>
+              <span>View Full Original Ordinance</span>
+            </a>
           </div>
 
         </div>
@@ -534,18 +521,19 @@
       <!-- Footer Actions Bar -->
       <div class="modal-footer bg-white border-top px-4 py-3 justify-content-between">
         <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.78rem; font-family: sans-serif;">
-          <i class="bi bi-bar-chart-line text-primary fs-5"></i>
+          <i class="bi bi-shield-check text-primary fs-5"></i>
           <div>
             <div class="fw-semibold text-dark">Official Impact Evaluation System</div>
             <div>Legislative Administration System &bull; Manila City Hall</div>
           </div>
         </div>
         <div class="d-flex align-items-center gap-2" style="font-family: sans-serif;">
-          <button type="button" id="evalModalApproveBtn" class="btn btn-success text-white rounded-3 px-3.5 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-1.5 border-0 d-none"
-            style="background-color: #16a34a;"
-            onclick="approveCurrentEvaluation()">
-            <i class="bi bi-check-circle-fill" id="evalApproveIcon"></i><span id="evalApproveText">Approve</span>
-          </button>
+          <div id="evalModalRevisionFooterActions" class="d-none d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-3 px-3 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-1.5"
+              onclick="requestRevisionFromActiveModal()">
+              <i class="bi bi-arrow-counterclockwise"></i> Request Revision
+            </button>
+          </div>
           <button type="button" id="evalModalRunBtn" class="btn text-white rounded-3 px-3.5 py-2 fw-semibold shadow-sm border-0 d-inline-flex align-items-center justify-content-center"
             style="background: linear-gradient(135deg, #4f46e5, #7c3aed);"
             onclick="runPolicyEvaluationModal()">
@@ -804,6 +792,62 @@
         <div class="modal-footer border-0 pt-0">
           <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-warning fw-semibold rounded-3 px-4">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Request Revision Modal -->
+<div class="modal fade" id="requestRevisionModal" tabindex="-1" aria-hidden="true" style="z-index: 1065;">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 580px;">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="modal-header border-0 pb-0 pt-4 px-4 bg-danger bg-opacity-10">
+        <div class="d-flex align-items-center gap-2.5">
+          <div class="p-2 rounded-circle bg-danger text-white d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+            <i class="bi bi-arrow-counterclockwise fs-5"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0">Request Policy Revision</h5>
+            <div class="text-muted small">Return policy to sponsor/drafter citing specific failed criteria</div>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="requestRevisionForm" onsubmit="submitRequestRevision(event)">
+        <input type="hidden" id="revisionPolicyId" value="">
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small text-secondary text-uppercase mb-1">Policy Title</label>
+            <div class="fw-bold text-dark p-2.5 bg-light rounded-3 border" id="revisionPolicyTitle">—</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small text-secondary text-uppercase mb-1">Specific Failed Criteria Cited</label>
+            <div class="alert alert-danger border border-danger-subtle rounded-3 p-3 mb-0" style="background:#fef2f2;">
+              <ul class="mb-0 ps-3 small text-danger-emphasis" id="revisionFailedCriteriaList" style="line-height:1.7;">
+                <li>No criteria deficits noted.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small text-secondary text-uppercase mb-1">Revision Notice &amp; Drafter Instructions</label>
+            <textarea id="revisionInstructions" class="form-control rounded-3 font-monospace small" rows="4" placeholder="Specific drafting guidance for the sponsor/author..." required></textarea>
+          </div>
+
+          <div class="small text-muted d-flex align-items-center gap-2 p-2 rounded-2 bg-light">
+            <i class="bi bi-shield-exclamation text-danger"></i>
+            <span>The drafter/sponsor will be notified with these specific criteria citations to submit a revised draft.</span>
+          </div>
+        </div>
+        <div class="modal-footer border-top px-4 py-3 bg-light d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-secondary rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" id="revisionSubmitBtn" class="btn btn-danger text-white fw-semibold rounded-3 px-4 shadow-sm">
+            <i class="bi bi-send-check-fill me-1.5"></i> Send Revision Request
+          </button>
         </div>
       </form>
     </div>

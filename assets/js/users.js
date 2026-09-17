@@ -430,7 +430,7 @@ function openEvaluationModal(evaluation) {
 
     const rawStatus = (details.status || '').trim();
     const hasEvaluationDate = Boolean(details.evaluationDate && details.evaluationDate !== '—' && details.evaluationDate.trim() !== '');
-    const hasEvaluation = details.has_evaluation === true || (details.has_evaluation !== false && hasEvaluationDate && (rawStatus === 'Approved' || rawStatus === 'Completed' || rawStatus === 'Evaluated'));
+    const hasEvaluation = details.has_evaluation === true || (details.has_evaluation !== false && hasEvaluationDate && (rawStatus === 'Approved' || rawStatus === 'Under Review' || rawStatus === 'Does Not Meet Standards' || rawStatus === 'Completed' || rawStatus === 'Evaluated'));
     const isCompleted = hasEvaluation;
 
     // Policy title
@@ -444,42 +444,90 @@ function openEvaluationModal(evaluation) {
     const dateEl = document.getElementById('evalModalDate');
     if (dateEl) dateEl.textContent = isCompleted ? (details.evaluationDate || '—') : '—';
 
-    // Status badge
-    const status = details.status || (isCompleted ? 'Completed' : 'Draft');
+    // Criteria scores directly from record
+    const econLevel = isCompleted ? (details.economicLevel || 'High') : 'Awaiting';
+    const socialLevel = isCompleted ? (details.socialLevel || 'High') : 'Awaiting';
+    const envLevel = isCompleted ? (details.envLevel || 'High') : 'Awaiting';
+    const legalLevel = isCompleted ? (details.legalLevel || 'High') : 'Awaiting';
+
+    const isLowLevel = (lvl) => {
+        const l = String(lvl || '').toLowerCase().trim();
+        return l === 'low' || l === 'fail' || l === 'failed' || l === 'does not meet' || l === 'non-compliant';
+    };
+
+    const hasFailedCriterion = isLowLevel(econLevel) || isLowLevel(socialLevel) || isLowLevel(envLevel) || isLowLevel(legalLevel);
+
+    // STATUS MODEL (3 STATES: Draft, Approved, Needs Revision)
+    let currentStatus = 'Draft';
+    if (hasEvaluation) {
+        if (hasFailedCriterion) {
+            currentStatus = 'Needs Revision';
+        } else {
+            currentStatus = 'Approved';
+        }
+    } else {
+        currentStatus = 'Draft';
+    }
+
     const statusEl = document.getElementById('evalModalStatus');
     if (statusEl) {
-        statusEl.textContent = status;
+        statusEl.textContent = currentStatus;
         let style = 'padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; display: inline-block; transition: all 0.2s ease;';
-        if (status === 'Approved') {
-            style += ' background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;';
-        } else if (status === 'Completed') {
-            style += ' background:#dbeafe; color:#1d4ed8; border:1px solid #bfdbfe;';
-        } else if (status === 'Under Review' || status === 'Draft' || status === 'Pending') {
-            style += ' background:#fef3c7; color:#b45309; border:1px solid #fde68a;';
+        if (currentStatus === 'Approved') {
+            style += ' background: rgba(22, 163, 74, 0.12); color: #15803d; border: 1px solid rgba(22, 163, 74, 0.25);';
+        } else if (currentStatus === 'Needs Revision') {
+            style += ' background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;';
         } else {
-            style += ' background:#f3f4f6; color:#4b5563; border:1px solid #e5e7eb;';
+            style += ' background: rgba(107, 114, 128, 0.12); color: #4b5563; border: 1px solid rgba(107, 114, 128, 0.25);';
         }
         statusEl.className = '';
         statusEl.style.cssText = style;
     }
 
-    // Criteria reasons / findings
+    // Full Document Access Link (Bottom-Left)
+    const docLinkEl = document.getElementById('evalModalDocLink');
+    if (docLinkEl) {
+        const policyId = details.policy_id || details.id || '';
+        if (details.document_url || details.file_path) {
+            docLinkEl.href = details.document_url || details.file_path;
+            docLinkEl.target = '_blank';
+        } else if (policyId) {
+            docLinkEl.href = `../backend/view_policy_document.php?id=${encodeURIComponent(policyId)}`;
+            docLinkEl.target = '_blank';
+        } else {
+            docLinkEl.href = '#';
+            docLinkEl.target = '_self';
+        }
+    }
+
+    // 1. Economic Feasibility
+    const econScoreEl = document.getElementById('evalCriteriaEconomicScore');
     const econEl = document.getElementById('evalCriteriaEconomicReason');
+    if (econScoreEl) econScoreEl.innerHTML = isCompleted ? getEvaluationScoreBadgeUser(econLevel) : '<span class="badge bg-secondary-subtle text-secondary px-2.5 py-1">Awaiting</span>';
     if (econEl) {
         econEl.innerHTML = isCompleted ? (details.economicReason ? String(details.economicReason).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Funding and implementation costs are manageable within municipal allocations.') : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
     }
 
+    // 2. Social Impact
+    const socialScoreEl = document.getElementById('evalCriteriaSocialScore');
     const socialEl = document.getElementById('evalCriteriaSocialReason');
+    if (socialScoreEl) socialScoreEl.innerHTML = isCompleted ? getEvaluationScoreBadgeUser(socialLevel) : '<span class="badge bg-secondary-subtle text-secondary px-2.5 py-1">Awaiting</span>';
     if (socialEl) {
         socialEl.innerHTML = isCompleted ? (details.socialReason ? String(details.socialReason).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'The policy provides measurable benefits to affected communities and enhances public welfare.') : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
     }
 
+    // 3. Environmental Impact
+    const envScoreEl = document.getElementById('evalCriteriaEnvScore');
     const envEl = document.getElementById('evalCriteriaEnvReason');
+    if (envScoreEl) envScoreEl.innerHTML = isCompleted ? getEvaluationScoreBadgeUser(envLevel) : '<span class="badge bg-secondary-subtle text-secondary px-2.5 py-1">Awaiting</span>';
     if (envEl) {
         envEl.innerHTML = isCompleted ? (details.envReason ? String(details.envReason).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'The policy satisfies urban environmental standards and sustainability requirements.') : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
     }
 
+    // 4. Legal Compliance
+    const legalScoreEl = document.getElementById('evalCriteriaLegalScore');
     const legalEl = document.getElementById('evalCriteriaLegalReason');
+    if (legalScoreEl) legalScoreEl.innerHTML = isCompleted ? getEvaluationScoreBadgeUser(legalLevel) : '<span class="badge bg-secondary-subtle text-secondary px-2.5 py-1">Awaiting</span>';
     if (legalEl) {
         if (isCompleted) {
             if (details.legalAuthority || details.draftingQuality || details.proceduralCompliance) {
@@ -502,34 +550,13 @@ function openEvaluationModal(evaluation) {
         analysisEl.innerHTML = isCompleted ? (details.aiAnalysis ? String(details.aiAnalysis).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Evidence-based impact analysis confirms alignment with statutory governance.') : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
     }
 
-    // Recommendation
-    const recEl = document.getElementById('evalModalRecommendationTitle');
-    if (recEl) recEl.textContent = isCompleted ? (details.recommendation || 'Approve & Proceed to Legislative Deliberation') : 'Awaiting evaluation.';
-
-    const reasonEl = document.getElementById('evalModalReason');
-    if (reasonEl) reasonEl.textContent = isCompleted ? (details.reason || '') : '';
-
-    // Suggested Improvements
-    const improvementsEl = document.getElementById('evalModalImprovements');
-    if (improvementsEl) {
-        if (isCompleted) {
-            if (details.improvements && details.improvements.length > 0) {
-                let listHtml = '<ul class="mb-0 ps-3">';
-                details.improvements.forEach(function (item) {
-                    listHtml += '<li class="mb-1.5">' + String(item).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</li>';
-                });
-                listHtml += '</ul>';
-                improvementsEl.innerHTML = listHtml;
-            } else {
-                improvementsEl.innerHTML = '<p class="text-success mb-0"><i class="bi bi-check-circle-fill me-1.5"></i>No statutory gaps identified; ready for legislative deliberation.</p>';
-            }
-        } else {
-            improvementsEl.innerHTML = '<p class="text-muted mb-0 fst-italic">Awaiting evaluation.</p>';
-        }
+    const modalEl = document.getElementById('evaluationDetailModal');
+    if (modalEl) {
+        (bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl)).show();
     }
-
-    new bootstrap.Modal(document.getElementById('evaluationDetailModal')).show();
 }
+
+window.openEvaluationModal = openEvaluationModal;
 
 function openImpactModal(title, score, risk, summary) {
     if (document.getElementById('impactTitle')) document.getElementById('impactTitle').innerText = title;

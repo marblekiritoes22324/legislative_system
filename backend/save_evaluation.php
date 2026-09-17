@@ -60,7 +60,8 @@ if ($policy_id > 0) {
         mysqli_stmt_bind_result($chk, $real_id, $real_title);
         if (mysqli_stmt_fetch($chk)) {
             $has_fk = true;
-            if (empty($policy_title)) $policy_title = $real_title;
+            if (empty($policy_title))
+                $policy_title = $real_title;
         }
         mysqli_stmt_close($chk);
     }
@@ -103,31 +104,92 @@ if (!$has_fk || $policy_id <= 0) {
     exit;
 }
 
+function reconcile_criterion_level($level, $reason)
+{
+    $lvl = ucfirst(strtolower(trim($level ?? 'High')));
+    $txt = strtolower(trim($reason ?? ''));
+    if (empty($txt) || $txt === 'awaiting evaluation.' || $txt === '—')
+        return $lvl ?: 'High';
+
+    $has_no_conflict = (
+        stripos($txt, 'no statutory conflict') !== false ||
+        stripos($txt, 'no statutory conflicts') !== false ||
+        stripos($txt, 'no conflict') !== false ||
+        stripos($txt, 'without conflict') !== false ||
+        stripos($txt, 'without statutory conflict') !== false
+    );
+
+    $has_deficit = (
+        stripos($txt, 'insufficient') !== false ||
+        stripos($txt, 'gap') !== false ||
+        stripos($txt, 'unfunded') !== false ||
+        stripos($txt, 'lacks') !== false ||
+        stripos($txt, 'unquantified') !== false ||
+        (!$has_no_conflict && stripos($txt, 'conflict') !== false) ||
+        stripos($txt, 'ultra vires') !== false ||
+        stripos($txt, 'severe') !== false ||
+        stripos($txt, 'deficient') !== false ||
+        stripos($txt, 'missing') !== false
+    );
+
+    $has_compliant = (
+        stripos($txt, 'manageable') !== false ||
+        stripos($txt, 'available') !== false ||
+        stripos($txt, 'positive') !== false ||
+        stripos($txt, 'strong') !== false ||
+        stripos($txt, 'compliant') !== false ||
+        stripos($txt, 'satisfies') !== false ||
+        stripos($txt, 'enhances') !== false ||
+        stripos($txt, 'sustainable') !== false ||
+        stripos($txt, 'within delegated') !== false ||
+        stripos($txt, 'benefits') !== false ||
+        $has_no_conflict
+    );
+
+    if ($has_deficit)
+        return 'Low';
+    if ($lvl === 'Low' && $has_compliant)
+        return 'High';
+    if ($lvl === 'Low')
+        return 'Low';
+    if ($lvl === 'Medium' || $lvl === 'Moderate')
+        return 'Medium';
+    return 'High';
+}
+
 $econ_level = isset($_POST['economic_level']) ? trim($_POST['economic_level']) : 'High';
-$econ_reason = isset($_POST['economic_reason']) ? trim($_POST['economic_reason']) : 'Funding and implementation costs are manageable and available.';
+$econ_reason = isset($_POST['economic_reason']) ? trim($_POST['economic_reason']) : 'Funding realism and cost allocations are manageable within municipal budget.';
 
 $social_level = isset($_POST['social_level']) ? trim($_POST['social_level']) : 'High';
-$social_reason = isset($_POST['social_reason']) ? trim($_POST['social_reason']) : 'The policy provides benefits to affected communities and improves quality of life.';
+$social_reason = isset($_POST['social_reason']) ? trim($_POST['social_reason']) : 'The policy provides measurable community welfare benefits to affected districts.';
 
 $env_level = isset($_POST['env_level']) ? trim($_POST['env_level']) : 'High';
-$env_reason = isset($_POST['env_reason']) ? trim($_POST['env_reason']) : 'The policy has minimal expected environmental effects.';
+$env_reason = isset($_POST['env_reason']) ? trim($_POST['env_reason']) : 'Maintains positive ecological resilience and sustainability standards.';
 
 $legal_level = isset($_POST['legal_level']) ? trim($_POST['legal_level']) : 'High';
-$legal_reason = isset($_POST['legal_reason']) ? trim($_POST['legal_reason']) : 'Compliant with statutory requirements.';
+$legal_reason = isset($_POST['legal_reason']) ? trim($_POST['legal_reason']) : 'Within delegated municipal power under RA 7160 with no statutory conflicts.';
 
 $legal_authority = isset($_POST['legal_authority']) ? trim($_POST['legal_authority']) : '';
 $drafting_quality = isset($_POST['drafting_quality']) ? trim($_POST['drafting_quality']) : '';
 $procedural_compliance = isset($_POST['procedural_compliance']) ? trim($_POST['procedural_compliance']) : '';
-$rec_type = isset($_POST['recommendation_type']) ? trim($_POST['recommendation_type']) : 'Approve & Proceed';
+
+$econ_level = reconcile_criterion_level($econ_level, $econ_reason);
+$social_level = reconcile_criterion_level($social_level, $social_reason);
+$env_level = reconcile_criterion_level($env_level, $env_reason);
+$legal_level = reconcile_criterion_level($legal_level, $legal_reason);
+
+// Check if any criterion is Low/Fail
+$has_low_score = ($econ_level === 'Low' || $social_level === 'Low' || $env_level === 'Low' || $legal_level === 'Low');
+
+// STATUS MODEL (Draft, Approved, Needs Revision)
+$status = $has_low_score ? 'Needs Revision' : 'Approved';
 
 $notes_payload = json_encode([
     'ai_analysis' => $ai_analysis,
-    'reason' => $reason,
-    'recommendation_type' => $rec_type,
+    'status' => $status,
     'legal_authority' => $legal_authority,
     'drafting_quality' => $drafting_quality,
     'procedural_compliance' => $procedural_compliance,
-    'improvements' => $improvements,
     'criteria' => [
         'economic' => ['level' => $econ_level, 'reason' => $econ_reason],
         'social' => ['level' => $social_level, 'reason' => $social_reason],
@@ -136,15 +198,11 @@ $notes_payload = json_encode([
     ]
 ]);
 
-// Determine numeric overall score from risk level
-$overall_score = 8.5;
-if (stripos($risk_level, 'Moderate') !== false || stripos($risk_level, 'Medium') !== false) {
-    $overall_score = 6.5;
-} elseif (stripos($risk_level, 'High') !== false) {
-    $overall_score = 4.5;
-}
+// Determine numeric overall score
+$overall_score = $has_low_score ? 4.5 : 8.5;
 
-// Save or Update evaluation record (WITHOUT modifying or deleting the policy_research record)
+// Save evaluation record
+$summary_text = $ai_analysis;
 $query = "INSERT INTO evaluations (policy_id, policy_title, evaluator, risk_level, ai_recommendation, notes, status, overall_score, updated_at) 
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW()) 
           ON DUPLICATE KEY UPDATE 
@@ -161,7 +219,7 @@ $query = "INSERT INTO evaluations (policy_id, policy_title, evaluator, risk_leve
 
 $stmt = mysqli_prepare($conn, $query);
 if ($stmt) {
-    mysqli_stmt_bind_param($stmt, "issssssd", $policy_id, $policy_title, $evaluator, $risk_level, $recommendation, $notes_payload, $status, $overall_score);
+    mysqli_stmt_bind_param($stmt, "issssssd", $policy_id, $policy_title, $evaluator, $risk_level, $summary_text, $notes_payload, $status, $overall_score);
     $executed = mysqli_stmt_execute($stmt);
     mysqli_stmt_close($stmt);
 
@@ -173,17 +231,17 @@ if ($stmt) {
         // Record evaluation version snapshot
         require_once __DIR__ . '/evaluation_versions_helper.php';
         record_evaluation_version($conn, $policy_id, [
-            'evaluator'           => $evaluator,
-            'risk_level'          => $risk_level,
-            'economic_score'      => $overall_score,
-            'social_score'        => $overall_score,
+            'evaluator' => $evaluator,
+            'risk_level' => $risk_level,
+            'economic_score' => $overall_score,
+            'social_score' => $overall_score,
             'environmental_score' => $overall_score,
-            'legal_score'         => $overall_score,
-            'overall_score'       => $overall_score,
-            'ai_recommendation'   => $recommendation,
-            'notes'               => $notes_payload,
-            'status'              => $status,
-            'approved_by'         => ($evaluator === 'Admin') ? 'System Administrator' : 'Staff Evaluator'
+            'legal_score' => $overall_score,
+            'overall_score' => $overall_score,
+            'ai_recommendation' => $recommendation,
+            'notes' => $notes_payload,
+            'status' => $status,
+            'approved_by' => ($evaluator === 'Admin') ? 'System Administrator' : 'Staff Evaluator'
         ]);
 
         $now = new DateTime();
@@ -209,7 +267,7 @@ if ($stmt) {
             'legal_level' => $legal_level,
             'legal_reason' => $legal_reason,
             'evaluator' => $evaluator,
-            'status' => 'Completed'
+            'status' => $status
         ]);
         exit;
     } else {

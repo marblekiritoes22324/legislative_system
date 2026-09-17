@@ -1,10 +1,28 @@
 <?php
 // users/report.php — User Reports Submodule (Matching Admin side layout with View, PDF, DOCX & Print support)
 
-// Pull policy records from DB for the report selection table
+// Pull policy records and evaluations from DB for the report selection table
 $u_report_policies = [];
 if (!empty($conn)) {
-  $rq = mysqli_query($conn, "SELECT id, title, category, status, created_at, ai_summary FROM policy_records WHERE (status IS NULL OR status != 'Archived') ORDER BY created_at DESC LIMIT 20");
+  $rq = mysqli_query($conn, "
+    SELECT 
+      p.id, 
+      p.title, 
+      p.category, 
+      p.status, 
+      p.created_at, 
+      p.ai_summary, 
+      p.author,
+      p.ordinance_number,
+      e.risk_level,
+      e.ai_recommendation,
+      e.status AS eval_status
+    FROM policy_records p
+    LEFT JOIN evaluations e ON p.id = e.policy_id
+    WHERE (p.status IS NULL OR p.status != 'Archived')
+    ORDER BY p.created_at DESC 
+    LIMIT 30
+  ");
   if ($rq) {
     while ($row = mysqli_fetch_assoc($rq)) {
       $u_report_policies[] = $row;
@@ -36,14 +54,18 @@ if (empty($u_report_policies)) {
   </div>
   <!-- 1. Select Policy Record -->
   <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-    <h3 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2" style="font-size:1.05rem;">
-      <i class="bi bi-journal-check text-primary"></i> 1. Select Policy Record
-    </h3>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+      <div>
+        <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
+          <i class="bi bi-journal-check text-primary"></i> 1. Select Policy Record
+        </h3>
+        <p class="text-muted mb-0 small">Click any policy title below to view its full official legislative report, download, or print.</p>
+      </div>
+    </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0" style="font-size:0.88rem;">
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
           <tr>
-            <th class="text-center py-3.5" style="width:50px;"></th>
             <th class="py-3.5 text-uppercase text-dark fw-bold"
               style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Policy Title</th>
             <th class="py-3.5 text-uppercase text-dark fw-bold"
@@ -79,23 +101,28 @@ if (empty($u_report_policies)) {
               $initialPreviewSummary = $summary;
             }
 
-            $risk = 'Low Risk';
-            $recText = 'Proceed with implementation and continue monitoring the effectiveness of the policy.';
-            $rowBg = $isFirst ? 'background-color:#EFF6FF;' : '';
+            $risk = !empty($pol['risk_level']) ? $pol['risk_level'] : 'Low Risk';
+            $recText = !empty($pol['ai_recommendation']) ? $pol['ai_recommendation'] : 'Proceed with implementation and continue monitoring the effectiveness of the policy.';
+
+            $policyData = [
+              'title' => $pol['title'],
+              'policy_title' => $pol['title'],
+              'category' => $pol['category'] ?? 'General Legislation',
+              'status' => $pol['status'] ?? 'Published',
+              'date' => $dateStr,
+              'date_uploaded' => $dateStr,
+              'summary' => $summary,
+              'risk' => $risk,
+              'recommendation' => $recText,
+              'author' => $pol['author'] ?? 'City Council of Manila',
+              'ordinance_number' => $pol['ordinance_number'] ?? '',
+              'report_type' => 'Evaluation Report'
+            ];
+            $policyJson = json_encode($policyData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
             ?>
-            <tr class="user-report-policy-row <?= $isFirst ? 'active-report-row' : '' ?>"
-              style="cursor:pointer; <?= $rowBg ?>" onclick="selectUserReportPolicy(this,
-                '<?= addslashes(htmlspecialchars($pol['title'])) ?>',
-                '<?= addslashes(htmlspecialchars($pol['category'] ?? '—')) ?>',
-                '<?= addslashes(htmlspecialchars($pol['status'] ?? 'Published')) ?>',
-                '<?= $dateStr ?>',
-                '<?= addslashes(htmlspecialchars($summary)) ?>',
-                '<?= $risk ?>',
-                '<?= addslashes($recText) ?>')">
-              <td class="text-center py-3">
-                <input class="form-check-input" type="radio" name="userReportPolicyRadio" <?= $isFirst ? 'checked' : '' ?>
-                  onclick="event.stopPropagation();">
-              </td>
+            <tr class="user-report-policy-row clickable-report-row" style="cursor:pointer;"
+              data-policy='<?= htmlspecialchars($policyJson, ENT_QUOTES, 'UTF-8') ?>'
+              onclick="openUserPolicyRowReport(this)">
               <td class="py-3">
                 <div class="d-flex align-items-center gap-2.5">
                   <div
@@ -103,7 +130,12 @@ if (empty($u_report_policies)) {
                     style="width: 32px; height: 32px;">
                     <i class="bi bi-file-earmark-text-fill fs-6"></i>
                   </div>
-                  <strong class="text-dark"><?= htmlspecialchars($pol['title']) ?></strong>
+                  <div>
+                    <a href="javascript:void(0)" class="fw-bold text-dark text-decoration-none policy-title-link"
+                      onclick="event.stopPropagation(); openUserPolicyRowReport(this.closest('tr'));">
+                      <?= htmlspecialchars($pol['title']) ?>
+                    </a>
+                  </div>
                 </div>
               </td>
               <td class="py-3">
@@ -1107,6 +1139,48 @@ if (empty($u_report_policies)) {
     };
   }
 
+  function openUserPolicyRowReport(trEl) {
+    if (!trEl) return;
+    var rawPolicy = trEl.getAttribute('data-policy');
+    var repObj = null;
+    if (rawPolicy) {
+      try {
+        repObj = JSON.parse(rawPolicy);
+      } catch (e) {
+        console.error('Failed to parse policy JSON:', e);
+      }
+    }
+    if (!repObj) {
+      var linkEl = trEl.querySelector('.policy-title-link') || trEl.querySelector('strong');
+      var title = linkEl ? linkEl.textContent.trim() : 'Policy Report';
+      var cat = (trEl.cells[1] ? trEl.cells[1].textContent.trim() : 'General Legislation');
+      var status = (trEl.cells[2] ? trEl.cells[2].textContent.trim() : 'Published');
+      var date = (trEl.cells[3] ? trEl.cells[3].textContent.trim() : '—');
+      repObj = {
+        title: title,
+        policy_title: title,
+        category: cat,
+        status: status,
+        date: date,
+        date_uploaded: date,
+        summary: 'This policy contains official legislative data and impact evaluation findings for ' + title + '.',
+        risk: 'Low Risk',
+        recommendation: 'Proceed with implementation and continue monitoring the effectiveness of the policy.',
+        report_type: 'Evaluation Report'
+      };
+    }
+
+    _selectedUserReport = repObj;
+    var cleanTitle = ((repObj.title || repObj.policy_title || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_'));
+    var fileName = cleanTitle + '_Report.pdf';
+
+    try {
+      trackUserGeneratedReport(repObj.title || repObj.policy_title, 'PDF', repObj);
+    } catch (e) { }
+
+    openUserReportDocumentModal(repObj, fileName);
+  }
+
   var _activeUserModalReport = null;
   var _activeUserModalFileName = '';
 
@@ -1270,6 +1344,7 @@ if (empty($u_report_policies)) {
     return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  window.openUserPolicyRowReport = openUserPolicyRowReport;
   window.exportUserReport = exportUserReport;
   window.exportUserReportFile = exportUserReportFile;
   window.printSelectedUserReport = printSelectedUserReport;

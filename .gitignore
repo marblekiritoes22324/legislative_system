@@ -1,0 +1,13 @@
+# Environment variables and secrets
+.env
+.env.*
+*.env
+
+# Operating System & IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary uploads / logs (optional, keep uploads dir structure)
+# assets/uploads/*

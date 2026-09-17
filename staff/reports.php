@@ -2,7 +2,25 @@
 // staff/reports.php — Staff Reports Submodule
 $report_policies = [];
 if (!empty($conn)) {
-  $rq = mysqli_query($conn, "SELECT id, title, category, status, created_at FROM policy_records ORDER BY created_at DESC LIMIT 20");
+  $rq = mysqli_query($conn, "
+    SELECT 
+      p.id, 
+      p.title, 
+      p.category, 
+      p.status, 
+      p.created_at, 
+      p.ai_summary, 
+      p.author,
+      p.ordinance_number,
+      e.risk_level,
+      e.ai_recommendation,
+      e.status AS eval_status
+    FROM policy_records p
+    LEFT JOIN evaluations e ON p.id = e.policy_id
+    WHERE (p.status IS NULL OR p.status != 'Archived')
+    ORDER BY p.created_at DESC 
+    LIMIT 30
+  ");
   if ($rq) {
     while ($row = mysqli_fetch_assoc($rq)) {
       $report_policies[] = $row;
@@ -38,20 +56,13 @@ if (empty($report_policies)) {
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
           <i class="bi bi-journal-check text-primary"></i> 1. Select Policy Record
         </h3>
-        <p class="text-muted mb-0 small">Select a policy record from the list below to generate its official legislative
-          report.</p>
+        <p class="text-muted mb-0 small">Click any policy title below to view its full official legislative report, download, or print.</p>
       </div>
-      <button type="button"
-        class="btn btn-primary px-3.5 py-2 rounded-3 d-inline-flex align-items-center gap-2 shadow-sm fw-semibold"
-        style="background: #0B2E59; border-color: #0B2E59;" onclick="printSelectedReport()">
-        <i class="bi bi-printer-fill fs-6"></i> Print Selected Report
-      </button>
     </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0" style="font-size:0.88rem;">
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
           <tr>
-            <th class="text-center py-3.5" style="width:50px;"></th>
             <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
               Policy Title</th>
             <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
@@ -88,23 +99,28 @@ if (empty($report_policies)) {
               $initialStaffSummary = $summary;
             }
 
-            $risk = 'Low Risk';
-            $recText = 'Proceed with implementation and continue monitoring the effectiveness of the policy.';
-            $rowBg = $isFirst ? 'background-color:#EFF6FF;' : '';
+            $risk = !empty($pol['risk_level']) ? $pol['risk_level'] : 'Low Risk';
+            $recText = !empty($pol['ai_recommendation']) ? $pol['ai_recommendation'] : 'Proceed with implementation and continue monitoring the effectiveness of the policy.';
+
+            $policyData = [
+              'title' => $pol['title'],
+              'policy_title' => $pol['title'],
+              'category' => $pol['category'] ?? 'General Legislation',
+              'status' => $pol['status'] ?? 'Draft',
+              'date' => $dateStr,
+              'date_uploaded' => $dateStr,
+              'summary' => $summary,
+              'risk' => $risk,
+              'recommendation' => $recText,
+              'author' => $pol['author'] ?? 'City Council of Manila',
+              'ordinance_number' => $pol['ordinance_number'] ?? '',
+              'report_type' => 'Evaluation Report'
+            ];
+            $policyJson = json_encode($policyData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
             ?>
-            <tr class="report-policy-row <?= $isFirst ? 'active-report-row' : '' ?>" style="cursor:pointer; <?= $rowBg ?>"
-              onclick="selectReportPolicy(this, <?= $isFirst ? 'true' : 'false' ?>,
-                '<?= addslashes(htmlspecialchars($pol['title'])) ?>',
-                '<?= addslashes(htmlspecialchars($pol['category'] ?? '—')) ?>',
-                '<?= addslashes(htmlspecialchars($pol['status'] ?? 'Draft')) ?>',
-                '<?= $dateStr ?>',
-                '<?= addslashes(htmlspecialchars($summary)) ?>',
-                '<?= $risk ?>',
-                '<?= addslashes($recText) ?>')">
-              <td class="text-center py-3">
-                <input class="form-check-input" type="radio" name="reportPolicyRadio" <?= $isFirst ? 'checked' : '' ?>
-                onclick="event.stopPropagation();">
-              </td>
+            <tr class="report-policy-row clickable-report-row" style="cursor:pointer;"
+              data-policy='<?= htmlspecialchars($policyJson, ENT_QUOTES, 'UTF-8') ?>'
+              onclick="openPolicyRowReport(this)">
               <td class="py-3">
                 <div class="d-flex align-items-center gap-2.5">
                   <div
@@ -112,9 +128,12 @@ if (empty($report_policies)) {
                     style="width: 32px; height: 32px;">
                     <i class="bi bi-file-earmark-text-fill fs-6"></i>
                   </div>
-                  <strong class="text-dark">
-                    <?= htmlspecialchars($pol['title']) ?>
-                  </strong>
+                  <div>
+                    <a href="javascript:void(0)" class="fw-bold text-dark text-decoration-none policy-title-link"
+                      onclick="event.stopPropagation(); openPolicyRowReport(this.closest('tr'));">
+                      <?= htmlspecialchars($pol['title']) ?>
+                    </a>
+                  </div>
                 </div>
               </td>
               <td class="py-3">
@@ -168,6 +187,27 @@ if (empty($report_policies)) {
   </div>
 
   <style>
+    /* Clickable Policy Records Table Styling */
+    .clickable-report-row {
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+    .clickable-report-row:hover {
+      background-color: #f1f5f9 !important;
+    }
+    .clickable-report-row:hover .policy-title-link {
+      color: #0d6efd !important;
+      text-decoration: underline !important;
+    }
+    body.dark-theme .clickable-report-row:hover {
+      background-color: #1e293b !important;
+    }
+    body.dark-theme .clickable-report-row .policy-title-link {
+      color: #f8fafc !important;
+    }
+    body.dark-theme .clickable-report-row:hover .policy-title-link {
+      color: #60a5fa !important;
+    }
+
     /* Clean Executive Recent Reports Styling */
     .badge-report-type {
       display: inline-flex;
@@ -265,23 +305,30 @@ if (empty($report_policies)) {
         <div class="modal-header border-bottom px-4 py-3 bg-light d-flex align-items-center justify-content-between">
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-file-earmark-text-fill text-primary fs-5"></i>
-            <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative
-              Document</h5>
+            <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative Document</h5>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button type="button"
-              class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
-              id="reportModalDownloadPdfBtn">
-              <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
-            </button>
-            <button type="button"
-              class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs"
-              id="reportModalDownloadDocxBtn">
-              <i class="bi bi-file-earmark-word-fill"></i> Word (.docx)
-            </button>
-            <button type="button" class="btn btn-sm btn-light border rounded-3 px-2.5 py-1.5 text-secondary"
-              id="reportModalPrintBtn" title="Print Document">
-              <i class="bi bi-printer"></i>
+            <!-- Download Button Dropdown -->
+            <div class="dropdown">
+              <button class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm dropdown-toggle" type="button" id="reportModalDownloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-download"></i> Download
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-1.5" aria-labelledby="reportModalDownloadDropdown">
+                <li>
+                  <a class="dropdown-item py-2 px-3 rounded-2 d-flex align-items-center gap-2 fw-medium text-dark" href="javascript:void(0)" id="reportModalDownloadPdfBtn">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i> Download as PDF
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item py-2 px-3 rounded-2 d-flex align-items-center gap-2 fw-medium text-dark" href="javascript:void(0)" id="reportModalDownloadDocxBtn">
+                    <i class="bi bi-file-earmark-word-fill text-primary fs-6"></i> Download as Word (.docx)
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <!-- Print Button -->
+            <button type="button" class="btn btn-sm text-white rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn">
+              <i class="bi bi-printer-fill"></i> Print
             </button>
             <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -290,6 +337,21 @@ if (empty($report_policies)) {
           <div id="reportViewerModalDocumentBody" class="bg-white p-4 rounded-3 border shadow-sm mx-auto"
             style="max-width: 740px;">
             <!-- Rendered document will be injected here -->
+          </div>
+        </div>
+        <div class="modal-footer border-top px-4 py-2.5 bg-light d-flex align-items-center justify-content-between">
+          <span class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i> Official City Council of Manila Legislative Document</span>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-3 px-3" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 fw-semibold" id="reportModalDownloadDocxBtnFooter">
+              <i class="bi bi-file-earmark-word-fill me-1"></i> Word (.docx)
+            </button>
+            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 fw-semibold" id="reportModalDownloadPdfBtnFooter">
+              <i class="bi bi-download me-1"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-sm text-white rounded-3 px-3.5 fw-semibold" style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtnFooter">
+              <i class="bi bi-printer-fill me-1"></i> Print Report
+            </button>
           </div>
         </div>
       </div>
@@ -302,7 +364,9 @@ if (empty($report_policies)) {
   (function () {
     var firstRow = document.querySelector('#reportPolicyTableBody .report-policy-row');
     if (firstRow) firstRow.style.backgroundColor = '#EFF6FF';
-    renderRecentGeneratedReportsTable();
+    if (typeof renderRecentGeneratedReportsTable === 'function') {
+      renderRecentGeneratedReportsTable();
+    }
   })();
 
   var _report = {
@@ -921,12 +985,55 @@ if (empty($report_policies)) {
     };
   }
 
+  function openPolicyRowReport(trEl) {
+    if (!trEl) return;
+    var rawPolicy = trEl.getAttribute('data-policy');
+    var repObj = null;
+    if (rawPolicy) {
+      try {
+        repObj = JSON.parse(rawPolicy);
+      } catch (e) {
+        console.error('Failed to parse policy JSON:', e);
+      }
+    }
+    if (!repObj) {
+      var linkEl = trEl.querySelector('.policy-title-link') || trEl.querySelector('strong');
+      var title = linkEl ? linkEl.textContent.trim() : 'Policy Report';
+      var cat = (trEl.cells[1] ? trEl.cells[1].textContent.trim() : 'General Legislation');
+      var status = (trEl.cells[2] ? trEl.cells[2].textContent.trim() : 'Draft');
+      var date = (trEl.cells[3] ? trEl.cells[3].textContent.trim() : '—');
+      repObj = {
+        title: title,
+        policy_title: title,
+        category: cat,
+        status: status,
+        date: date,
+        date_uploaded: date,
+        summary: 'This policy contains official legislative data and impact evaluation findings for ' + title + '.',
+        risk: 'Low Risk',
+        recommendation: 'Proceed with implementation and continue monitoring the effectiveness of the policy.',
+        report_type: 'Evaluation Report'
+      };
+    }
+
+    _report = repObj;
+    var cleanTitle = ((repObj.title || repObj.policy_title || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_'));
+    var fileName = cleanTitle + '_Report.pdf';
+
+    try {
+      trackGeneratedReport(repObj.title || repObj.policy_title, 'PDF', repObj);
+    } catch (e) { }
+
+    openReportDocumentModal(repObj, fileName);
+  }
+
   var _activeModalReport = null;
   var _activeModalFileName = '';
 
   function openReportDocumentModal(rep, fileName) {
     _activeModalReport = rep;
-    _activeModalFileName = fileName || (((rep.title || rep.policy_title || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_')) + '_Report.pdf');
+    var cleanTitle = ((rep.title || rep.policy_title || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_'));
+    _activeModalFileName = fileName || (cleanTitle + '_Report.pdf');
 
     var logoUrl = '../assets/images/manilacityhall.svg';
     var htmlContent = buildSharedReportTemplate(rep, logoUrl);
@@ -955,6 +1062,28 @@ if (empty($report_policies)) {
     var printBtn = document.getElementById('reportModalPrintBtn');
     if (printBtn) {
       printBtn.onclick = function () {
+        printSelectedReport(_activeModalReport);
+      };
+    }
+
+    var pdfBtnFooter = document.getElementById('reportModalDownloadPdfBtnFooter');
+    if (pdfBtnFooter) {
+      pdfBtnFooter.onclick = function () {
+        saveReportAsPDF(_activeModalFileName, _activeModalReport);
+      };
+    }
+
+    var docxBtnFooter = document.getElementById('reportModalDownloadDocxBtnFooter');
+    if (docxBtnFooter) {
+      docxBtnFooter.onclick = function () {
+        var docxName = _activeModalFileName.replace(/\.pdf$/i, '') + '.docx';
+        generateWordDoc(docxName, _activeModalReport);
+      };
+    }
+
+    var printBtnFooter = document.getElementById('reportModalPrintBtnFooter');
+    if (printBtnFooter) {
+      printBtnFooter.onclick = function () {
         printSelectedReport(_activeModalReport);
       };
     }
@@ -1088,6 +1217,7 @@ if (empty($report_policies)) {
   }
 
   // Ensure all global report functions are attached to window
+  window.openPolicyRowReport = openPolicyRowReport;
   window.exportReport = exportReport;
   window.printSelectedReport = printSelectedReport;
   window.generateWordDoc = generateWordDoc;
@@ -1098,248 +1228,4 @@ if (empty($report_policies)) {
   window.renderRecentGeneratedReportsTable = renderRecentGeneratedReportsTable;
   document.addEventListener('DOMContentLoaded', renderRecentGeneratedReportsTable);
   window.addEventListener('load', renderRecentGeneratedReportsTable);
-</script>efaultSeed = [
-{
-report_name: 'QC_SP-2876_vs_Manila_Single_Use_Plastics_Comparative_Analysis.pdf',
-policy_title: 'Single-Use Plastics Ban (Manila) vs. QC SP-2876 Plastics Recovery Code',
-report_type: 'Cross-LGU Benchmark',
-date_generated: 'Sep 01, 2026 11:45 AM',
-format: 'PDF',
-report_data: {
-title: 'Single-Use Plastics Ban (Manila) vs. QC SP-2876 Plastics Recovery Code',
-category: 'Environment',
-status: 'Approved',
-date: 'Sep 01, 2026',
-summary: 'Inter-city comparative benchmarking between City of Manila and Quezon City (QC EPWMD) regulatory structures,
-merchant recovery funds, and municipal compliance standards.',
-risk: 'Low Risk',
-recommendation: 'Incorporate Quezon City\'s structured recovery fund mechanisms into Manila City Council legislative
-committee draft.'
-}
-},
-{
-report_name: 'Disaster_Risk_Reduction_Framework_Version_Evolution.pdf',
-policy_title: 'Disaster Risk Reduction and Infrastructure Resilience Framework',
-report_type: 'Version Comparison',
-date_generated: 'Aug 29, 2026 03:20 PM',
-format: 'PDF',
-report_data: {
-title: 'Disaster Risk Reduction and Infrastructure Resilience Framework (Version Evolution)',
-category: 'Infrastructure',
-status: 'Approved',
-date: 'Aug 29, 2026',
-summary: 'Comparative evolution analysis between Version 1 (Baseline) and Version 2 (Revised), documenting updated
-drainage funding allocations and multi-agency response protocols.',
-risk: 'Low Risk',
-recommendation: 'Latest revised version is recommended for City Council plenary reading and budget endorsement.'
-}
-},
-{
-report_name: 'Flood_Risk_Assessment_Report.pdf',
-policy_title: 'Flood Risk Assessment and Drainage Improvement Plan for Manila City',
-report_type: 'Evaluation Report',
-date_generated: 'Aug 15, 2026 10:30 AM',
-format: 'PDF',
-report_data: {
-title: 'Flood Risk Assessment and Drainage Improvement Plan for Manila City',
-category: 'Infrastructure',
-status: 'Under Review',
-date: 'Aug 15, 2026',
-summary: 'This study evaluates the increasing frequency of urban flooding in Manila City during heavy rainfall and
-recommends regular drainage maintenance, expansion of pumping stations, and smart flood monitoring sensors.',
-risk: 'Medium Risk',
-recommendation: 'Proceed with committee review and stakeholder consultation.'
-}
-},
-{
-report_name: 'Clean_Energy_Grid_Act_Report.docx',
-policy_title: 'National Clean Energy Grid Modernization Act: Economic and Environmental Impact Assessment',
-report_type: 'Evaluation Report',
-date_generated: 'Aug 12, 2026 02:15 PM',
-format: 'DOCX',
-report_data: {
-title: 'National Clean Energy Grid Modernization Act: Economic and Environmental Impact Assessment',
-category: 'Health',
-status: 'Draft',
-date: 'Aug 12, 2026',
-summary: 'This policy research document evaluates the macroeconomic effects, grid reliability improvements, and carbon
-emission reductions associated with national clean energy infrastructure modernization.',
-risk: 'Low Risk',
-recommendation: 'Proceed with committee review and stakeholder consultation.'
-}
-},
-{
-report_name: 'Urban_Traffic_Congestion_Study_Report.pdf',
-policy_title: 'Urban Traffic Congestion Study in Manila City',
-report_type: 'Evaluation Report',
-date_generated: 'Aug 11, 2026 09:45 AM',
-format: 'PDF',
-report_data: {
-title: 'Urban Traffic Congestion Study in Manila City',
-category: 'Infrastructure',
-status: 'Draft',
-date: 'Aug 11, 2026',
-summary: 'An empirical analysis of traffic bottleneck nodes across Manila City district arteries, proposing adaptive
-traffic signaling and dedicated high-occupancy lanes.',
-risk: 'Low Risk',
-recommendation: 'Proceed with committee review and stakeholder consultation.'
-}
-}
-];
-
-try {
-localStorage.setItem(STAFF_RECENT_REPORTS_KEY, JSON.stringify(defaultSeed));
-} catch (e) { }
-return defaultSeed;
-}
-
-function trackGeneratedReport(policyTitle, format, reportObj) {
-var ext = (format === 'DOCX') ? 'docx' : 'pdf';
-var name = (policyTitle || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_');
-var fileName = name + '_Report.' + ext;
-
-var now = new Date();
-var timeStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
-' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-var reportItem = {
-report_name: fileName,
-policy_title: policyTitle,
-report_type: 'Evaluation Report',
-date_generated: timeStr,
-format: format,
-report_data: JSON.parse(JSON.stringify(reportObj || _report))
-};
-
-var list = loadRecentGeneratedReports();
-if (list.length > 0 && list[0].report_name === fileName && list[0].date_generated === timeStr) {
-return;
-}
-
-list.unshift(reportItem);
-if (list.length > 30) list = list.slice(0, 30);
-
-try {
-localStorage.setItem(STAFF_RECENT_REPORTS_KEY, JSON.stringify(list));
-} catch (e) { }
-
-renderRecentGeneratedReportsTable();
-}
-
-function renderRecentGeneratedReportsTable() {
-var tbody = document.getElementById('recentGeneratedReportsBody');
-var countEl = document.getElementById('recentGeneratedReportsCount');
-if (!tbody) return;
-
-var allList = loadRecentGeneratedReports();
-var list = allList;
-
-if (currentStaffReportFilter === 'Evaluation') {
-list = allList.filter(function (r) { return !r.report_type || r.report_type.indexOf('Evaluation') !== -1; });
-} else if (currentStaffReportFilter === 'Benchmark') {
-list = allList.filter(function (r) { return r.report_type && (r.report_type.indexOf('Benchmark') !== -1 ||
-r.report_type.indexOf('Comparison') !== -1); });
-} else if (currentStaffReportFilter === 'Version') {
-list = allList.filter(function (r) { return r.report_type && (r.report_type.indexOf('Version') !== -1); });
-}
-
-if (!list || list.length === 0) {
-tbody.innerHTML = '<tr>
-  <td colspan="5" class="text-center text-muted py-4"><i class="bi bi-info-circle me-1"></i> No matching reports found
-    for this filter.</td>
-</tr>';
-if (countEl) countEl.textContent = 'Showing 0 records';
-return;
-}
-
-var html = '';
-for (var i = 0; i < list.length; i++) { var r=list[i]; var isDocx=(r.format==='DOCX' ) || (r.report_name &&
-  r.report_name.toLowerCase().endsWith('.docx')); var fileIcon=isDocx ? 'bi-file-earmark-word-fill text-primary'
-  : 'bi-file-earmark-pdf-fill text-danger' ; var
-  typeBadge='<span class="badge-report-type"><i class="bi bi-file-earmark-text text-primary"></i><span>' +
-  esc(r.report_type || 'Evaluation Report' ) + '</span></span>' ; if (r.report_type &&
-  r.report_type.indexOf('Benchmark') !==-1) {
-  typeBadge='<span class="badge-report-type" style="background:#f0fdfa; color:#0f766e; border-color:#ccfbf1;"><i class="bi bi-intersect text-teal"></i><span>'
-  + esc(r.report_type) + '</span></span>' ; } else if (r.report_type && r.report_type.indexOf('Version') !==-1) {
-  typeBadge='<span class="badge-report-type" style="background:#fefce8; color:#a16207; border-color:#fef08a;"><i class="bi bi-clock-history text-warning"></i><span>'
-  + esc(r.report_type) + '</span></span>' ; } html +='<tr class="align-middle">' + '<td class="py-3 px-3">'
-  + '<div class="d-flex align-items-center gap-2">' + '<i class="bi ' + fileIcon + ' fs-5"></i>'
-  + '<span class="fw-semibold text-dark font-monospace" style="font-size: 0.86rem;">' + esc(r.report_name) + '</span>'
-  + '</div>' + '</td>' + '<td class="py-3 px-3 text-dark fw-medium" style="font-size: 0.88rem;">' + esc(r.policy_title)
-  + '</td>' + '<td class="py-3 px-3">' + typeBadge + '</td>' + '<td class="py-3 px-3 text-muted small">'
-  + '<i class="bi bi-calendar3 me-1.5 text-muted"></i>' + esc(r.date_generated) + '</td>'
-  + '<td class="py-3 px-3 text-end">'
-  + '<button type="button" class="btn btn-sm btn-report-download" onclick="downloadRecentGeneratedReport(' + i + ')">'
-  + '<i class="bi bi-download text-primary"></i>' + '<span>Download / View</span>' + '</button>' + '</td>' + '</tr>' ; }
-  tbody.innerHTML=html; if (countEl) countEl.textContent='Showing 1 to ' + list.length + ' of ' + allList.length
-  + ' records' ; } function getActiveReportData() { var titleEl=document.getElementById('prevPolicyTitle'); var
-  catEl=document.getElementById('prevCategory'); var sumEl=document.getElementById('prevAISummary'); var
-  evalEl=document.getElementById('prevEvalResult'); var recEl=document.getElementById('prevRecommendation'); var
-  title=titleEl ? titleEl.textContent.trim() : '' ; var cat=catEl ? catEl.textContent.trim() : '' ; var sum=sumEl ?
-  sumEl.textContent.trim() : '' ; var risk=evalEl ? evalEl.textContent.trim() : 'Low Risk' ; var rec=recEl ?
-  recEl.textContent.trim() : '' ; if (!title && typeof _report !=='undefined' && _report.title) { return _report; }
-  return { title: title || (_report ? _report.title : 'Policy Report' ), category: cat || (_report ? _report.category
-  : 'General' ), status: _report ? _report.status : 'Approved' , date: _report ? _report.date : new
-  Date().toLocaleDateString('en-US', { month: 'short' , day: 'numeric' , year: 'numeric' }), summary: sum || (_report ?
-  _report.summary : 'Policy evaluation and legislative review summary.' ), risk: risk || (_report ? _report.risk
-  : 'Low Risk' ), recommendation: rec || (_report ? _report.recommendation
-  : 'Proceed with implementation and continue monitoring the effectiveness of the policy.' ) }; } var
-  _activeModalReport=null; var _activeModalFileName='' ; function openReportDocumentModal(rep, fileName) {
-  _activeModalReport=rep; _activeModalFileName=fileName || (((rep.title || rep.policy_title || 'Policy'
-  ).replace(/[^a-zA-Z0-9 ]/g, '' ).trim().replace(/\s+/g, '_' )) + '_Report.pdf' ); var
-  logoUrl='../assets/images/manilacityhall.svg' ; var htmlContent=buildSharedReportTemplate(rep, logoUrl); var
-  bodyEl=document.getElementById('reportViewerModalDocumentBody'); if (bodyEl) bodyEl.innerHTML=htmlContent; var
-  titleEl=document.getElementById('reportViewerModalTitle'); if (titleEl) titleEl.textContent=rep.report_type
-  || 'Official Legislative Document' ; var pdfBtn=document.getElementById('reportModalDownloadPdfBtn'); if (pdfBtn) {
-  pdfBtn.onclick=function() { saveReportAsPDF(_activeModalFileName, _activeModalReport); }; } var
-  docxBtn=document.getElementById('reportModalDownloadDocxBtn'); if (docxBtn) { docxBtn.onclick=function() { var
-  docxName=_activeModalFileName.replace(/\.pdf$/i, '' ) + '.docx' ; generateWordDoc(docxName, _activeModalReport); }; }
-  var printBtn=document.getElementById('reportModalPrintBtn'); if (printBtn) { printBtn.onclick=function() {
-  printSelectedReport(_activeModalReport); }; } var modalEl=document.getElementById('reportDocumentViewerModal'); if
-  (modalEl && typeof bootstrap !=='undefined' ) { var modal=bootstrap.Modal.getInstance(modalEl) || new
-  bootstrap.Modal(modalEl); modal.show(); } } function saveReportAsPDF(fileName, rep) { var
-  logoUrl='../assets/images/manilacityhall.svg' ; var htmlContent=buildSharedReportTemplate(rep, logoUrl); if (typeof
-  html2pdf !=='undefined' ) { var container=document.createElement('div'); container.innerHTML=htmlContent;
-  container.style.position='fixed' ; container.style.left='-9999px' ; container.style.top='0' ;
-  container.style.width='750px' ; container.style.background='#ffffff' ; container.style.padding='20px' ;
-  document.body.appendChild(container); var opt={ margin: 0.4, filename: fileName.endsWith('.pdf') ? fileName : fileName
-  + '.pdf' , image: { type: 'jpeg' , quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in' ,
-  format: 'letter' , orientation: 'portrait' } }; html2pdf().set(opt).from(container).save().then(function () { if
-  (container && container.parentNode) container.parentNode.removeChild(container); }).catch(function (err) { if
-  (container && container.parentNode) container.parentNode.removeChild(container); printSelectedReport(rep); }); } else
-  { printSelectedReport(rep); } } function downloadRecentGeneratedReport(index) { var list=loadRecentGeneratedReports();
-  var item=list[index]; if (!item) return; var rep=item.report_data || { title: item.policy_title, category: 'General' ,
-  status: 'Evaluated' , date: item.date_generated,
-  summary: 'This policy contains official legislative data and impact evaluation findings for ' + item.policy_title
-  + '.' , risk: 'Low Risk' ,
-  recommendation: 'Proceed with implementation and continue monitoring the effectiveness of the policy.' }; if
-  (item.report_type) rep.report_type=item.report_type; if (item.format==='DOCX' || (item.report_name &&
-  item.report_name.toLowerCase().endsWith('.docx'))) { generateWordDoc(item.report_name, rep); } else {
-  openReportDocumentModal(rep, item.report_name); } } function exportReport(format) { var rep=getActiveReportData(); var
-  ext=(format==='DOCX' ) ? 'docx' : 'pdf' ; var name=(rep.title || 'Policy' ).replace(/[^a-zA-Z0-9 ]/g, ''
-  ).trim().replace(/\s+/g, '_' ); var fileName=name + '_Report.' + ext; try { trackGeneratedReport(rep.title, format,
-  rep); } catch (e) { } if (format==='DOCX' ) { generateWordDoc(fileName, rep); } else { saveReportAsPDF(fileName, rep);
-  } } function generateWordDoc(fileName, customReport) { var targetReport=customReport || getActiveReportData(); var
-  logoUrl='../assets/images/manilacityhall.svg' ; var htmlContent=buildSharedReportTemplate(targetReport, logoUrl); var
-  wordHTML='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
-  + '<head><meta charset="utf-8"><title>Legislative Evaluation Report</title>' + '<style>'
-  + '@page WordSection1 { size: 8.5in 11.0in; margin: 0.5in 0.5in 0.5in 0.5in; }'
-  + 'div.WordSection1 { page: WordSection1; width: 540pt; margin: 0 auto; text-align: center; }'
-  + 'body { font-family: "Segoe UI", Arial, sans-serif; font-size: 11pt; color: #0f172a; background: #ffffff; }'
-  + 'table { width: 100% !important; border-collapse: collapse; }'
-  + 'img { max-width: 65px !important; max-height: 65px !important; }' + '</style></head><body>'
-  + '<div class="WordSection1" align="center">' + htmlContent + '</div>' + '</body></html>' ; var blob=new
-  Blob(['\ufeff' + wordHTML], { type: 'application/msword;charset=utf-8' }); var url=URL.createObjectURL(blob); var
-  a=document.createElement('a'); a.href=url; a.download=fileName; document.body.appendChild(a); a.click();
-  document.body.removeChild(a); URL.revokeObjectURL(url); } function downloadReportDoc(fileName) { var
-  list=loadRecentGeneratedReports(); for (var i=0; i < list.length; i++) { if (list[i].report_name===fileName) {
-  downloadRecentGeneratedReport(i); return; } } if (fileName.toLowerCase().endsWith('.docx')) {
-  generateWordDoc(fileName, getActiveReportData()); } else { openReportDocumentModal(getActiveReportData(), fileName); }
-  } // Ensure all global report functions are attached to window window.exportReport=exportReport;
-  window.printSelectedReport=printSelectedReport; window.generateWordDoc=generateWordDoc;
-  window.downloadRecentGeneratedReport=downloadRecentGeneratedReport;
-  window.openReportDocumentModal=openReportDocumentModal; window.saveReportAsPDF=saveReportAsPDF;
-  window.selectReportPolicy=selectReportPolicy;
-  window.renderRecentGeneratedReportsTable=renderRecentGeneratedReportsTable;
-  document.addEventListener('DOMContentLoaded', renderRecentGeneratedReportsTable); window.addEventListener('load',
-  renderRecentGeneratedReportsTable); </script>
+</script>

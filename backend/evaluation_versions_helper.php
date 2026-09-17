@@ -170,29 +170,41 @@ if (!function_exists('get_policy_versions_comparison_data')) {
             return [];
         ensure_evaluation_versions_table($conn);
 
-        $extractLevel = function ($crit_item, $notes, $key, $score) {
-            if (is_array($crit_item) && !empty($crit_item['level']))
-                return $crit_item['level'];
-            if (is_string($crit_item) && !empty($crit_item))
-                return $crit_item;
-            if (is_array($notes) && !empty($notes[$key . '_level']))
-                return $notes[$key . '_level'];
-            if (!empty($score) && is_numeric($score) && $score > 0) {
-                if ($score >= 8)
-                    return 'Low';
-                if ($score >= 5)
-                    return 'Medium';
-                return 'High';
-            }
-            return 'Low';
-        };
+        $extractReconciled = function ($crit_item, $notes, $key, $score, $default_reason = '') {
+            $level = 'High';
+            $reason = $default_reason;
 
-        $extractReason = function ($crit_item, $notes, $key, $default) {
-            if (is_array($crit_item) && !empty($crit_item['reason']))
-                return $crit_item['reason'];
-            if (is_array($notes) && !empty($notes[$key . '_reason']))
-                return $notes[$key . '_reason'];
-            return $default;
+            if (is_array($crit_item)) {
+                $level = $crit_item['level'] ?? 'High';
+                $reason = $crit_item['reason'] ?? $default_reason;
+            } else if (is_string($crit_item) && !empty($crit_item)) {
+                $level = $crit_item;
+            } else if (is_array($notes) && !empty($notes[$key . '_level'])) {
+                $level = $notes[$key . '_level'];
+                $reason = $notes[$key . '_reason'] ?? $default_reason;
+            } else if (!empty($score) && is_numeric($score) && $score > 0) {
+                if ($score >= 8) $level = 'High';
+                else if ($score >= 5) $level = 'Medium';
+                else $level = 'Low';
+            }
+
+            // Standardize Low / Medium / High
+            $cleanLevel = 'High';
+            $upper = strtoupper(trim((string)$level));
+            if ($upper === 'HIGH' || strpos($upper, 'STRONG') !== -1 || strpos($upper, 'POSITIVE') !== -1) {
+                $cleanLevel = 'High';
+            } else if ($upper === 'MEDIUM' || $upper === 'MODERATE' || strpos($upper, 'PARTIAL') !== -1) {
+                $cleanLevel = 'Medium';
+            } else if ($upper === 'LOW' || strpos($upper, 'GAP') !== -1 || strpos($upper, 'UNVERIFIED') !== -1 || strpos($upper, 'NON-COMPLIANT') !== -1) {
+                $cleanLevel = 'Low';
+            } else {
+                $cleanLevel = 'High';
+            }
+
+            return [
+                'level' => $cleanLevel,
+                'reason' => !empty($reason) ? $reason : $default_reason
+            ];
         };
 
         // Fetch all policies that have Approved evaluation versions
@@ -253,27 +265,40 @@ if (!function_exists('get_policy_versions_comparison_data')) {
                 }
                 $crit = $notes_data['criteria'] ?? [];
 
-                $econ_level = $extractLevel($crit['economic'] ?? null, $notes_data, 'economic', $row['economic_score'] ?? 0);
-                $social_level = $extractLevel($crit['social'] ?? null, $notes_data, 'social', $row['social_score'] ?? 0);
-                $env_level = $extractLevel($crit['env'] ?? ($crit['environmental'] ?? null), $notes_data, 'env', $row['environmental_score'] ?? 0);
-                $legal_level = $extractLevel($crit['legal'] ?? null, $notes_data, 'legal', $row['legal_score'] ?? 0);
+                $econ_data = $extractReconciled($crit['economic'] ?? null, $notes_data, 'economic', $row['economic_score'] ?? 0, 'Funding and implementation costs are manageable and available.');
+                $social_data = $extractReconciled($crit['social'] ?? null, $notes_data, 'social', $row['social_score'] ?? 0, 'The policy provides benefits to affected communities and improves quality of life.');
+                $env_data = $extractReconciled($crit['env'] ?? ($crit['environmental'] ?? null), $notes_data, 'env', $row['environmental_score'] ?? 0, 'The policy has minimal expected environmental effects.');
+                $legal_data = $extractReconciled($crit['legal'] ?? null, $notes_data, 'legal', $row['legal_score'] ?? 0, 'No major legal conflicts were identified with existing laws and regulations.');
 
-                $econ_reason = $extractReason($crit['economic'] ?? null, $notes_data, 'economic', 'Funding and implementation costs are manageable and available.');
-                $social_reason = $extractReason($crit['social'] ?? null, $notes_data, 'social', 'The policy provides benefits to affected communities and improves quality of life.');
-                $env_reason = $extractReason($crit['env'] ?? ($crit['environmental'] ?? null), $notes_data, 'env', 'The policy has minimal expected environmental effects.');
-                $legal_reason = $extractReason($crit['legal'] ?? null, $notes_data, 'legal', 'No major legal conflicts were identified with existing laws and regulations.');
+                // Compute derived status strictly from the 4 criteria
+                $has_low = ($econ_data['level'] === 'Low' || $social_data['level'] === 'Low' || $env_data['level'] === 'Low' || $legal_data['level'] === 'Low');
+                $derived_status = $has_low ? 'Needs Revision' : 'Approved';
 
-                $app_date = !empty($row['approved_at']) ? date('M d, Y h:i A', strtotime($row['approved_at'])) : date('M d, Y h:i A', strtotime($row['created_at']));
-                $app_by = !empty($row['approved_by']) ? $row['approved_by'] : ($row['evaluator'] ?: 'System Administrator');
+                $econ_level = $econ_data['level'];
+                $econ_reason = $econ_data['reason'];
+                $social_level = $social_data['level'];
+                $social_reason = $social_data['reason'];
+                $env_level = $env_data['level'];
+                $env_reason = $env_data['reason'];
+                $legal_level = $legal_data['level'];
+                $legal_reason = $legal_data['reason'];
+
+                $eval_date = !empty($row['approved_at']) ? date('M d, Y', strtotime($row['approved_at'])) : date('M d, Y', strtotime($row['created_at']));
+                $eval_time = !empty($row['approved_at']) ? date('h:i A', strtotime($row['approved_at'])) : date('h:i A', strtotime($row['created_at']));
+                $eval_by = !empty($row['approved_by']) ? $row['approved_by'] : ($row['evaluator'] ?: 'Admin');
 
                 $policies_versions[$p_id]['versions'][] = [
                     'version_id' => (int) $row['version_id'],
                     'version_number' => (int) $row['version_number'],
                     'version_label' => $row['version_label'] ?: ('Version ' . $row['version_number']),
-                    'approved_by' => $app_by,
-                    'approved_at' => $app_date,
+                    'status' => $derived_status,
+                    'evaluator' => $eval_by,
+                    'evaluated_date' => $eval_date,
+                    'evaluated_time' => $eval_time,
+                    'approved_by' => ($derived_status === 'Approved') ? $eval_by : '—',
+                    'approved_at' => ($derived_status === 'Approved') ? ($eval_date . ' ' . $eval_time) : '—',
                     'risk_level' => $row['risk_level'] ?: 'Low Risk',
-                    'ai_recommendation' => $row['ai_recommendation'] ?: 'Suitable for implementation.',
+                    'ai_recommendation' => $row['ai_recommendation'] ?: 'Document findings recorded.',
                     'economic_level' => $econ_level,
                     'economic_reason' => $econ_reason,
                     'social_level' => $social_level,

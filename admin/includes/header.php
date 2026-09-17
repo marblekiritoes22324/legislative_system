@@ -14,6 +14,51 @@
     if (localStorage.getItem('admin_sidebar_collapsed') === 'true') {
       document.documentElement.classList.add('sidebar-collapsed');
     }
+
+    function showSection(sectionId) {
+      if (!sectionId) return;
+      var sections = document.querySelectorAll('.content-section');
+      sections.forEach(function (sec) {
+        if (sec.id === sectionId) {
+          sec.classList.remove('d-none');
+          sec.style.display = '';
+        } else {
+          sec.classList.add('d-none');
+        }
+      });
+      var navLinks = document.querySelectorAll('.sidebar-nav .nav-link, [data-target]');
+      navLinks.forEach(function (link) {
+        var target = link.getAttribute('data-target');
+        var href = link.getAttribute('href') || '';
+        var onclick = link.getAttribute('onclick') || '';
+        if (target === sectionId || (href && href.indexOf(sectionId) !== -1) || (onclick && onclick.indexOf(sectionId) !== -1)) {
+          link.classList.add('active');
+        } else if (target || href || onclick) {
+          link.classList.remove('active');
+        }
+      });
+      try {
+        var isStaff = window.location.pathname.indexOf('staff') !== -1 || document.getElementById('staffDashboardSection');
+        var isUser = window.location.pathname.indexOf('user') !== -1 || document.getElementById('userDashboardSection');
+        var storageKey = isStaff ? 'staff_active_section' : (isUser ? 'user_active_section' : 'admin_active_section');
+        sessionStorage.setItem(storageKey, sectionId);
+        var url = new URL(window.location.href);
+        url.searchParams.set('section', sectionId);
+        window.history.replaceState({}, '', url);
+      } catch (e) { }
+
+      try {
+        if (sectionId === 'adminDashboardSection' && typeof refreshDashboardData === 'function') setTimeout(refreshDashboardData, 50);
+        if (sectionId === 'approvalQueueSection' && typeof renderApprovalQueue === 'function') renderApprovalQueue();
+        if (sectionId === 'activeUsersSection' && typeof renderDirectory === 'function') renderDirectory();
+        if (sectionId === 'systemLogsSection' && typeof renderLogs === 'function') renderLogs();
+        if (sectionId === 'systemLogsSection' && typeof renderAuditLogsTable === 'function') renderAuditLogsTable();
+        if (sectionId === 'dataCollectionSection' && typeof window.renderResearchCategoryChart === 'function') setTimeout(window.renderResearchCategoryChart, 50);
+        if (sectionId === 'reportGenerationSection' && typeof window.renderRecentGeneratedReportsTable === 'function') setTimeout(window.renderRecentGeneratedReportsTable, 50);
+        if (sectionId === 'dataVisualizationSection' && typeof window.loadAnalyticsSection === 'function') setTimeout(window.loadAnalyticsSection, 50);
+      } catch (e) { }
+    }
+    window.showSection = showSection;
   </script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">

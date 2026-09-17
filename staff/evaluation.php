@@ -17,18 +17,19 @@ if (!isset($evaluations) || !is_array($evaluations)) {
     </div>
 
     <!-- Evaluation Records Table -->
+    <!-- Evaluation Records Table -->
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0;">
         <thead class="table-light">
           <tr>
             <th scope="col" class="py-3 px-3 text-dark fw-bold text-uppercase"
-              style="width: 32%; font-size: 0.85rem; letter-spacing: 0.5px;">Policy Title</th>
+              style="width: 28%; font-size: 0.85rem; letter-spacing: 0.5px;">Policy Title</th>
             <th scope="col" class="py-3 px-3 text-dark fw-bold text-uppercase"
-              style="width: 40%; font-size: 0.85rem; letter-spacing: 0.5px;">AI Recommendation</th>
+              style="width: 32%; font-size: 0.85rem; letter-spacing: 0.5px;">Evaluation Findings &amp; Analysis</th>
             <th scope="col" class="py-3 px-3 text-dark fw-bold text-uppercase text-center"
-              style="width: 14%; font-size: 0.85rem; letter-spacing: 0.5px;">Status</th>
+              style="width: 16%; font-size: 0.85rem; letter-spacing: 0.5px;">Status</th>
             <th scope="col" class="py-3 px-3 text-dark fw-bold text-uppercase text-center"
-              style="width: 14%; font-size: 0.85rem; letter-spacing: 0.5px;">Action</th>
+              style="width: 24%; font-size: 0.85rem; letter-spacing: 0.5px;">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -37,9 +38,6 @@ if (!isset($evaluations) || !is_array($evaluations)) {
               <?php
               $title = $eval['policy_title'];
               $has_evaluation = !empty($eval['evaluation_id']) && !empty($eval['evaluation_date']) && $eval['evaluation_status'] !== 'Draft' && $eval['evaluation_status'] !== 'Pending';
-              $status = $has_evaluation ? (!empty($eval['evaluation_status']) && $eval['evaluation_status'] !== '0' ? $eval['evaluation_status'] : 'Completed') : 'Draft';
-              $overall_score = $has_evaluation ? number_format((float) $eval['overall_score'], 1) : null;
-              $risk_level = 'N/A';
 
               // Build a human-friendly evaluation date
               $eval_date_fmt = '—';
@@ -59,33 +57,46 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                 }
               }
 
-              $improvements = [];
-              if (!empty($notes_data['improvements']) && is_array($notes_data['improvements'])) {
-                $improvements = $notes_data['improvements'];
-              } elseif ($has_evaluation) {
-                if (!empty($eval['economic_score']) && $eval['economic_score'] < 8)
-                  $improvements[] = 'Improve economic feasibility planning and cost quantification.';
-                if (!empty($eval['social_score']) && $eval['social_score'] < 8)
-                  $improvements[] = 'Strengthen social impact and community protection measures.';
-                if (!empty($eval['environmental_score']) && $eval['environmental_score'] < 8)
-                  $improvements[] = 'Enhance environmental compliance and sustainability provisions.';
-                if (!empty($eval['legal_score']) && $eval['legal_score'] < 8)
-                  $improvements[] = 'Address statutory compliance and procedural verification gaps.';
+              $criteria_data = !empty($notes_data['criteria']) && is_array($notes_data['criteria']) ? $notes_data['criteria'] : [];
+
+              $raw_econ_lvl = $criteria_data['economic']['level'] ?? 'High';
+              $raw_econ_rsn = $criteria_data['economic']['reason'] ?? 'Funding realism and cost estimates are quantified within municipal budget allocations.';
+              $raw_soc_lvl = $criteria_data['social']['level'] ?? 'High';
+              $raw_soc_rsn = $criteria_data['social']['reason'] ?? 'Provides measurable community welfare enhancements with clear identified beneficiaries.';
+              $raw_env_lvl = $criteria_data['env']['level'] ?? 'High';
+              $raw_env_rsn = $criteria_data['env']['reason'] ?? 'Satisfies urban environmental safety standards with positive ecological resilience.';
+              $raw_leg_lvl = $criteria_data['legal']['level'] ?? 'High';
+              $raw_leg_rsn = $criteria_data['legal']['reason'] ?? 'Within delegated municipal powers under RA 7160; drafting clarity and severability verified.';
+
+              // STATUS MODEL (3 STATES: Draft, Approved, Needs Revision)
+              // Automatically computed based on the Evaluation Criteria scores:
+              // - All pass (High/Medium, no Low/Fail) -> Approved
+              // - Any Low/Fail -> Needs Revision
+              // - Not yet evaluated -> Draft
+              $is_low = function($lvl) {
+                $l = strtolower(trim($lvl ?? ''));
+                return ($l === 'low' || $l === 'fail' || $l === 'failed' || $l === 'does not meet' || $l === 'non-compliant');
+              };
+
+              $has_failed_criterion = ($is_low($raw_econ_lvl) || $is_low($raw_soc_lvl) || $is_low($raw_env_lvl) || $is_low($raw_leg_lvl));
+
+              if ($has_evaluation) {
+                if ($has_failed_criterion) {
+                  $status = 'Needs Revision';
+                } else {
+                  $status = 'Approved';
+                }
+              } else {
+                $status = 'Draft';
               }
 
               $ai_analysis = !empty($notes_data['ai_analysis']) ? $notes_data['ai_analysis'] : ($has_evaluation
                 ? 'Evidence-based impact analysis confirms alignment with statutory governance and municipal operational criteria.'
                 : 'Awaiting evaluation. Click "Evaluate Policy" to generate evidence-based assessment.');
 
-              $reason = !empty($notes_data['reason']) ? $notes_data['reason'] : ($has_evaluation
-                ? 'The policy aligns with intended municipal objectives and demonstrates measurable community benefits across assessed criteria.'
-                : '');
-
               $evaluator_name = $has_evaluation
                 ? ((!empty($eval['evaluator']) && $eval['evaluator'] !== 'Administration' && $eval['evaluator'] !== 'System Administrator') ? $eval['evaluator'] : 'Staff')
                 : '—';
-
-              $criteria_data = !empty($notes_data['criteria']) && is_array($notes_data['criteria']) ? $notes_data['criteria'] : [];
 
               $approved_at_fmt = (!empty($eval['approved_at'])) ? date('M d, Y h:i A', strtotime($eval['approved_at'])) : null;
 
@@ -96,37 +107,30 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                 'status' => $status,
                 'approved_by' => $eval['approved_by'] ?? null,
                 'approved_at' => $approved_at_fmt,
-                'riskLevel' => $has_evaluation ? ($eval['risk_level'] ?? 'Low Risk') : 'N/A',
                 'evaluationDate' => $eval_date_fmt,
                 'evaluator' => $evaluator_name,
                 'aiAnalysis' => $ai_analysis,
-                'recommendation' => $has_evaluation
-                  ? ($eval['ai_recommendation'] ?: 'Approve & Proceed to Legislative Deliberation')
-                  : 'Awaiting evaluation.',
-                'recommendationType' => $has_evaluation ? ($notes_data['recommendation_type'] ?? 'Approve & Proceed') : 'Awaiting evaluation',
-                'reason' => $reason,
-                'improvements' => $improvements,
-                'economicLevel' => $has_evaluation ? ($criteria_data['economic']['level'] ?? 'High') : 'Awaiting',
-                'economicReason' => $has_evaluation ? ($criteria_data['economic']['reason'] ?? 'Funding realism and cost estimates are quantified within municipal budget allocations.') : 'Awaiting evaluation.',
-                'socialLevel' => $has_evaluation ? ($criteria_data['social']['level'] ?? 'High') : 'Awaiting',
-                'socialReason' => $has_evaluation ? ($criteria_data['social']['reason'] ?? 'Provides measurable community welfare enhancements with clear identified beneficiaries.') : 'Awaiting evaluation.',
-                'envLevel' => $has_evaluation ? ($criteria_data['env']['level'] ?? 'High') : 'Awaiting',
-                'envReason' => $has_evaluation ? ($criteria_data['env']['reason'] ?? 'Satisfies urban environmental safety standards with positive ecological resilience.') : 'Awaiting evaluation.',
-                'legalLevel' => $has_evaluation ? ($criteria_data['legal']['level'] ?? 'High') : 'Awaiting',
-                'legalReason' => $has_evaluation ? ($criteria_data['legal']['reason'] ?? 'Within delegated municipal powers under RA 7160; drafting clarity and severability verified.') : 'Awaiting evaluation.',
+                'economicLevel' => $has_evaluation ? $raw_econ_lvl : 'Awaiting',
+                'economicReason' => $has_evaluation ? $raw_econ_rsn : 'Awaiting evaluation.',
+                'socialLevel' => $has_evaluation ? $raw_soc_lvl : 'Awaiting',
+                'socialReason' => $has_evaluation ? $raw_soc_rsn : 'Awaiting evaluation.',
+                'envLevel' => $has_evaluation ? $raw_env_lvl : 'Awaiting',
+                'envReason' => $has_evaluation ? $raw_env_rsn : 'Awaiting evaluation.',
+                'legalLevel' => $has_evaluation ? $raw_leg_lvl : 'Awaiting',
+                'legalReason' => $has_evaluation ? $raw_leg_rsn : 'Awaiting evaluation.',
                 'legalAuthority' => $notes_data['legal_authority'] ?? '',
                 'draftingQuality' => $notes_data['drafting_quality'] ?? '',
                 'proceduralCompliance' => $notes_data['procedural_compliance'] ?? '',
               ];
 
-              // Read-only Status Pill Badge Styling
-              $badge_style = 'background:#f3f4f6; color:#4b5563; border:1px solid #e5e7eb;';
+              // Read-only Status Pill Badge Styling (3 STATES: Draft, Approved, Needs Revision)
+              $badge_style = 'background: rgba(107, 114, 128, 0.12); color: #4b5563; border: 1px solid rgba(107, 114, 128, 0.25);';
               if ($status === 'Approved') {
-                $badge_style = 'background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;';
-              } elseif ($status === 'Completed') {
-                $badge_style = 'background:#dbeafe; color:#1d4ed8; border:1px solid #bfdbfe;';
-              } elseif ($status === 'Under Review' || $status === 'Draft' || $status === 'Pending') {
-                $badge_style = 'background:#fef3c7; color:#b45309; border:1px solid #fde68a;';
+                $badge_style = 'background: rgba(22, 163, 74, 0.12); color: #15803d; border: 1px solid rgba(22, 163, 74, 0.25);';
+              } elseif ($status === 'Needs Revision') {
+                $badge_style = 'background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-weight: 700;';
+              } else {
+                $badge_style = 'background: rgba(107, 114, 128, 0.12); color: #4b5563; border: 1px solid rgba(107, 114, 128, 0.25);';
               }
               ?>
               <tr id="eval-row-<?= (int) $eval['policy_id'] ?>" data-policy-id="<?= (int) $eval['policy_id'] ?>">
@@ -136,8 +140,7 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                 <td class="px-3 py-3 small text-secondary" id="eval-rec-cell-<?= (int) $eval['policy_id'] ?>"
                   style="vertical-align: middle; line-height: 1.5;">
                   <?php if ($has_evaluation): ?>
-                    <span
-                      class="text-dark fw-medium"><?= htmlspecialchars($eval['ai_recommendation'] ?: 'Enact Policy with Enhanced Inter-Agency Coordination and Implementation Monitoring') ?></span>
+                    <span class="text-dark fw-medium"><?= htmlspecialchars($ai_analysis) ?></span>
                   <?php else: ?>
                     <span class="text-muted fst-italic">Awaiting evaluation...</span>
                   <?php endif; ?>
@@ -149,13 +152,26 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                   </span>
                 </td>
                 <td class="px-3 py-3 text-center" style="vertical-align: middle;">
-                  <button id="eval-view-btn-<?= (int) $eval['policy_id'] ?>"
-                    onclick='openEvaluationModal(<?= htmlspecialchars(json_encode($evaluation_data), ENT_QUOTES, "UTF-8") ?>)'
-                    style="display:inline-flex; align-items:center; justify-content:center; gap:6px; background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; border:none; padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer; box-shadow:0 2px 6px rgba(124,58,237,0.25); transition:all 0.2s;"
-                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(124,58,237,0.35)';"
-                    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(124,58,237,0.25)';">
-                    <i class="bi bi-bar-chart-line-fill"></i> View Evaluation
-                  </button>
+                  <div class="d-flex flex-wrap align-items-center justify-content-center gap-1.5">
+                    <button id="eval-view-btn-<?= (int) $eval['policy_id'] ?>"
+                      onclick='openEvaluationModal(<?= htmlspecialchars(json_encode($evaluation_data), ENT_QUOTES, "UTF-8") ?>)'
+                      class="btn btn-sm text-white"
+                      style="display:inline-flex; align-items:center; justify-content:center; gap:5px; background:linear-gradient(135deg,#4f46e5,#7c3aed); border:none; padding:5px 12px; border-radius:7px; font-size:0.78rem; font-weight:600; cursor:pointer; box-shadow:0 2px 5px rgba(124,58,237,0.25); transition:all 0.2s;"
+                      onmouseover="this.style.transform='translateY(-1px)';"
+                      onmouseout="this.style.transform='translateY(0)';"
+                      title="View Evaluation Report">
+                      <i class="bi bi-bar-chart-line-fill"></i> View Evaluation
+                    </button>
+                    <?php if ($status === 'Needs Revision'): ?>
+                      <button id="eval-revision-btn-<?= (int) $eval['policy_id'] ?>"
+                        onclick='requestRevision(<?= (int) $eval['policy_id'] ?>, <?= htmlspecialchars(json_encode($title), ENT_QUOTES, "UTF-8") ?>, <?= htmlspecialchars(json_encode($evaluation_data), ENT_QUOTES, "UTF-8") ?>)'
+                        class="btn btn-sm btn-outline-danger"
+                        style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 11px; border-radius:7px; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.2s;"
+                        title="Send back to sponsor/drafter citing failed criteria">
+                        <i class="bi bi-arrow-counterclockwise"></i> Request Revision
+                      </button>
+                    <?php endif; ?>
+                  </div>
                 </td>
               </tr>
             <?php endforeach; ?>

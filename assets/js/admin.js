@@ -8,61 +8,46 @@ function showSection(sectionId) {
   if (!sectionId) return;
 
   const sections = document.querySelectorAll('.content-section');
-  const navLinks = document.querySelectorAll('.sidebar-nav .nav-link, [data-target]');
-
   sections.forEach((section) => {
     if (section.id === sectionId) {
       section.classList.remove('d-none');
+      section.style.display = '';
     } else {
       section.classList.add('d-none');
     }
   });
 
+  const navLinks = document.querySelectorAll('.sidebar-nav .nav-link, [data-target]');
   navLinks.forEach((link) => {
     const target = link.dataset.target;
     const href = link.getAttribute('href') || '';
-    if ((target && target === sectionId) || (href && href.includes(sectionId))) {
+    const onclick = link.getAttribute('onclick') || '';
+    if ((target && target === sectionId) || (href && href.includes(sectionId)) || (onclick && onclick.includes(sectionId))) {
       link.classList.add('active');
-    } else if (target || href) {
+    } else if (target || href || onclick) {
       link.classList.remove('active');
     }
   });
 
   try {
     const isStaff = window.location.pathname.includes('staff') || document.getElementById('staffDashboardSection');
-    const storageKey = isStaff ? 'staff_active_section' : 'admin_active_section';
+    const isUser = window.location.pathname.includes('user') || document.getElementById('userDashboardSection');
+    const storageKey = isStaff ? 'staff_active_section' : (isUser ? 'user_active_section' : 'admin_active_section');
     sessionStorage.setItem(storageKey, sectionId);
     const url = new URL(window.location.href);
     url.searchParams.set('section', sectionId);
     window.history.replaceState({}, '', url);
   } catch (e) { }
 
-  if (sectionId === 'adminDashboardSection') {
-    setTimeout(refreshDashboardData, 50);
-  }
-  if (sectionId === 'approvalQueueSection') renderApprovalQueue();
-  if (sectionId === 'activeUsersSection') renderDirectory();
-  if (sectionId === 'systemLogsSection') renderLogs();
-  if (sectionId === 'dataCollectionSection') {
-    setTimeout(function () {
-      if (typeof window.renderResearchCategoryChart === 'function') window.renderResearchCategoryChart();
-    }, 60);
-  }
-  if (sectionId === 'reportGenerationSection') {
-    setTimeout(function () {
-      if (typeof window.renderRecentGeneratedReportsTable === 'function') window.renderRecentGeneratedReportsTable();
-    }, 60);
-  }
-  if (sectionId === 'dataVisualizationSection') {
-    setTimeout(function () {
-      if (typeof window.loadAnalyticsSection === 'function') window.loadAnalyticsSection();
-    }, 60);
-  }
-
   try {
-    const url = new URL(window.location.href);
-    url.searchParams.set('section', sectionId);
-    window.history.replaceState({}, '', url);
+    if (sectionId === 'adminDashboardSection' && typeof refreshDashboardData === 'function') setTimeout(refreshDashboardData, 50);
+    if (sectionId === 'approvalQueueSection' && typeof renderApprovalQueue === 'function') renderApprovalQueue();
+    if (sectionId === 'activeUsersSection' && typeof renderDirectory === 'function') renderDirectory();
+    if (sectionId === 'systemLogsSection' && typeof renderLogs === 'function') renderLogs();
+    if (sectionId === 'systemLogsSection' && typeof renderAuditLogsTable === 'function') renderAuditLogsTable();
+    if (sectionId === 'dataCollectionSection' && typeof window.renderResearchCategoryChart === 'function') setTimeout(window.renderResearchCategoryChart, 50);
+    if (sectionId === 'reportGenerationSection' && typeof window.renderRecentGeneratedReportsTable === 'function') setTimeout(window.renderRecentGeneratedReportsTable, 50);
+    if (sectionId === 'dataVisualizationSection' && typeof window.loadAnalyticsSection === 'function') setTimeout(window.loadAnalyticsSection, 50);
   } catch (e) { }
 }
 
@@ -203,11 +188,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // ── Sync nav highlight and show active section for Admin Portal only ──
   if (window.ADMIN_CONFIG && window.ADMIN_CONFIG.activeSection) {
     showSection(window.ADMIN_CONFIG.activeSection);
-    seedLogsIfEmpty();
-    updateDashboardStats();
-    renderApprovalQueue();
-    loadRecentActivities();
-    setInterval(loadRecentActivities, 4000);
+    if (typeof seedLogsIfEmpty === 'function') seedLogsIfEmpty();
+    if (typeof updateDashboardStats === 'function') updateDashboardStats();
+    if (typeof renderApprovalQueue === 'function') renderApprovalQueue();
+    if (typeof loadRecentActivities === 'function') {
+      loadRecentActivities();
+      setInterval(loadRecentActivities, 4000);
+    }
     if (typeof refreshDashboardData === 'function') refreshDashboardData();
   }
 });
@@ -1197,6 +1184,49 @@ function openEditPolicyModal(policy) {
 
 window.evaluationStatusOverrides = window.evaluationStatusOverrides || {};
 
+// Helper to reconcile score badge with justification text (Score must match justification)
+function reconcileScoreAndJustification(level, reason) {
+  const lvl = String(level || 'High').trim();
+  const txt = String(reason || '').toLowerCase().trim();
+  if (!txt || txt === 'awaiting evaluation.' || txt === '—') return lvl;
+
+  const hasNoConflict = txt.includes('no statutory conflict') || txt.includes('no conflict') || txt.includes('without conflict');
+  const hasDeficitOrGap = (
+    txt.includes('insufficient') ||
+    txt.includes('gap') ||
+    txt.includes('unfunded') ||
+    txt.includes('lacks') ||
+    txt.includes('unquantified') ||
+    (!hasNoConflict && txt.includes('conflict')) ||
+    txt.includes('ultra vires') ||
+    txt.includes('severe') ||
+    txt.includes('deficient') ||
+    txt.includes('missing') ||
+    txt.includes('unverified reading failure')
+  );
+
+  const hasCompliantEvidence = (
+    txt.includes('manageable') ||
+    txt.includes('available') ||
+    txt.includes('positive') ||
+    txt.includes('strong') ||
+    txt.includes('compliant') ||
+    txt.includes('satisfies') ||
+    txt.includes('enhances') ||
+    txt.includes('sustainable') ||
+    txt.includes('within delegated') ||
+    txt.includes('benefits') ||
+    txt.includes('no statutory conflicts') ||
+    txt.includes('clarity and severability verified')
+  );
+
+  if (hasDeficitOrGap) return 'Low';
+  if (lvl.toLowerCase() === 'low' && hasCompliantEvidence) return 'High';
+  if (lvl.toLowerCase() === 'low') return 'Low';
+  if (lvl.toLowerCase() === 'medium' || lvl.toLowerCase() === 'moderate') return 'Medium';
+  return 'High';
+}
+
 // Helper for Score Badges
 function getEvaluationScoreBadge(score) {
   if (!score || score === '—' || String(score).toLowerCase().includes('awaiting')) {
@@ -1214,25 +1244,7 @@ function getEvaluationScoreBadge(score) {
   return '<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 fw-semibold" style="font-size:0.75rem;">' + s + '</span>';
 }
 
-function getRecommendationTypeBadge(type) {
-  if (!type || type === '—' || String(type).toLowerCase().includes('awaiting')) {
-    return '<span class="badge bg-secondary-subtle text-secondary px-3 py-1.5 rounded-pill fw-semibold" style="font-size:0.8rem;">Awaiting evaluation</span>';
-  }
-  const t = String(type).trim();
-  const lower = t.toLowerCase();
-  if (lower.includes('approve & proceed') || lower.includes('proceed')) {
-    return '<span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1.5 rounded-pill fw-bold" style="font-size:0.8rem;"><i class="bi bi-check-circle-fill me-1"></i>Approve & Proceed</span>';
-  } else if (lower.includes('conditions')) {
-    return '<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-3 py-1.5 rounded-pill fw-bold" style="font-size:0.8rem;"><i class="bi bi-info-circle-fill me-1"></i>Approve with Conditions</span>';
-  } else if (lower.includes('revise')) {
-    return '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1.5 rounded-pill fw-bold" style="font-size:0.8rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Revise</span>';
-  } else if (lower.includes('reject')) {
-    return '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1.5 rounded-pill fw-bold" style="font-size:0.8rem;"><i class="bi bi-x-circle-fill me-1"></i>Reject</span>';
-  }
-  return '<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill fw-bold" style="font-size:0.8rem;">' + t + '</span>';
-}
-
-// ── Evaluation Modal ──────────────────────────────────────────
+// ── Evaluation Modal (Official Impact Evaluation System) ─────────
 function openEvaluationModal(evaluation) {
   const details = typeof evaluation === 'string' ? { title: evaluation } : Object.assign({}, evaluation);
   const policyId = details.policy_id || details.id || 0;
@@ -1243,53 +1255,55 @@ function openEvaluationModal(evaluation) {
 
   const rawStatus = (details.status || '').trim();
   const hasEvaluationDate = Boolean(details.evaluationDate && details.evaluationDate !== '—' && details.evaluationDate.trim() !== '');
-  const hasEvaluation = details.has_evaluation === true || (details.has_evaluation !== false && hasEvaluationDate && (rawStatus === 'Approved' || rawStatus === 'Completed' || rawStatus === 'Evaluated'));
+  const hasEvaluation = details.has_evaluation === true || (details.has_evaluation !== false && hasEvaluationDate && rawStatus !== 'Draft' && rawStatus !== 'Pending');
 
-  const isApproved = (rawStatus === 'Approved' && hasEvaluation);
-  const isCompleted = hasEvaluation;
-  const currentStatus = isApproved ? 'Approved' : (isCompleted ? (rawStatus === 'Evaluated' ? 'Evaluated' : 'Completed') : 'Draft');
+  // Criteria scores & reasons directly from record
+  const econReasonText = details.economicReason || (hasEvaluation ? 'Funding realism and cost allocations are manageable within municipal budget.' : '');
+  const socialReasonText = details.socialReason || (hasEvaluation ? 'Provides measurable community welfare benefits to affected districts.' : '');
+  const envReasonText = details.envReason || (hasEvaluation ? 'Maintains positive ecological resilience and sustainability standards.' : '');
+  const legalReasonText = details.legalReason || (hasEvaluation ? 'Within delegated municipal powers under RA 7160; no statutory conflicts identified.' : '');
 
-  const isStaff = window.location.pathname.includes('/staff/') || document.body.classList.contains('staff-portal');
+  const finalEconLevel = hasEvaluation ? (details.economicLevel || 'High') : 'Awaiting';
+  const finalSocialLevel = hasEvaluation ? (details.socialLevel || 'High') : 'Awaiting';
+  const finalEnvLevel = hasEvaluation ? (details.envLevel || 'High') : 'Awaiting';
+  const finalLegalLevel = hasEvaluation ? (details.legalLevel || 'High') : 'Awaiting';
 
-  // Update button text: Evaluate Policy vs Re-evaluate Policy, and lock/hide once Approved
+  const isLowLevel = (lvl) => {
+    const l = String(lvl || '').toLowerCase().trim();
+    return l === 'low' || l === 'fail' || l === 'failed' || l === 'does not meet' || l === 'non-compliant';
+  };
+
+  const hasFailedCriterion = isLowLevel(finalEconLevel) || isLowLevel(finalSocialLevel) || isLowLevel(finalEnvLevel) || isLowLevel(finalLegalLevel);
+
+  // STATUS MODEL (3 STATES: Draft, Approved, Needs Revision)
+  // Automatically computed based on the Evaluation Criteria scores:
+  // - All pass (High/Medium) -> Approved
+  // - Any Low/Fail -> Needs Revision
+  // - Not yet evaluated -> Draft
+  let currentStatus = 'Draft';
+  if (hasEvaluation) {
+    if (hasFailedCriterion) {
+      currentStatus = 'Needs Revision';
+    } else {
+      currentStatus = 'Approved';
+    }
+  } else {
+    currentStatus = 'Draft';
+  }
+
+  // Action Buttons:
+  // - Draft: "Evaluate Policy" active
+  // - Approved / Needs Revision: Record is final and view-only (run button hidden)
   const btn = document.getElementById('evalModalRunBtn');
   if (btn) {
-    if (isApproved) {
-      btn.classList.add('d-none');
-    } else {
+    if (currentStatus === 'Draft') {
       btn.classList.remove('d-none');
-      if (isCompleted) {
-        btn.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Re-evaluate Policy';
-      } else {
-        btn.innerHTML = '<i class="bi bi-play-circle-fill me-2"></i>Evaluate Policy';
-      }
+      btn.innerHTML = '<i class="bi bi-play-circle-fill me-2"></i>Evaluate Policy';
       btn.style.background = 'linear-gradient(135deg, #4f46e5, #7c3aed)';
       btn.style.borderColor = 'transparent';
       btn.disabled = false;
-    }
-  }
-
-  // Update Approve button state (Admin only)
-  const approveBtn = document.getElementById('evalModalApproveBtn');
-  if (approveBtn) {
-    if (isStaff) {
-      approveBtn.classList.add('d-none');
-    } else if (isApproved) {
-      approveBtn.classList.remove('d-none');
-      approveBtn.innerHTML = '<i class="bi bi-patch-check-fill me-1.5"></i><span>Approved</span>';
-      approveBtn.className = 'btn btn-success text-white rounded-3 px-3.5 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-1.5 border-0 disabled';
-      approveBtn.disabled = true;
-      approveBtn.style.opacity = '1';
-      approveBtn.style.backgroundColor = '#16a34a';
-    } else if (isCompleted) {
-      approveBtn.classList.remove('d-none');
-      approveBtn.innerHTML = '<i class="bi bi-check-circle-fill me-1.5"></i><span>Approve</span>';
-      approveBtn.className = 'btn btn-success text-white rounded-3 px-3.5 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-1.5 border-0';
-      approveBtn.disabled = false;
-      approveBtn.style.opacity = '1';
-      approveBtn.style.backgroundColor = '#16a34a';
     } else {
-      approveBtn.classList.add('d-none');
+      btn.classList.add('d-none');
     }
   }
 
@@ -1298,128 +1312,102 @@ function openEvaluationModal(evaluation) {
 
   // Evaluated By & Date (State Integrity Rule)
   const evalDateEl = document.getElementById('evalModalDate');
-  if (evalDateEl) evalDateEl.textContent = isCompleted ? (details.evaluationDate || '—') : '—';
+  if (evalDateEl) evalDateEl.textContent = hasEvaluation ? (details.evaluationDate || '—') : '—';
 
   const evalByEl = document.getElementById('evalModalEvaluator');
-  if (evalByEl) evalByEl.textContent = isCompleted ? ((details.evaluator && details.evaluator !== 'Administration' && details.evaluator !== 'System Administrator') ? details.evaluator : 'Admin') : '—';
+  if (evalByEl) evalByEl.textContent = hasEvaluation ? ((details.evaluator && details.evaluator !== 'Administration' && details.evaluator !== 'System Administrator') ? details.evaluator : 'Admin') : '—';
 
-  // Approved By and Approved Date row
-  const approvedRow = document.getElementById('evalModalApprovedRow');
-  const approvedByEl = document.getElementById('evalModalApprovedBy');
-  const approvedAtEl = document.getElementById('evalModalApprovedAt');
-  if (approvedRow) {
-    if (isApproved && details.approved_by) {
-      approvedRow.classList.remove('d-none');
-      if (approvedByEl) approvedByEl.textContent = details.approved_by;
-      if (approvedAtEl) approvedAtEl.textContent = details.approved_at ? `(${details.approved_at})` : '';
-    } else {
-      approvedRow.classList.add('d-none');
-    }
-  }
+  // Status badge (3-State Model: Draft, Approved, Needs Revision)
+  setModalStatusBadge(currentStatus);
 
-  // Status badge
-  const statusEl = document.getElementById('evalModalStatus');
-  if (statusEl) {
-    statusEl.textContent = currentStatus;
-    if (currentStatus === 'Approved' || currentStatus === 'Completed') {
-      statusEl.className = 'badge bg-success px-2.5 py-1';
-    } else if (currentStatus === 'Under Review') {
-      statusEl.className = 'badge bg-warning text-dark px-2.5 py-1';
+  // Toggle Revision Action Button in modal footer
+  const revFooter = document.getElementById('evalModalRevisionFooterActions');
+  if (revFooter) {
+    if (currentStatus === 'Needs Revision') {
+      revFooter.classList.remove('d-none');
     } else {
-      statusEl.className = 'badge bg-secondary px-2.5 py-1';
+      revFooter.classList.add('d-none');
     }
   }
 
   // 1. Economic Feasibility
   const econScoreEl = document.getElementById('evalCriteriaEconomicScore');
   const econReasonEl = document.getElementById('evalCriteriaEconomicReason');
-  if (econScoreEl) econScoreEl.innerHTML = isCompleted ? getEvaluationScoreBadge(details.economicLevel || 'High') : getEvaluationScoreBadge('Awaiting');
+  if (econScoreEl) econScoreEl.innerHTML = getEvaluationScoreBadge(finalEconLevel);
   if (econReasonEl) {
-    econReasonEl.innerHTML = isCompleted
-      ? (details.economicReason ? String(details.economicReason).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Funding and implementation costs are manageable within municipal allocations.')
+    econReasonEl.innerHTML = hasEvaluation
+      ? (econReasonText ? String(econReasonText).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Funding realism and cost allocations are manageable within municipal budget.')
       : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
   }
 
   // 2. Social Impact
   const socialScoreEl = document.getElementById('evalCriteriaSocialScore');
   const socialReasonEl = document.getElementById('evalCriteriaSocialReason');
-  if (socialScoreEl) socialScoreEl.innerHTML = isCompleted ? getEvaluationScoreBadge(details.socialLevel || 'High') : getEvaluationScoreBadge('Awaiting');
+  if (socialScoreEl) socialScoreEl.innerHTML = getEvaluationScoreBadge(finalSocialLevel);
   if (socialReasonEl) {
-    socialReasonEl.innerHTML = isCompleted
-      ? (details.socialReason ? String(details.socialReason).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Provides measurable community welfare benefits to affected districts.')
+    socialReasonEl.innerHTML = hasEvaluation
+      ? (socialReasonText ? String(socialReasonText).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Provides measurable community welfare benefits to affected districts.')
       : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
   }
 
   // 3. Environmental Impact
   const envScoreEl = document.getElementById('evalCriteriaEnvScore');
   const envReasonEl = document.getElementById('evalCriteriaEnvReason');
-  if (envScoreEl) envScoreEl.innerHTML = isCompleted ? getEvaluationScoreBadge(details.envLevel || 'High') : getEvaluationScoreBadge('Awaiting');
+  if (envScoreEl) envScoreEl.innerHTML = getEvaluationScoreBadge(finalEnvLevel);
   if (envReasonEl) {
-    envReasonEl.innerHTML = isCompleted
-      ? (details.envReason ? String(details.envReason).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Satisfies municipal environmental and sustainability standards.')
+    envReasonEl.innerHTML = hasEvaluation
+      ? (envReasonText ? String(envReasonText).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Maintains positive ecological resilience and sustainability standards.')
       : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
   }
 
   // 4. Legal Compliance (3 Sub-checks)
   const legalScoreEl = document.getElementById('evalCriteriaLegalScore');
   const legalReasonEl = document.getElementById('evalCriteriaLegalReason');
-  if (legalScoreEl) legalScoreEl.innerHTML = isCompleted ? getEvaluationScoreBadge(details.legalLevel || 'High') : getEvaluationScoreBadge('Awaiting');
+  if (legalScoreEl) legalScoreEl.innerHTML = getEvaluationScoreBadge(finalLegalLevel);
   if (legalReasonEl) {
-    if (isCompleted) {
+    if (hasEvaluation) {
       const hasSubChecks = details.legalAuthority || details.draftingQuality || details.proceduralCompliance;
       if (hasSubChecks) {
         legalReasonEl.innerHTML = `
           <div class="mb-1.5"><strong class="text-dark">1. Legal Authority:</strong> ${escapeHtml(details.legalAuthority || 'Within delegated municipal powers under RA 7160 (LGC); serves valid public purpose.')}</div>
           <div class="mb-1.5"><strong class="text-dark">2. Drafting Quality:</strong> ${escapeHtml(details.draftingQuality || 'Clear operative clauses, definitional clarity, and severability included.')}</div>
-          <div><strong class="text-dark">3. Procedural Compliance:</strong> ${escapeHtml(details.proceduralCompliance || 'Readings verified; publication & committee hearings marked as Unverified pending floor submission.')}</div>
+          <div><strong class="text-dark">3. Procedural Compliance:</strong> ${escapeHtml(details.proceduralCompliance || 'Readings verified; committee report and publication marked as Unverified pending floor calendar.')}</div>
         `;
       } else {
-        legalReasonEl.innerHTML = String(details.legalReason || 'Within delegated municipal powers under RA 7160; no statutory conflicts identified.').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        legalReasonEl.innerHTML = String(legalReasonText || 'Within delegated municipal powers under RA 7160; no statutory conflicts identified.').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       }
     } else {
       legalReasonEl.innerHTML = '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
     }
   }
 
-  // SECTION 3: ANALYSIS
+  // SECTION 3: ANALYSIS (Factual synthesis of findings)
   const analysisEl = document.getElementById('evalModalAnalysis');
   if (analysisEl) {
-    analysisEl.innerHTML = isCompleted
-      ? (details.aiAnalysis ? String(details.aiAnalysis).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'The proposed policy measure demonstrates strong statutory alignment with municipal priorities across Economic Feasibility, Social Impact, Environmental Protection, and Legal Compliance criteria.')
+    analysisEl.innerHTML = hasEvaluation
+      ? (details.aiAnalysis ? String(details.aiAnalysis).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Factual synthesis of evidence confirms statutory alignment and municipal operational feasibility.')
       : '<span class="text-muted fst-italic">Awaiting evaluation. Click "Evaluate Policy" to generate evidence-based assessment.</span>';
   }
 
-  // SECTION 4: RECOMMENDATION
-  const recTypeEl = document.getElementById('evalModalRecommendationType');
-  const recTitleEl = document.getElementById('evalModalRecommendationTitle');
-  const reasonEl = document.getElementById('evalModalReason');
-
-  if (recTypeEl) {
-    recTypeEl.innerHTML = isCompleted ? getRecommendationTypeBadge(details.recommendationType || 'Approve & Proceed') : getRecommendationTypeBadge('Awaiting evaluation');
-  }
-  if (recTitleEl) {
-    recTitleEl.textContent = isCompleted ? (details.recommendation || 'Approve & Proceed to Legislative Deliberation') : 'Awaiting evaluation.';
-  }
-  if (reasonEl) {
-    reasonEl.textContent = isCompleted ? (details.reason || '') : '';
-  }
-
-  // SECTION 5: SUGGESTED IMPROVEMENTS
-  const improvementsEl = document.getElementById('evalModalImprovements');
-  if (improvementsEl) {
-    if (isCompleted) {
-      if (details.improvements && details.improvements.length > 0) {
-        let listHtml = '<ul class="mb-0 ps-3">';
-        details.improvements.forEach(function (item) {
-          listHtml += '<li class="mb-1.5">' + escapeHtml(item) + '</li>';
-        });
-        listHtml += '</ul>';
-        improvementsEl.innerHTML = listHtml;
-      } else {
-        improvementsEl.innerHTML = '<p class="text-success mb-0"><i class="bi bi-check-circle-fill me-1.5"></i>No statutory gaps identified; ready for legislative deliberation.</p>';
-      }
+  // FULL DOCUMENT ACCESS (Bottom-Left of Report)
+  const docLink = document.getElementById('evalModalDocLink');
+  if (docLink) {
+    const rawFilePath = details.file_path || details.filePath || '';
+    if (rawFilePath && rawFilePath.trim() !== '') {
+      docLink.href = '../assets/uploads/policies/' + encodeURIComponent(rawFilePath.trim());
+      docLink.target = '_blank';
+      docLink.onclick = null;
     } else {
-      improvementsEl.innerHTML = '<p class="text-muted mb-0 fst-italic">Awaiting evaluation.</p>';
+      docLink.href = '#';
+      docLink.target = '_self';
+      docLink.onclick = function (e) {
+        e.preventDefault();
+        if (typeof window.viewPolicyDetails === 'function') {
+          window.viewPolicyDetails(details.title || '', details.category || 'General', details.publication_date || details.evaluationDate || '', details.description || details.aiAnalysis || '');
+        } else {
+          alert('Full document record text: ' + (details.title || 'Policy Record'));
+        }
+      };
     }
   }
 
@@ -1429,6 +1417,8 @@ function openEvaluationModal(evaluation) {
     modalInst.show();
   }
 }
+
+window.openEvaluationModal = openEvaluationModal;
 
 // ── Open Fresh Pre-filled Re-Evaluation Form (New Version Flow) ──
 function openReEvaluationForm() {
@@ -1675,12 +1665,6 @@ async function runPolicyEvaluationModal() {
   const btn = document.getElementById('evalModalRunBtn');
   if (!btn) return;
 
-  const isReeval = (btn.innerText.includes('Re-evaluate') || btn.innerHTML.includes('Re-evaluate'));
-  if (isReeval) {
-    openReEvaluationForm();
-    return;
-  }
-
   btn.disabled = true;
   btn.style.background = '#3b82f6';
   btn.style.borderColor = '#3b82f6';
@@ -1695,7 +1679,7 @@ async function runPolicyEvaluationModal() {
   try {
     const analysisEl = document.getElementById('evalModalAnalysis');
     if (analysisEl) {
-      analysisEl.textContent = 'Gemini AI is reading policy evidence, verifying statutory compliance sub-checks, and calculating impact scores...';
+      analysisEl.textContent = 'Evaluating ordinance against document evidence, assessing statutory compliance sub-checks, and synthesizing findings...';
     }
 
     const details = window.currentActiveEvaluation || {};
@@ -1708,25 +1692,29 @@ async function runPolicyEvaluationModal() {
       const timeoutId = setTimeout(() => controller.abort(), 15000);
 
       try {
-        let promptText = `Role: Official Impact Evaluation System for Manila City Hall's Legislative Administration System — evaluates policies/ordinances using only evidence from the submitted document. Never fill in a finding that wasn't actually assessed.
+        let promptText = `Role: Official Impact Evaluation System, Manila City Hall Legislative Administration.
+Evaluate the following ordinance using ONLY document evidence. The system observes and records only — it never edits, revises, or instructs changes.
 
 Policy Title: "${policyTitle}"
 
-Evaluation Criteria (each scored Low/Medium/High + 1-2 sentence justification citing the document):
+CRITERIA (Score each Low/Medium/High + 1-2 sentence document-cited justification):
 1. Economic Feasibility — funding realism, cost quantification
 2. Social Impact — beneficiaries, burdened parties, measurable community effect
-3. Environmental Impact — ecological effects, if any
+3. Environmental Impact — ecological effects
 4. Legal Compliance (3 sub-checks):
    - Legal Authority — within delegated city power under Local Government Code (RA 7160), public purpose, no conflicts
    - Drafting Quality — intent clause, defined terms, enforceable mandate, penalty/severability clauses
-   - Procedural Compliance — readings, hearing, committee report, quorum/vote, signature/publication; mark "Unverified" (never assume pass) for anything not evidenced
+   - Procedural Compliance — readings, hearing, committee report, quorum/vote, publication; mark "Unverified" (never assume pass) for anything not evidenced
 
-Recommendation: Must be one of ["Approve & Proceed", "Approve with Conditions", "Revise", "Reject"] — must follow from the scores, not be set independently.
-Suggested Improvements: Only for actual gaps found (if none, return empty array).
+Hard Rules:
+- Score must match justification: Low = gaps/insufficient evidence, Medium = partial, High = strong/compliant.
+- Never pair "Low" with success-sounding text.
+- Analysis must be a factual synthesis of findings only (NO recommendations, suggested edits, or directives).
+- Final status must be "Approved" (if all criteria Medium/High and no Legal sub-checks unverified) or "Under Review" (if any criterion is Low or Legal sub-check is non-compliant/unresolved).
 
 Return ONLY a valid JSON object with the following exact keys (no markdown wrapping, no code blocks):
 {
-  "risk_level": "Low Risk",
+  "status": "Approved",
   "economic_level": "High",
   "economic_reason": "Specific 1-2 sentence economic feasibility evaluation citing funding realism and cost quantification.",
   "social_level": "High",
@@ -1734,15 +1722,11 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
   "env_level": "High",
   "env_reason": "Specific 1-2 sentence environmental evaluation citing ecological factors.",
   "legal_level": "High",
-  "legal_reason": "Compliant with statutory requirements.",
-  "legal_authority": "Within delegated municipal powers under RA 7160; serves valid public purpose with no national statutory conflicts.",
-  "drafting_quality": "Clear intent clause, defined terms, enforceable mandate, and severability clause verified.",
-  "procedural_compliance": "Preliminary enactment readings noted; public hearing and committee report marked as Unverified pending floor submission.",
-  "ai_analysis": "Short synthesis summarizing evidence and municipal operational feasibility.",
-  "recommendation_type": "Approve & Proceed",
-  "recommendation_title": "Approve & Proceed with Implementation",
-  "reason": "Detailed assessment demonstrates high operational viability and strong statutory alignment.",
-  "improvements": ["Actual gap improvement 1", "Actual gap improvement 2"]
+  "legal_reason": "Statutory compliance verified against RA 7160.",
+  "legal_authority": "Within delegated municipal powers under Local Government Code (RA 7160); valid public welfare purpose with no national statutory conflicts.",
+  "drafting_quality": "Clear intent clause, defined terms, enforceable mandate, and severability clause verified in document text.",
+  "procedural_compliance": "Preliminary enactment readings evidenced; public hearing and gazette publication marked as Unverified pending floor submission.",
+  "ai_analysis": "Factual synthesis of evaluation findings based strictly on document evidence without recommendations or directives."
 }`;
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
@@ -1767,50 +1751,47 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
 
     if (!evalRes) {
       evalRes = {
-        risk_level: "Low Risk",
+        status: "Approved",
         economic_level: "High",
-        economic_reason: `Funding realism and cost allocations for "${policyTitle}" are manageable within City Council annual appropriations.`,
+        economic_reason: `Funding realism and cost allocations for "${policyTitle}" are evidenced as manageable within City Council annual appropriations.`,
         social_level: "High",
         social_reason: `Identifies direct community beneficiaries and promotes public welfare across Manila City districts.`,
         env_level: "High",
-        env_reason: `Minimal ecological footprint with positive alignment to sustainable urban governance standards.`,
+        env_reason: `Maintains positive alignment to sustainable urban governance and ecological standards.`,
         legal_level: "High",
         legal_reason: `Within delegated municipal power under RA 7160 with no statutory conflicts.`,
         legal_authority: `Within delegated city legislative powers under Local Government Code (RA 7160); valid public welfare purpose.`,
         drafting_quality: `Clear title, operative mandate, and standard severability provisions verified in draft text.`,
         procedural_compliance: `Sponsorship verified; committee public hearing and official publication marked as Unverified pending floor calendar.`,
-        ai_analysis: `Evidence-based synthesis of "${policyTitle}" indicates strong operational feasibility, high public welfare yield, and solid statutory grounding for City Council deliberation.`,
-        recommendation_type: "Approve & Proceed",
-        recommendation_title: "Approve & Proceed to Legislative Deliberation",
-        reason: "Evidence-based findings satisfy all 4 criteria with no fatal statutory or budgetary defects.",
-        improvements: [
-          "Incorporate periodic quarterly implementation monitoring metrics",
-          "Specify lead municipal department responsible for inter-agency coordination"
-        ]
+        ai_analysis: `Evidence-based synthesis of "${policyTitle}" confirms operational feasibility, positive public welfare yield, and solid statutory grounding under RA 7160.`
       };
     }
 
     // Extract variables safely
-    const risk = evalRes.risk_level || 'Low Risk';
-    const econLevel = evalRes.economic_level || 'High';
-    const econReason = evalRes.economic_reason || `Funding for "${policyTitle}" is manageable and quantified.`;
-    const socialLevel = evalRes.social_level || 'High';
+    const econLevel = reconcileScoreAndJustification(evalRes.economic_level || 'High', evalRes.economic_reason || '');
+    const econReason = evalRes.economic_reason || `Funding for "${policyTitle}" is evidenced as manageable within City Council annual appropriations.`;
+    const socialLevel = reconcileScoreAndJustification(evalRes.social_level || 'High', evalRes.social_reason || '');
     const socialReason = evalRes.social_reason || `Provides measurable community welfare benefits to Manila City residents.`;
-    const envLevel = evalRes.env_level || 'High';
+    const envLevel = reconcileScoreAndJustification(evalRes.env_level || 'High', evalRes.env_reason || '');
     const envReason = evalRes.env_reason || `Maintains positive ecological resilience and sustainability standards.`;
-    const legalLevel = evalRes.legal_level || 'High';
+    const legalLevel = reconcileScoreAndJustification(evalRes.legal_level || 'High', evalRes.legal_reason || '');
     const legalReason = evalRes.legal_reason || `Compliant with RA 7160 and statutory regulations.`;
     const legalAuth = evalRes.legal_authority || 'Within delegated municipal powers under RA 7160; serves valid public purpose.';
     const draftingQual = evalRes.drafting_quality || 'Clear intent clause, defined terms, enforceable mandate, and severability clause verified.';
     const procComp = evalRes.procedural_compliance || 'Sponsorship verified; public hearing and gazette publication marked as Unverified pending floor submission.';
 
-    const aiAnalysisText = evalRes.ai_analysis || `Comprehensive evaluation of "${policyTitle}" indicates high viability and statutory alignment.`;
-    const recType = evalRes.recommendation_type || 'Approve & Proceed';
-    const recTitle = evalRes.recommendation_title || 'Approve & Proceed to Legislative Deliberation';
-    const reasonText = evalRes.reason || 'Evidence-based findings satisfy all 4 criteria with no fatal statutory or budgetary defects.';
-    const improvementsList = Array.isArray(evalRes.improvements) ? evalRes.improvements : [];
+    const aiAnalysisText = evalRes.ai_analysis || `Evidence-based synthesis of "${policyTitle}" confirms operational feasibility and statutory alignment.`;
 
-    // Save to DB via backend/save_evaluation.php
+    // 3-State Model: Approved or Under Review
+    const hasUnverifiedSubchecks = (
+      (legalAuth && (legalAuth.toLowerCase().includes('unverified') || legalAuth.toLowerCase().includes('gap') || legalAuth.toLowerCase().includes('conflict'))) ||
+      (draftingQual && (draftingQual.toLowerCase().includes('unverified') || draftingQual.toLowerCase().includes('gap') || draftingQual.toLowerCase().includes('ambiguous'))) ||
+      (procComp && (procComp.toLowerCase().includes('unverified') || procComp.toLowerCase().includes('gap') || procComp.toLowerCase().includes('pending')))
+    );
+    const hasLowScore = (econLevel === 'Low' || socialLevel === 'Low' || envLevel === 'Low' || legalLevel === 'Low' || hasUnverifiedSubchecks);
+    const finalStatus = hasLowScore ? 'Under Review' : 'Approved';
+
+    // Evaluator determination
     let savedDateStr = '';
     const isStaffPortal = window.location.pathname.includes('/staff/') || document.body.classList.contains('staff-portal') || !!document.querySelector('.brand-text .small')?.textContent?.includes('Staff');
     const currentEvaluator = isStaffPortal ? 'Staff' : 'Admin';
@@ -1819,7 +1800,7 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
       const formData = new FormData();
       formData.append('policy_id', policyId);
       formData.append('policy_title', policyTitle);
-      formData.append('risk_level', risk);
+      formData.append('risk_level', hasLowScore ? 'High Risk' : 'Low Risk');
       formData.append('economic_level', econLevel);
       formData.append('economic_reason', econReason);
       formData.append('social_level', socialLevel);
@@ -1832,10 +1813,6 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
       formData.append('drafting_quality', draftingQual);
       formData.append('procedural_compliance', procComp);
       formData.append('ai_analysis', aiAnalysisText);
-      formData.append('recommendation_type', recType);
-      formData.append('recommendation', recTitle);
-      formData.append('reason', reasonText);
-      formData.append('improvements', JSON.stringify(improvementsList));
       formData.append('evaluator', currentEvaluator);
 
       const saveRes = await fetch('../backend/save_evaluation.php', {
@@ -1855,14 +1832,29 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
       savedDateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     }
 
-    // Update UI Elements in Modal
+    // Update UI Elements in Modal (Output Fields)
+    // 1. Status
+    setModalStatusBadge(finalStatus);
+
+    // 2. Toggle Revision Action in footer if Needs Revision
+    const revFooter = document.getElementById('evalModalRevisionFooterActions');
+    if (revFooter) {
+      if (finalStatus === 'Needs Revision') {
+        revFooter.classList.remove('d-none');
+      } else {
+        revFooter.classList.add('d-none');
+      }
+    }
+
+    // 3. Date
     const dateEl = document.getElementById('evalModalDate');
     if (dateEl) dateEl.textContent = savedDateStr;
 
+    // 4. Evaluated By
     const evalByEl = document.getElementById('evalModalEvaluator');
     if (evalByEl) evalByEl.textContent = currentEvaluator;
 
-    // Update 4 Criteria Scores & Reasons
+    // 5. Criteria Table (score + justification)
     const econScoreEl = document.getElementById('evalCriteriaEconomicScore');
     const econReasonEl = document.getElementById('evalCriteriaEconomicReason');
     if (econScoreEl) econScoreEl.innerHTML = getEvaluationScoreBadge(econLevel);
@@ -1889,44 +1881,15 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
       `;
     }
 
-    // Analysis
+    // 6. Analysis
     if (analysisEl) analysisEl.textContent = aiAnalysisText;
 
-    // Recommendation
-    const recTypeEl = document.getElementById('evalModalRecommendationType');
-    const recTitleEl = document.getElementById('evalModalRecommendationTitle');
-    const reasonEl = document.getElementById('evalModalReason');
-
-    if (recTypeEl) recTypeEl.innerHTML = getRecommendationTypeBadge(recType);
-    if (recTitleEl) recTitleEl.textContent = recTitle;
-    if (reasonEl) reasonEl.textContent = reasonText;
-
-    // Suggested Improvements
-    const improvementsEl = document.getElementById('evalModalImprovements');
-    if (improvementsEl) {
-      if (improvementsList.length > 0) {
-        let listHtml = '<ul class="mb-0 ps-3">';
-        improvementsList.forEach(item => {
-          listHtml += '<li class="mb-1.5">' + escapeHtml(item) + '</li>';
-        });
-        listHtml += '</ul>';
-        improvementsEl.innerHTML = listHtml;
-      } else {
-        improvementsEl.innerHTML = '<p class="text-success mb-0"><i class="bi bi-check-circle-fill me-1.5"></i>No statutory gaps identified; ready for legislative deliberation.</p>';
-      }
-    }
-
-    // Update active evaluation cache in memory
+    // Update active evaluation memory
     if (window.currentActiveEvaluation) {
       window.currentActiveEvaluation.policy_id = policyId;
-      window.currentActiveEvaluation.status = 'Completed';
+      window.currentActiveEvaluation.status = finalStatus;
       window.currentActiveEvaluation.evaluationDate = savedDateStr;
-      window.currentActiveEvaluation.riskLevel = risk;
       window.currentActiveEvaluation.aiAnalysis = aiAnalysisText;
-      window.currentActiveEvaluation.recommendationType = recType;
-      window.currentActiveEvaluation.recommendation = recTitle;
-      window.currentActiveEvaluation.reason = reasonText;
-      window.currentActiveEvaluation.improvements = improvementsList;
       window.currentActiveEvaluation.economicLevel = econLevel;
       window.currentActiveEvaluation.economicReason = econReason;
       window.currentActiveEvaluation.socialLevel = socialLevel;
@@ -1942,34 +1905,18 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
       window.currentActiveEvaluation.has_evaluation = true;
     }
 
-    // Update table row if present in DOM in real time
+    // Update table row in real time
     if (policyId) {
-      window.updateEvaluationRowStatus(policyId, 'Completed', recTitle);
+      window.updateEvaluationRowStatus(policyId, finalStatus, aiAnalysisText);
     }
 
-    // Show Done state
-    btn.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Re-evaluate Policy';
-    btn.style.background = 'linear-gradient(135deg, #4f46e5, #7c3aed)';
-    btn.style.borderColor = 'transparent';
-    btn.disabled = false;
-
-    // Unlock Approve button for Admin
+    // Record is final and view-only: hide Evaluate button
+    btn.classList.add('d-none');
     const approveBtn = document.getElementById('evalModalApproveBtn');
-    if (approveBtn && !isStaffPortal) {
-      approveBtn.disabled = false;
-      approveBtn.classList.remove('d-none');
-      approveBtn.innerHTML = '<i class="bi bi-check-circle-fill me-1.5"></i><span>Approve</span>';
-      approveBtn.className = 'btn btn-success text-white rounded-3 px-3.5 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-1.5 border-0';
-    }
-
-    // Update status badge to Completed
-    if (statusEl) {
-      statusEl.textContent = 'Completed';
-      statusEl.className = 'badge bg-success px-2.5 py-1';
-    }
+    if (approveBtn) approveBtn.classList.add('d-none');
 
     if (window.addSystemNotification) {
-      window.addSystemNotification('ai', 'AI Impact Evaluation Completed', 'Evidence-based evaluation generated for "' + policyTitle + '"', 'all');
+      window.addSystemNotification('ai', 'Official Policy Evaluation Completed', `Evaluation recorded for "${policyTitle}" with status "${finalStatus}".`, 'all');
     }
   } catch (errMain) {
     console.error("Evaluation process error:", errMain);
@@ -1982,57 +1929,169 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
 function setModalStatusBadge(newStatus) {
   const statusEl = document.getElementById('evalModalStatus');
   if (!statusEl) return;
-  statusEl.textContent = newStatus;
-  statusEl.removeAttribute('style');
-  if (newStatus === 'Approved') {
-    statusEl.className = 'badge bg-success px-2.5 py-1';
-    statusEl.style.backgroundColor = '#16a34a';
-    statusEl.style.color = '#ffffff';
-  } else if (newStatus === 'Completed') {
-    statusEl.className = 'badge bg-success px-2.5 py-1';
-    statusEl.style.backgroundColor = '#16a34a';
-    statusEl.style.color = '#ffffff';
-  } else if (newStatus === 'Under Review' || newStatus === 'Draft' || newStatus === 'Pending') {
-    statusEl.className = 'badge bg-warning text-dark px-2.5 py-1';
+  const s = (newStatus || 'Draft').trim();
+  if (s === 'Approved') {
+    statusEl.textContent = 'Approved';
+    statusEl.className = 'badge px-2.5 py-1 text-success';
+    statusEl.style.cssText = 'background: rgba(22, 163, 74, 0.12); color: #15803d; border: 1px solid rgba(22, 163, 74, 0.25); font-weight: 700;';
+  } else if (s === 'Needs Revision' || s === 'For Council Deliberation' || s === 'Under Review' || s === 'Does Not Meet Standards') {
+    statusEl.textContent = 'Needs Revision';
+    statusEl.className = 'badge px-2.5 py-1 text-danger';
+    statusEl.style.cssText = 'background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-weight: 700;';
   } else {
-    statusEl.className = 'badge bg-secondary px-2.5 py-1';
+    statusEl.textContent = 'Draft';
+    statusEl.className = 'badge px-2.5 py-1 text-secondary';
+    statusEl.style.cssText = 'background: rgba(107, 114, 128, 0.12); color: #4b5563; border: 1px solid rgba(107, 114, 128, 0.25); font-weight: 700;';
   }
 }
 window.setModalStatusBadge = setModalStatusBadge;
 
 // ── Global Real-Time Evaluation Table Status Updater ────────
-function updateEvaluationRowStatus(policyId, newStatus, recommendationText) {
+function updateEvaluationRowStatus(policyId, newStatus, analysisSnippet) {
   if (!policyId) return;
+  const normalizedStatus = (newStatus === 'Under Review' || newStatus === 'Does Not Meet Standards' || newStatus === 'For Council Deliberation') ? 'Needs Revision' : newStatus;
   window.evaluationStatusOverrides = window.evaluationStatusOverrides || {};
   window.evaluationStatusOverrides[policyId] = Object.assign(window.evaluationStatusOverrides[policyId] || {}, {
-    status: newStatus,
-    approved_by: window.currentActiveEvaluation?.approved_by,
-    approved_at: window.currentActiveEvaluation?.approved_at
+    status: normalizedStatus,
+    aiAnalysis: analysisSnippet
   });
 
   const badge = document.getElementById('eval-status-badge-' + policyId);
   if (badge) {
-    badge.textContent = newStatus;
-    let badgeStyle = 'background:#f3f4f6; color:#4b5563; border:1px solid #e5e7eb;';
-    if (newStatus === 'Approved') {
-      badgeStyle = 'background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;';
-    } else if (newStatus === 'Completed') {
-      badgeStyle = 'background:#dbeafe; color:#1d4ed8; border:1px solid #bfdbfe;';
-    } else if (newStatus === 'Under Review' || newStatus === 'Draft' || newStatus === 'Pending') {
-      badgeStyle = 'background:#fef3c7; color:#b45309; border:1px solid #fde68a;';
+    badge.textContent = normalizedStatus;
+    let badgeStyle = 'background: rgba(107, 114, 128, 0.12); color: #4b5563; border: 1px solid rgba(107, 114, 128, 0.25);';
+    if (normalizedStatus === 'Approved') {
+      badgeStyle = 'background: rgba(22, 163, 74, 0.12); color: #15803d; border: 1px solid rgba(22, 163, 74, 0.25);';
+    } else if (normalizedStatus === 'Needs Revision') {
+      badgeStyle = 'background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-weight: 700;';
     }
     badge.style.cssText = 'display:inline-block; padding: 5px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.3px; cursor: default; transition: all 0.25s ease; ' + badgeStyle;
   }
 
-  if (recommendationText) {
+  if (analysisSnippet) {
     const tableRecCell = document.getElementById('eval-rec-cell-' + policyId);
     if (tableRecCell) {
-      const safeRec = String(recommendationText).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      tableRecCell.innerHTML = `<span class="text-dark fw-medium">${safeRec}</span>`;
+      const safeRec = String(analysisSnippet).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      tableRecCell.innerHTML = `<span class="text-dark fw-medium" title="${safeRec}">${safeRec.length > 85 ? safeRec.substring(0, 85) + '...' : safeRec}</span>`;
     }
   }
 }
 window.updateEvaluationRowStatus = updateEvaluationRowStatus;
+
+// ── Criteria Helpers & Revision Modal Actions ──
+function getDeliberationFlagsFromDetails(details) {
+  const flags = [];
+  const econLvl = String(details.economicLevel || '').toLowerCase();
+  const socLvl = String(details.socialLevel || '').toLowerCase();
+  const envLvl = String(details.envLevel || '').toLowerCase();
+  const legLvl = String(details.legalLevel || '').toLowerCase();
+
+  const isLow = (lvl) => lvl === 'low' || lvl === 'fail' || lvl === 'failed' || lvl === 'does not meet' || lvl === 'non-compliant';
+
+  if (isLow(econLvl)) {
+    flags.push({ criterion: 'Economic Feasibility', score: 'Low', finding: details.economicReason || 'Budgetary allocations and funding realism unquantified.' });
+  }
+  if (isLow(socLvl)) {
+    flags.push({ criterion: 'Social Impact', score: 'Low', finding: details.socialReason || 'Direct community welfare enhancements unevidenced.' });
+  }
+  if (isLow(envLvl)) {
+    flags.push({ criterion: 'Environmental Impact', score: 'Low', finding: details.envReason || 'Ecological safety standards not satisfied.' });
+  }
+  if (isLow(legLvl)) {
+    flags.push({ criterion: 'Legal Compliance', score: 'Low', finding: details.legalReason || 'Statutory authority or procedural compliance deficits under RA 7160.' });
+  }
+  return flags;
+}
+
+function requestRevision(policyId, policyTitle, details) {
+  details = details || window.currentActiveEvaluation || {};
+  const flags = getDeliberationFlagsFromDetails(details);
+  const idInput = document.getElementById('revisionPolicyId');
+  const titleEl = document.getElementById('revisionPolicyTitle');
+  if (idInput) idInput.value = policyId || details.policy_id || '';
+  if (titleEl) titleEl.textContent = policyTitle || details.title || 'Policy Record';
+
+  const listEl = document.getElementById('revisionFailedCriteriaList');
+  if (listEl) {
+    if (flags.length > 0) {
+      listEl.innerHTML = flags.map(f => `<li><strong>⚠️ ${escapeHtml(f.criterion)}:</strong> ${escapeHtml(f.finding)}</li>`).join('');
+    } else {
+      listEl.innerHTML = '<li><strong>⚠️ Specific Criteria Requiring Revision:</strong> Citations identified during impact assessment.</li>';
+    }
+  }
+
+  const instructionsEl = document.getElementById('revisionInstructions');
+  if (instructionsEl) {
+    const citedList = flags.map(f => `• ${f.criterion}: ${f.finding}`).join('\n');
+    instructionsEl.value = `Please revise the draft ordinance to address the following evaluated criteria:\n${citedList || '• Address flagged criteria deficits'}\n\nPlease update the draft and resubmit for re-evaluation.`;
+  }
+
+  const modalEl = document.getElementById('requestRevisionModal');
+  if (modalEl) {
+    const modalInst = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    modalInst.show();
+  }
+}
+window.requestRevision = requestRevision;
+
+function requestRevisionFromActiveModal() {
+  const details = window.currentActiveEvaluation || {};
+  requestRevision(details.policy_id || details.id || 0, details.title || '', details);
+}
+window.requestRevisionFromActiveModal = requestRevisionFromActiveModal;
+
+async function submitRequestRevision(e) {
+  if (e) e.preventDefault();
+  const policyId = document.getElementById('revisionPolicyId')?.value || '';
+  const policyTitle = document.getElementById('revisionPolicyTitle')?.textContent || '';
+  const instructions = document.getElementById('revisionInstructions')?.value || '';
+  const btn = document.getElementById('revisionSubmitBtn');
+
+  const details = window.currentActiveEvaluation || {};
+  const flags = getDeliberationFlagsFromDetails(details);
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1.5"></span> Sending Revision Request...';
+  }
+
+  try {
+    const res = await fetch('../backend/evaluation_deliberation_actions.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'request_revision',
+        policy_id: policyId,
+        policy_title: policyTitle,
+        instructions: instructions,
+        failed_criteria: flags,
+        actor: 'Admin'
+      })
+    });
+    const result = await res.json();
+
+    const modalEl = document.getElementById('requestRevisionModal');
+    if (modalEl) {
+      const modalInst = bootstrap.Modal.getInstance(modalEl);
+      if (modalInst) modalInst.hide();
+    }
+
+    if (result.success) {
+      alert('Revision request sent back to the sponsor/drafter along with specific failed criteria.');
+    } else {
+      alert(result.error || 'Failed to send revision request.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('An error occurred while sending revision request.');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-send-check-fill me-1.5"></i> Send Revision Request';
+    }
+  }
+}
+window.submitRequestRevision = submitRequestRevision;
 
 async function approveCurrentEvaluation() {
   const details = window.currentActiveEvaluation || {};

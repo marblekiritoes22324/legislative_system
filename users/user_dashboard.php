@@ -436,8 +436,8 @@ if (!empty($conn)) {
   $tq = mysqli_query($conn, "SELECT DAY(COALESCE(publication_date, created_at)) as up_day, COUNT(*) as cnt FROM $policy_tbl WHERE (status IS NULL OR status != 'Archived') AND (COALESCE(publication_date, created_at) LIKE '$cur_m_prefix%') GROUP BY up_day");
   if ($tq && mysqli_num_rows($tq) > 0) {
     while ($tRow = mysqli_fetch_assoc($tq)) {
-      $daily_counts_map[(int)$tRow['up_day']] = (int)$tRow['cnt'];
-      $total_month_uploads += (int)$tRow['cnt'];
+      $daily_counts_map[(int) $tRow['up_day']] = (int) $tRow['cnt'];
+      $total_month_uploads += (int) $tRow['cnt'];
     }
   }
 }
@@ -571,6 +571,37 @@ if (!empty($conn)) {
     if (localStorage.getItem('admin_sidebar_collapsed') === 'true' || localStorage.getItem('user_sidebar_collapsed') === 'true') {
       document.documentElement.classList.add('sidebar-collapsed');
     }
+
+    function showSection(sectionId) {
+      if (!sectionId) return;
+      var sections = document.querySelectorAll('.content-section');
+      sections.forEach(function (sec) {
+        if (sec.id === sectionId) {
+          sec.classList.remove('d-none');
+          sec.style.display = '';
+        } else {
+          sec.classList.add('d-none');
+        }
+      });
+      var navLinks = document.querySelectorAll('.sidebar-nav .nav-link, [data-target]');
+      navLinks.forEach(function (link) {
+        var target = link.getAttribute('data-target');
+        var href = link.getAttribute('href') || '';
+        var onclick = link.getAttribute('onclick') || '';
+        if (target === sectionId || (href && href.indexOf(sectionId) !== -1) || (onclick && onclick.indexOf(sectionId) !== -1)) {
+          link.classList.add('active');
+        } else if (target || href || onclick) {
+          link.classList.remove('active');
+        }
+      });
+      try {
+        sessionStorage.setItem('user_active_section', sectionId);
+        var url = new URL(window.location.href);
+        url.searchParams.set('section', sectionId);
+        window.history.replaceState({}, '', url);
+      } catch (e) { }
+    }
+    window.showSection = showSection;
   </script>
   <!-- Bootstrap 5.3 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -1364,42 +1395,61 @@ if (!empty($conn)) {
             </div>
             <hr style="border-color: #e5e7eb; opacity: 0.8;" class="my-4">
 
+
+
             <!-- SECTION 2: EVALUATION CRITERIA -->
             <div class="mb-4">
-              <h5 class="fw-bold text-uppercase mb-3" style="font-size: 0.95rem; letter-spacing: 1px;">EVALUATION
-                CRITERIA</h5>
-              <div class="ps-4">
+              <h5 class="fw-bold text-uppercase mb-3" style="font-size: 0.95rem; letter-spacing: 1px;">EVALUATION CRITERIA</h5>
+              <div class="ps-2 ps-md-3">
                 <div class="table-responsive">
-                  <table class="table table-bordered align-middle mb-0"
-                    style="font-size: 0.9rem; border-color: #e5e7eb;">
+                  <table class="table table-bordered align-middle mb-0" style="font-size: 0.88rem; border-color: #e2e8f0;">
                     <thead style="background-color: #f8fafc;">
-                      <tr class="text-uppercase text-secondary fw-bold"
-                        style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                        <th scope="col" style="padding: 10px 14px; width: 32%;">CRITERIA</th>
-                        <th scope="col" style="padding: 10px 14px; width: 68%;">ASSESSMENT &amp; FINDINGS</th>
+                      <tr class="text-uppercase text-secondary fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                        <th scope="col" style="padding: 10px 12px; width: 28%;">CRITERIA</th>
+                        <th scope="col" class="text-center" style="padding: 10px 10px; width: 14%;">SCORE</th>
+                        <th scope="col" style="padding: 10px 14px; width: 58%;">ASSESSMENT &amp; EVIDENCE-BASED FINDINGS</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td style="padding: 10px 14px;" class="fw-bold text-dark">Economic Feasibility</td>
-                        <td style="padding: 10px 14px;" class="text-dark" id="evalCriteriaEconomicReason">Funding and
-                          implementation costs are manageable and available within municipal allocations.</td>
+                        <td style="padding: 10px 12px;" class="fw-bold text-dark">
+                          <div>Economic Feasibility</div>
+                          <div class="small text-muted fw-normal" style="font-size:0.75rem;">Funding realism, cost quantification</div>
+                        </td>
+                        <td style="padding: 10px 10px; text-align:center;" id="evalCriteriaEconomicScore">
+                          <span class="badge bg-secondary-subtle text-secondary px-2.5 py-1">Awaiting</span>
+                        </td>
+                        <td style="padding: 10px 14px;" class="text-dark" id="evalCriteriaEconomicReason">Awaiting evaluation.</td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 14px;" class="fw-bold text-dark">Social Impact</td>
-                        <td style="padding: 10px 14px;" class="text-dark" id="evalCriteriaSocialReason">The policy
-                          provides measurable benefits to affected communities and enhances public welfare.</td>
+                        <td style="padding: 10px 12px;" class="fw-bold text-dark">
+                          <div>Social Impact</div>
+                          <div class="small text-muted fw-normal" style="font-size:0.75rem;">Beneficiaries, burdened parties, community effect</div>
+                        </td>
+                        <td style="padding: 10px 10px; text-align:center;" id="evalCriteriaSocialScore">
+                          <span class="badge bg-secondary-subtle text-secondary px-2.5 py-1">Awaiting</span>
+                        </td>
+                        <td style="padding: 10px 14px;" class="text-dark" id="evalCriteriaSocialReason">Awaiting evaluation.</td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 14px;" class="fw-bold text-dark">Environmental Impact</td>
-                        <td style="padding: 10px 14px;" class="text-dark" id="evalCriteriaEnvReason">The policy
-                          satisfies
-                          urban environmental standards and sustainability requirements.</td>
+                        <td style="padding: 10px 12px;" class="fw-bold text-dark">
+                          <div>Environmental Impact</div>
+                          <div class="small text-muted fw-normal" style="font-size:0.75rem;">Ecological effects, environmental resilience</div>
+                        </td>
+                        <td style="padding: 10px 10px; text-align:center;" id="evalCriteriaEnvScore">
+                          <span class="badge bg-secondary-subtle text-secondary px-2.5 py-1">Awaiting</span>
+                        </td>
+                        <td style="padding: 10px 14px;" class="text-dark" id="evalCriteriaEnvReason">Awaiting evaluation.</td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 14px;" class="fw-bold text-dark">Legal Compliance</td>
-                        <td style="padding: 10px 14px;" class="text-dark" id="evalCriteriaLegalReason">Compliant with
-                          the Local Government Code and relevant national/local statutory frameworks.</td>
+                        <td style="padding: 10px 12px;" class="fw-bold text-dark">
+                          <div>Legal Compliance</div>
+                          <div class="small text-muted fw-normal" style="font-size:0.75rem;">Authority, drafting quality, procedural compliance</div>
+                        </td>
+                        <td style="padding: 10px 10px; text-align:center;" id="evalCriteriaLegalScore">
+                          <span class="badge bg-secondary-subtle text-secondary px-2.5 py-1">Awaiting</span>
+                        </td>
+                        <td style="padding: 10px 14px;" class="text-dark" id="evalCriteriaLegalReason">Awaiting evaluation.</td>
                       </tr>
                     </tbody>
                   </table>
@@ -1414,62 +1464,29 @@ if (!empty($conn)) {
                 <i class="bi bi-journal-text fs-5 text-dark"></i>
                 <h5 class="fw-bold text-uppercase mb-0" style="font-size: 0.95rem; letter-spacing: 1px;">ANALYSIS</h5>
               </div>
-              <div class="ps-4">
+              <div class="ps-2 ps-md-3">
                 <p class="mb-0 text-dark" id="evalModalAnalysis"
-                  style="font-size: 0.95rem; line-height: 1.7; text-align: justify;">
-                  The proposed policy measure demonstrates strong statutory alignment with municipal priorities across
-                  Economic Feasibility, Social Impact, Environmental Protection, and Legal Compliance criteria.
+                  style="font-size: 0.92rem; line-height: 1.7; text-align: justify;">
+                  Awaiting evaluation.
                 </p>
               </div>
             </div>
-            <hr style="border-color: #e5e7eb; opacity: 0.8;" class="my-4">
 
-            <!-- SECTION 4: RECOMMENDATION -->
-            <div class="mb-4">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <i class="bi bi-check-circle-fill fs-5 text-dark"></i>
-                <h5 class="fw-bold text-uppercase mb-0" style="font-size: 0.95rem; letter-spacing: 1px;">RECOMMENDATION
-                </h5>
-              </div>
-              <div class="ps-4">
-                <div class="mb-2">
-                  <span id="evalModalRecommendationType"
-                    style="display:inline-block;background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;padding:3px 12px;border-radius:999px;font-size:0.8rem;font-weight:600;">Proceed
-                    with Implementation</span>
-                </div>
-                <h6 class="fw-bold text-dark mb-2" id="evalModalRecommendationTitle"
-                  style="font-size: 1rem; line-height: 1.4;">
-                  Enact Policy with Enhanced Inter-Agency Coordination and Funding Frameworks
-                </h6>
-                <p class="text-dark mb-0" id="evalModalReason"
-                  style="font-size: 0.95rem; line-height: 1.7; text-align: justify;">
-                  The plan addresses a fundamental vulnerability in Manila's urban infrastructure that causes recurring
-                  economic losses, though its long-term success requires regional watershed integration and sustainable
-                  maintenance funding.
-                </p>
-              </div>
-            </div>
-            <hr style="border-color: #e5e7eb; opacity: 0.8;" class="my-4">
-
-            <!-- SECTION 5: SUGGESTED IMPROVEMENTS -->
-            <div class="mb-4">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <i class="bi bi-lightbulb-fill fs-5 text-dark"></i>
-                <h5 class="fw-bold text-uppercase mb-0" style="font-size: 0.95rem; letter-spacing: 1px;">SUGGESTED
-                  IMPROVEMENTS</h5>
-              </div>
-              <div class="ps-4">
-                <div class="text-dark" id="evalModalImprovements" style="font-size: 0.95rem; line-height: 1.7;">
-                  <ul class="mb-0 ps-3">
-                    <li class="mb-2">Incorporate nature-based infrastructure solutions, such as bioswales and permeable
-                      pavements, alongside traditional engineering upgrades.</li>
-                    <li class="mb-2">Establish a formal joint task force with adjacent Metro Manila local government
-                      units to address cross-boundary stormwater flow.</li>
-                    <li class="mb-0">Develop a multi-year dedicated maintenance fund and real-time public asset
-                      management dashboard to ensure operational longevity.</li>
-                  </ul>
+            <!-- FULL DOCUMENT ACCESS (Bottom-Left of Report) -->
+            <div class="mt-4 pt-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-3" id="evalModalDocumentAccessBlock">
+              <div class="d-flex align-items-center gap-2">
+                <span class="p-2 rounded-2 bg-primary bg-opacity-10 text-primary">
+                  <i class="bi bi-file-earmark-text-fill fs-5"></i>
+                </span>
+                <div>
+                  <div class="fw-bold text-dark small" style="font-size:0.88rem;">Original Ordinance Document</div>
+                  <div class="text-muted" style="font-size:0.75rem;">Direct source reference for factual verification</div>
                 </div>
               </div>
+              <a id="evalModalDocLink" href="#" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs" style="font-size:0.82rem;">
+                <i class="bi bi-box-arrow-up-right"></i>
+                <span>View Full Original Ordinance</span>
+              </a>
             </div>
 
           </div>

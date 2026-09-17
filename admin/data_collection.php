@@ -384,7 +384,7 @@ $num_departments = count($departments_map);
 
   function renderResearchCategoryChart() {
     var ctx = document.getElementById('researchCategoryChart');
-    if (!ctx) return;
+    if (!ctx || typeof Chart === 'undefined') return;
 
     var categories = <?= json_encode(array_keys($categories_map)) ?>;
     var counts = <?= json_encode(array_values($categories_map)) ?>;
@@ -471,10 +471,14 @@ $num_departments = count($departments_map);
     }
   }
 
-  // Render chart on page load or section show
+  window.renderResearchCategoryChart = renderResearchCategoryChart;
+
+  // Render chart safely on page load or section show
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderResearchCategoryChart);
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof Chart !== 'undefined') renderResearchCategoryChart();
+    });
   } else {
-    renderResearchCategoryChart();
+    if (typeof Chart !== 'undefined') renderResearchCategoryChart();
   }
 </script>

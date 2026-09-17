@@ -1,8 +1,26 @@
 <?php
-// Pull policy records from DB for the select table
+// Pull policy records and evaluations from DB for the select table
 $report_policies = [];
 if (!empty($conn)) {
-  $rq = mysqli_query($conn, "SELECT id, title, category, status, created_at FROM policy_records ORDER BY created_at DESC LIMIT 20");
+  $rq = mysqli_query($conn, "
+    SELECT 
+      p.id, 
+      p.title, 
+      p.category, 
+      p.status, 
+      p.created_at, 
+      p.ai_summary, 
+      p.author,
+      p.ordinance_number,
+      e.risk_level,
+      e.ai_recommendation,
+      e.status AS eval_status
+    FROM policy_records p
+    LEFT JOIN evaluations e ON p.id = e.policy_id
+    WHERE (p.status IS NULL OR p.status != 'Archived')
+    ORDER BY p.created_at DESC 
+    LIMIT 30
+  ");
   if ($rq) {
     while ($row = mysqli_fetch_assoc($rq)) {
       $report_policies[] = $row;
@@ -39,19 +57,13 @@ if (empty($report_policies)) {
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
           <i class="bi bi-journal-check text-primary"></i> 1. Select Policy Record
         </h3>
-        <p class="text-muted mb-0 small">Select a policy record from the list below to generate its official legislative report.</p>
+        <p class="text-muted mb-0 small">Click any policy title below to view its full official legislative report, download, or print.</p>
       </div>
-      <button type="button"
-        class="btn btn-primary px-3.5 py-2 rounded-3 d-inline-flex align-items-center gap-2 shadow-sm fw-semibold"
-        style="background: #0B2E59; border-color: #0B2E59;" onclick="printSelectedReport()">
-        <i class="bi bi-printer-fill fs-6"></i> Print Selected Report
-      </button>
     </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0" style="font-size:0.88rem;">
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
           <tr>
-            <th class="text-center py-3.5" style="width:50px;"></th>
             <th class="py-3.5 text-uppercase text-dark fw-bold"
               style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Policy Title</th>
             <th class="py-3.5 text-uppercase text-dark fw-bold"
@@ -88,23 +100,28 @@ if (empty($report_policies)) {
               $initialAdminSummary = $summary;
             }
 
-            $risk = 'Low Risk';
-            $recText = 'Proceed with implementation and continue monitoring the effectiveness of the policy.';
-            $rowBg = $isFirst ? 'background-color:#EFF6FF;' : '';
+            $risk = !empty($pol['risk_level']) ? $pol['risk_level'] : 'Low Risk';
+            $recText = !empty($pol['ai_recommendation']) ? $pol['ai_recommendation'] : 'Proceed with implementation and continue monitoring the effectiveness of the policy.';
+
+            $policyData = [
+              'title' => $pol['title'],
+              'policy_title' => $pol['title'],
+              'category' => $pol['category'] ?? 'General Legislation',
+              'status' => $pol['status'] ?? 'Draft',
+              'date' => $dateStr,
+              'date_uploaded' => $dateStr,
+              'summary' => $summary,
+              'risk' => $risk,
+              'recommendation' => $recText,
+              'author' => $pol['author'] ?? 'City Council of Manila',
+              'ordinance_number' => $pol['ordinance_number'] ?? '',
+              'report_type' => 'Evaluation Report'
+            ];
+            $policyJson = json_encode($policyData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
             ?>
-            <tr class="report-policy-row <?= $isFirst ? 'active-report-row' : '' ?>" style="cursor:pointer; <?= $rowBg ?>"
-              onclick="selectReportPolicy(this, <?= $isFirst ? 'true' : 'false' ?>,
-                '<?= addslashes(htmlspecialchars($pol['title'])) ?>',
-                '<?= addslashes(htmlspecialchars($pol['category'] ?? '—')) ?>',
-                '<?= addslashes(htmlspecialchars($pol['status'] ?? 'Draft')) ?>',
-                '<?= $dateStr ?>',
-                '<?= addslashes(htmlspecialchars($summary)) ?>',
-                '<?= $risk ?>',
-                '<?= addslashes($recText) ?>')">
-              <td class="text-center py-3">
-                <input class="form-check-input" type="radio" name="reportPolicyRadio" <?= $isFirst ? 'checked' : '' ?>
-                  onclick="event.stopPropagation();">
-              </td>
+            <tr class="report-policy-row clickable-report-row" style="cursor:pointer;"
+              data-policy='<?= htmlspecialchars($policyJson, ENT_QUOTES, 'UTF-8') ?>'
+              onclick="openPolicyRowReport(this)">
               <td class="py-3">
                 <div class="d-flex align-items-center gap-2.5">
                   <div
@@ -112,7 +129,12 @@ if (empty($report_policies)) {
                     style="width: 32px; height: 32px;">
                     <i class="bi bi-file-earmark-text-fill fs-6"></i>
                   </div>
-                  <strong class="text-dark"><?= htmlspecialchars($pol['title']) ?></strong>
+                  <div>
+                    <a href="javascript:void(0)" class="fw-bold text-dark text-decoration-none policy-title-link"
+                      onclick="event.stopPropagation(); openPolicyRowReport(this.closest('tr'));">
+                      <?= htmlspecialchars($pol['title']) ?>
+                    </a>
+                  </div>
                 </div>
               </td>
               <td class="py-3">
@@ -162,6 +184,27 @@ if (empty($report_policies)) {
   </div>
 
   <style>
+    /* Clickable Policy Records Table Styling */
+    .clickable-report-row {
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+    .clickable-report-row:hover {
+      background-color: #f1f5f9 !important;
+    }
+    .clickable-report-row:hover .policy-title-link {
+      color: #0d6efd !important;
+      text-decoration: underline !important;
+    }
+    body.dark-theme .clickable-report-row:hover {
+      background-color: #1e293b !important;
+    }
+    body.dark-theme .clickable-report-row .policy-title-link {
+      color: #f8fafc !important;
+    }
+    body.dark-theme .clickable-report-row:hover .policy-title-link {
+      color: #60a5fa !important;
+    }
+
     /* Clean Executive Recent Reports Styling */
     .badge-report-type {
       display: inline-flex;
@@ -261,14 +304,27 @@ if (empty($report_policies)) {
             <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative Document</h5>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" id="reportModalDownloadPdfBtn">
-              <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs" id="reportModalDownloadDocxBtn">
-              <i class="bi bi-file-earmark-word-fill"></i> Word (.docx)
-            </button>
-            <button type="button" class="btn btn-sm btn-light border rounded-3 px-2.5 py-1.5 text-secondary" id="reportModalPrintBtn" title="Print Document">
-              <i class="bi bi-printer"></i>
+            <!-- Download Button Dropdown -->
+            <div class="dropdown">
+              <button class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm dropdown-toggle" type="button" id="reportModalDownloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-download"></i> Download
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-1.5" aria-labelledby="reportModalDownloadDropdown">
+                <li>
+                  <a class="dropdown-item py-2 px-3 rounded-2 d-flex align-items-center gap-2 fw-medium text-dark" href="javascript:void(0)" id="reportModalDownloadPdfBtn">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i> Download as PDF
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item py-2 px-3 rounded-2 d-flex align-items-center gap-2 fw-medium text-dark" href="javascript:void(0)" id="reportModalDownloadDocxBtn">
+                    <i class="bi bi-file-earmark-word-fill text-primary fs-6"></i> Download as Word (.docx)
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <!-- Print Button -->
+            <button type="button" class="btn btn-sm text-white rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn">
+              <i class="bi bi-printer-fill"></i> Print
             </button>
             <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -276,6 +332,21 @@ if (empty($report_policies)) {
         <div class="modal-body p-4 p-md-4" style="max-height: 75vh; overflow-y: auto; background:#f8fafc;">
           <div id="reportViewerModalDocumentBody" class="bg-white p-4 rounded-3 border shadow-sm mx-auto" style="max-width: 740px;">
             <!-- Rendered document will be injected here -->
+          </div>
+        </div>
+        <div class="modal-footer border-top px-4 py-2.5 bg-light d-flex align-items-center justify-content-between">
+          <span class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i> Official City Council of Manila Legislative Document</span>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-3 px-3" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 fw-semibold" id="reportModalDownloadDocxBtnFooter">
+              <i class="bi bi-file-earmark-word-fill me-1"></i> Word (.docx)
+            </button>
+            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 fw-semibold" id="reportModalDownloadPdfBtnFooter">
+              <i class="bi bi-download me-1"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-sm text-white rounded-3 px-3.5 fw-semibold" style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtnFooter">
+              <i class="bi bi-printer-fill me-1"></i> Print Report
+            </button>
           </div>
         </div>
       </div>
@@ -300,7 +371,9 @@ if (empty($report_policies)) {
     if (firstRow) firstRow.style.backgroundColor = '#EFF6FF';
 
     // Render dynamic reports table on page load
-    renderRecentGeneratedReportsTable();
+    if (typeof renderRecentGeneratedReportsTable === 'function') {
+      renderRecentGeneratedReportsTable();
+    }
   })();
 
   // Active report data object
@@ -923,12 +996,52 @@ if (empty($report_policies)) {
     };
   }
 
-  var _activeModalReport = null;
-  var _activeModalFileName = '';
+  function openPolicyRowReport(trEl) {
+    if (!trEl) return;
+    var rawPolicy = trEl.getAttribute('data-policy');
+    var repObj = null;
+    if (rawPolicy) {
+      try {
+        repObj = JSON.parse(rawPolicy);
+      } catch (e) {
+        console.error('Failed to parse policy JSON:', e);
+      }
+    }
+    if (!repObj) {
+      var linkEl = trEl.querySelector('.policy-title-link') || trEl.querySelector('strong');
+      var title = linkEl ? linkEl.textContent.trim() : 'Policy Report';
+      var cat = (trEl.cells[1] ? trEl.cells[1].textContent.trim() : 'General Legislation');
+      var status = (trEl.cells[2] ? trEl.cells[2].textContent.trim() : 'Draft');
+      var date = (trEl.cells[3] ? trEl.cells[3].textContent.trim() : '—');
+      repObj = {
+        title: title,
+        policy_title: title,
+        category: cat,
+        status: status,
+        date: date,
+        date_uploaded: date,
+        summary: 'This policy contains official legislative data and impact evaluation findings for ' + title + '.',
+        risk: 'Low Risk',
+        recommendation: 'Proceed with implementation and continue monitoring the effectiveness of the policy.',
+        report_type: 'Evaluation Report'
+      };
+    }
+
+    _report = repObj;
+    var cleanTitle = ((repObj.title || repObj.policy_title || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_'));
+    var fileName = cleanTitle + '_Report.pdf';
+
+    try {
+      trackGeneratedReport(repObj.title || repObj.policy_title, 'PDF', repObj);
+    } catch (e) { }
+
+    openReportDocumentModal(repObj, fileName);
+  }
 
   function openReportDocumentModal(rep, fileName) {
     _activeModalReport = rep;
-    _activeModalFileName = fileName || (((rep.title || rep.policy_title || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_')) + '_Report.pdf');
+    var cleanTitle = ((rep.title || rep.policy_title || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_'));
+    _activeModalFileName = fileName || (cleanTitle + '_Report.pdf');
     
     var logoUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/admin/')) + '/assets/images/manilacityhall.svg';
     var htmlContent = buildSharedReportTemplate(rep, logoUrl);
@@ -957,6 +1070,28 @@ if (empty($report_policies)) {
     var printBtn = document.getElementById('reportModalPrintBtn');
     if (printBtn) {
       printBtn.onclick = function() {
+        printSelectedReport(_activeModalReport);
+      };
+    }
+
+    var pdfBtnFooter = document.getElementById('reportModalDownloadPdfBtnFooter');
+    if (pdfBtnFooter) {
+      pdfBtnFooter.onclick = function() {
+        saveReportAsPDF(_activeModalFileName, _activeModalReport);
+      };
+    }
+
+    var docxBtnFooter = document.getElementById('reportModalDownloadDocxBtnFooter');
+    if (docxBtnFooter) {
+      docxBtnFooter.onclick = function() {
+        var docxName = _activeModalFileName.replace(/\.pdf$/i, '') + '.docx';
+        generateWordDoc(docxName, _activeModalReport);
+      };
+    }
+
+    var printBtnFooter = document.getElementById('reportModalPrintBtnFooter');
+    if (printBtnFooter) {
+      printBtnFooter.onclick = function() {
         printSelectedReport(_activeModalReport);
       };
     }
@@ -1090,6 +1225,7 @@ if (empty($report_policies)) {
   }
 
   // Ensure all global report functions are attached to window
+  window.openPolicyRowReport = openPolicyRowReport;
   window.exportReport = exportReport;
   window.printSelectedReport = printSelectedReport;
   window.generateWordDoc = generateWordDoc;
