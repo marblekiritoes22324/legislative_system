@@ -131,7 +131,6 @@
         $admin_nav_items = [
           ['href' => 'admin_dashboard.php?section=systemLogsSection', 'icon' => 'bi-terminal-fill', 'label' => 'Audit Logs'],
           ['href' => 'admin_dashboard.php?section=activeUsersSection', 'icon' => 'bi-people', 'label' => 'User Directory'],
-          ['href' => 'admin_dashboard.php?section=databaseManagementSection', 'icon' => 'bi-database-check', 'label' => 'Database Management'],
         ];
         foreach ($admin_nav_items as $item):
           $is_active = ($active_page === $item['label']) ? 'active' : '';

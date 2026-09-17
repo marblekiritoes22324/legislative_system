@@ -433,26 +433,16 @@ function openEvaluationModal(evaluation) {
     const hasEvaluation = details.has_evaluation === true || (details.has_evaluation !== false && hasEvaluationDate && (rawStatus === 'Approved' || rawStatus === 'Completed' || rawStatus === 'Evaluated'));
     const isCompleted = hasEvaluation;
 
-    // Update button text: Evaluate Policy vs Re-evaluate Policy
-    const btn = document.getElementById('evalModalRunBtn');
-    if (btn) {
-        if (isCompleted) {
-            btn.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Re-evaluate Policy';
-        } else {
-            btn.innerHTML = '<i class="bi bi-play-circle-fill me-2"></i>Evaluate Policy';
-        }
-        btn.style.background = 'linear-gradient(135deg, #4f46e5, #7c3aed)';
-        btn.style.borderColor = 'transparent';
-        btn.disabled = false;
-    }
-
     // Policy title
     const titleEl = document.getElementById('evalModalTitle');
     if (titleEl) titleEl.textContent = details.title || 'Policy Evaluation';
 
-    // Evaluated By
+    // Evaluated By & Date
     const evalByEl = document.getElementById('evalModalEvaluator');
     if (evalByEl) evalByEl.textContent = isCompleted ? ((details.evaluator && details.evaluator !== 'Administration' && details.evaluator !== 'System Administrator') ? details.evaluator : 'Admin') : '—';
+
+    const dateEl = document.getElementById('evalModalDate');
+    if (dateEl) dateEl.textContent = isCompleted ? (details.evaluationDate || '—') : '—';
 
     // Status badge
     const status = details.status || (isCompleted ? 'Completed' : 'Draft');
@@ -473,62 +463,68 @@ function openEvaluationModal(evaluation) {
         statusEl.style.cssText = style;
     }
 
-    // Optional Risk level badge
-    const risk = details.riskLevel || 'N/A';
-    const riskEl = document.getElementById('evalModalRisk');
-    if (riskEl) {
-        riskEl.textContent = risk;
-        riskEl.removeAttribute('class');
-        if (risk.toLowerCase().includes('low')) {
-            riskEl.style.cssText = 'display:inline-block;background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;padding:3px 10px;border-radius:999px;font-size:0.75rem;font-weight:600;';
-        } else if (risk.toLowerCase().includes('moderate') || risk.toLowerCase().includes('medium')) {
-            riskEl.style.cssText = 'display:inline-block;background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:3px 10px;border-radius:999px;font-size:0.75rem;font-weight:600;';
-        } else if (risk.toLowerCase().includes('high')) {
-            riskEl.style.cssText = 'display:inline-block;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:3px 10px;border-radius:999px;font-size:0.75rem;font-weight:600;';
+    // Criteria reasons / findings
+    const econEl = document.getElementById('evalCriteriaEconomicReason');
+    if (econEl) {
+        econEl.innerHTML = isCompleted ? (details.economicReason ? String(details.economicReason).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Funding and implementation costs are manageable within municipal allocations.') : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
+    }
+
+    const socialEl = document.getElementById('evalCriteriaSocialReason');
+    if (socialEl) {
+        socialEl.innerHTML = isCompleted ? (details.socialReason ? String(details.socialReason).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'The policy provides measurable benefits to affected communities and enhances public welfare.') : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
+    }
+
+    const envEl = document.getElementById('evalCriteriaEnvReason');
+    if (envEl) {
+        envEl.innerHTML = isCompleted ? (details.envReason ? String(details.envReason).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'The policy satisfies urban environmental standards and sustainability requirements.') : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
+    }
+
+    const legalEl = document.getElementById('evalCriteriaLegalReason');
+    if (legalEl) {
+        if (isCompleted) {
+            if (details.legalAuthority || details.draftingQuality || details.proceduralCompliance) {
+                legalEl.innerHTML = `
+                  <div class="mb-1.5"><strong class="text-dark">1. Legal Authority:</strong> ${String(details.legalAuthority || 'Within delegated municipal powers under RA 7160.').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+                  <div class="mb-1.5"><strong class="text-dark">2. Drafting Quality:</strong> ${String(details.draftingQuality || 'Clear operative clauses and severability verified.').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+                  <div><strong class="text-dark">3. Procedural Compliance:</strong> ${String(details.proceduralCompliance || 'Readings verified; committee report and publication marked as Unverified pending floor submission.').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+                `;
+            } else {
+                legalEl.innerHTML = String(details.legalReason || 'Compliant with the Local Government Code and statutory frameworks.').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            }
         } else {
-            riskEl.style.cssText = 'display:inline-block;background:#f3f4f6;color:#4b5563;border:1px solid #e5e7eb;padding:3px 10px;border-radius:999px;font-size:0.75rem;font-weight:600;';
+            legalEl.innerHTML = '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
         }
     }
 
-    // Criteria reasons / findings
-    if (document.getElementById('evalCriteriaEconomicReason')) document.getElementById('evalCriteriaEconomicReason').textContent = details.economicReason || 'Funding and implementation costs are manageable and available within municipal allocations.';
-    if (document.getElementById('evalCriteriaSocialReason')) document.getElementById('evalCriteriaSocialReason').textContent = details.socialReason || 'The policy provides measurable benefits to affected communities and enhances public welfare.';
-    if (document.getElementById('evalCriteriaEnvReason')) document.getElementById('evalCriteriaEnvReason').textContent = details.envReason || 'The policy satisfies urban environmental standards and sustainability requirements.';
-    if (document.getElementById('evalCriteriaLegalReason')) document.getElementById('evalCriteriaLegalReason').textContent = details.legalReason || 'Compliant with the Local Government Code and relevant national/local statutory frameworks.';
-
-    // Evaluation date
-    const dateEl = document.getElementById('evalModalDate');
-    if (dateEl) dateEl.textContent = details.evaluationDate || '—';
-
     // Analysis
     const analysisEl = document.getElementById('evalModalAnalysis');
-    if (analysisEl) analysisEl.textContent = details.aiAnalysis || (isCompleted ? 'The proposed policy measure demonstrates strong statutory alignment with municipal priorities across Economic Feasibility, Social Impact, Environmental Protection, and Legal Compliance criteria.' : 'No evaluation has been performed yet.');
-
-    // Recommendation type & title
-    if (document.getElementById('evalModalRecommendationType')) {
-        document.getElementById('evalModalRecommendationType').textContent = details.recommendationType || 'Proceed with Implementation';
+    if (analysisEl) {
+        analysisEl.innerHTML = isCompleted ? (details.aiAnalysis ? String(details.aiAnalysis).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Evidence-based impact analysis confirms alignment with statutory governance.') : '<span class="text-muted fst-italic">Awaiting evaluation.</span>';
     }
-    const recEl = document.getElementById('evalModalRecommendationTitle');
-    if (recEl) recEl.textContent = details.recommendation || (isCompleted ? 'Enact Policy with Enhanced Inter-Agency Coordination and Funding Frameworks' : 'Awaiting evaluation.');
 
-    // Reason
+    // Recommendation
+    const recEl = document.getElementById('evalModalRecommendationTitle');
+    if (recEl) recEl.textContent = isCompleted ? (details.recommendation || 'Approve & Proceed to Legislative Deliberation') : 'Awaiting evaluation.';
+
     const reasonEl = document.getElementById('evalModalReason');
-    if (reasonEl) reasonEl.textContent = details.reason || (isCompleted ? 'The plan addresses a fundamental vulnerability in Manila\'s urban infrastructure that causes recurring economic losses, though its long-term success requires regional watershed integration and sustainable maintenance funding.' : '');
+    if (reasonEl) reasonEl.textContent = isCompleted ? (details.reason || '') : '';
 
     // Suggested Improvements
     const improvementsEl = document.getElementById('evalModalImprovements');
     if (improvementsEl) {
-        if (details.improvements && details.improvements.length > 0) {
-            let listHtml = '<ul class="mb-0 ps-3">';
-            details.improvements.forEach(function (item) {
-                const d = document.createElement('div');
-                d.textContent = item;
-                listHtml += '<li class="mb-2">' + d.innerHTML + '</li>';
-            });
-            listHtml += '</ul>';
-            improvementsEl.innerHTML = listHtml;
+        if (isCompleted) {
+            if (details.improvements && details.improvements.length > 0) {
+                let listHtml = '<ul class="mb-0 ps-3">';
+                details.improvements.forEach(function (item) {
+                    listHtml += '<li class="mb-1.5">' + String(item).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</li>';
+                });
+                listHtml += '</ul>';
+                improvementsEl.innerHTML = listHtml;
+            } else {
+                improvementsEl.innerHTML = '<p class="text-success mb-0"><i class="bi bi-check-circle-fill me-1.5"></i>No statutory gaps identified; ready for legislative deliberation.</p>';
+            }
         } else {
-            improvementsEl.innerHTML = '<ul class="mb-0 ps-3"><li class="mb-2">Incorporate nature-based infrastructure solutions, such as bioswales and permeable pavements, alongside traditional engineering upgrades.</li><li class="mb-2">Establish a formal joint task force with adjacent Metro Manila local government units to address cross-boundary stormwater flow.</li><li class="mb-0">Develop a multi-year dedicated maintenance fund and real-time public asset management dashboard to ensure operational longevity.</li></ul>';
+            improvementsEl.innerHTML = '<p class="text-muted mb-0 fst-italic">Awaiting evaluation.</p>';
         }
     }
 

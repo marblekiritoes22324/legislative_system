@@ -4,7 +4,7 @@
 $host = "localhost";
 $username = "root";
 $password = "";
-$database = "legislative_system";
+$database = "legislative_management_db";
 
 // Disable default PHP mysqli uncaught exception throwing for graceful error display
 mysqli_report(MYSQLI_REPORT_OFF);

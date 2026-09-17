@@ -19,13 +19,27 @@ body.dark-mode {
   --staff-text-main: #1E293B;
   --staff-text-muted: #64748B;
   background-color: #0B192E !important;
-  color: #1E293B !important;
+  color: #F8FAFC !important;
 }
 
 body.dark-mode .main-panel,
 body.dark-mode .content-area,
 body.dark-mode .app-shell {
   background-color: #0B192E !important;
+}
+
+/* Headings & Subtitles directly on the dark canvas background */
+body.dark-mode .content-area h1:not(.card *):not(.topbar *):not(.modal *),
+body.dark-mode .content-area h2:not(.card *):not(.topbar *):not(.modal *),
+body.dark-mode .content-area h3:not(.card *):not(.topbar *):not(.modal *),
+body.dark-mode .content-area h4:not(.card *):not(.topbar *):not(.modal *),
+body.dark-mode .content-area .text-dark:not(.card *):not(.topbar *):not(.modal *):not(.dropdown-menu *):not(.offcanvas *) {
+  color: #F8FAFC !important;
+}
+
+body.dark-mode .content-area p.text-muted:not(.card *):not(.topbar *):not(.modal *),
+body.dark-mode .content-area .text-muted:not(.card *):not(.topbar *):not(.modal *):not(.dropdown-menu *):not(.offcanvas *) {
+  color: #94A3B8 !important;
 }
 
 body.dark-mode .card,
@@ -35,6 +49,19 @@ body.dark-mode .dropdown-menu {
   background-color: #FFFFFF !important;
   color: #1E293B !important;
   border-color: #E2E8F0 !important;
+}
+
+body.dark-mode .card .text-dark,
+body.dark-mode .topbar .text-dark,
+body.dark-mode .modal-content .text-dark,
+body.dark-mode .dropdown-menu .text-dark {
+  color: #0F172A !important;
+}
+
+body.dark-mode .card .text-muted,
+body.dark-mode .topbar .text-muted,
+body.dark-mode .modal-content .text-muted {
+  color: #64748B !important;
 }
 
 body.dark-mode .table {
@@ -53,6 +80,25 @@ body.dark-mode .list-group-item {
   background-color: #FFFFFF !important;
   color: #1E293B !important;
   border-color: #E2E8F0 !important;
+}
+
+body.dark-mode .topbar .header-admin-role,
+body.dark-mode .topbar .header-admin-name,
+body.dark-mode .topbar .header-dark-label {
+  color: #1E293B !important;
+}
+
+body.dark-mode .topbar .header-admin-pipe {
+  color: #94A3B8 !important;
+}
+
+body.dark-mode .topbar .header-notif-btn i,
+body.dark-mode .topbar .header-dropdown-btn i {
+  color: #1E293B !important;
+}
+
+body.dark-mode .topbar .header-dropdown-btn i.bi-chevron-down {
+  color: #64748B !important;
 }
 
 /* Sidebar section header labels */

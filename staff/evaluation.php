@@ -64,32 +64,26 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                 $improvements = $notes_data['improvements'];
               } elseif ($has_evaluation) {
                 if (!empty($eval['economic_score']) && $eval['economic_score'] < 8)
-                  $improvements[] = 'Improve economic feasibility planning.';
+                  $improvements[] = 'Improve economic feasibility planning and cost quantification.';
                 if (!empty($eval['social_score']) && $eval['social_score'] < 8)
-                  $improvements[] = 'Strengthen social impact measures.';
+                  $improvements[] = 'Strengthen social impact and community protection measures.';
                 if (!empty($eval['environmental_score']) && $eval['environmental_score'] < 8)
-                  $improvements[] = 'Enhance environmental safety provisions.';
+                  $improvements[] = 'Enhance environmental compliance and sustainability provisions.';
                 if (!empty($eval['legal_score']) && $eval['legal_score'] < 8)
-                  $improvements[] = 'Address legal compliance gaps.';
-              }
-              if (empty($improvements)) {
-                $improvements = [
-                  'Include a detailed implementation timeline.',
-                  'Provide an estimated budget allocation.',
-                  'Define measurable performance indicators.',
-                  'Assign responsible offices for monitoring and evaluation.',
-                ];
+                  $improvements[] = 'Address statutory compliance and procedural verification gaps.';
               }
 
               $ai_analysis = !empty($notes_data['ai_analysis']) ? $notes_data['ai_analysis'] : ($has_evaluation
-                ? 'The AI analyzed the proposed policy and determined that it supports statutory governance objectives across economic, social, environmental, and legal criteria.'
-                : 'No evaluation has been performed yet.');
+                ? 'Evidence-based impact analysis confirms alignment with statutory governance and municipal operational criteria.'
+                : 'Awaiting evaluation. Click "Evaluate Policy" to generate evidence-based assessment.');
 
               $reason = !empty($notes_data['reason']) ? $notes_data['reason'] : ($has_evaluation
-                ? 'The proposed policy aligns with its intended objectives and demonstrates measurable benefits across the evaluated criteria.'
+                ? 'The policy aligns with intended municipal objectives and demonstrates measurable community benefits across assessed criteria.'
                 : '');
 
-              $evaluator_name = (!empty($eval['evaluator']) && $eval['evaluator'] !== 'Administration' && $eval['evaluator'] !== 'System Administrator') ? $eval['evaluator'] : 'Staff';
+              $evaluator_name = $has_evaluation
+                ? ((!empty($eval['evaluator']) && $eval['evaluator'] !== 'Administration' && $eval['evaluator'] !== 'System Administrator') ? $eval['evaluator'] : 'Staff')
+                : '—';
 
               $criteria_data = !empty($notes_data['criteria']) && is_array($notes_data['criteria']) ? $notes_data['criteria'] : [];
 
@@ -102,23 +96,27 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                 'status' => $status,
                 'approved_by' => $eval['approved_by'] ?? null,
                 'approved_at' => $approved_at_fmt,
-                'riskLevel' => $risk_level,
+                'riskLevel' => $has_evaluation ? ($eval['risk_level'] ?? 'Low Risk') : 'N/A',
                 'evaluationDate' => $eval_date_fmt,
                 'evaluator' => $evaluator_name,
                 'aiAnalysis' => $ai_analysis,
                 'recommendation' => $has_evaluation
-                  ? ($eval['ai_recommendation'] ?: 'Enact Policy with Enhanced Inter-Agency Coordination and Implementation Monitoring')
+                  ? ($eval['ai_recommendation'] ?: 'Approve & Proceed to Legislative Deliberation')
                   : 'Awaiting evaluation.',
+                'recommendationType' => $has_evaluation ? ($notes_data['recommendation_type'] ?? 'Approve & Proceed') : 'Awaiting evaluation',
                 'reason' => $reason,
                 'improvements' => $improvements,
-                'economicLevel' => $criteria_data['economic']['level'] ?? 'Low',
-                'economicReason' => $criteria_data['economic']['reason'] ?? 'Funding and implementation costs are manageable and available.',
-                'socialLevel' => $criteria_data['social']['level'] ?? 'Low',
-                'socialReason' => $criteria_data['social']['reason'] ?? 'The policy provides benefits to affected communities and improves quality of life.',
-                'envLevel' => $criteria_data['env']['level'] ?? 'Low',
-                'envReason' => $criteria_data['env']['reason'] ?? 'The policy has minimal expected environmental effects.',
-                'legalLevel' => $criteria_data['legal']['level'] ?? 'Low',
-                'legalReason' => $criteria_data['legal']['reason'] ?? 'No major legal conflicts were identified with existing laws and regulations.',
+                'economicLevel' => $has_evaluation ? ($criteria_data['economic']['level'] ?? 'High') : 'Awaiting',
+                'economicReason' => $has_evaluation ? ($criteria_data['economic']['reason'] ?? 'Funding realism and cost estimates are quantified within municipal budget allocations.') : 'Awaiting evaluation.',
+                'socialLevel' => $has_evaluation ? ($criteria_data['social']['level'] ?? 'High') : 'Awaiting',
+                'socialReason' => $has_evaluation ? ($criteria_data['social']['reason'] ?? 'Provides measurable community welfare enhancements with clear identified beneficiaries.') : 'Awaiting evaluation.',
+                'envLevel' => $has_evaluation ? ($criteria_data['env']['level'] ?? 'High') : 'Awaiting',
+                'envReason' => $has_evaluation ? ($criteria_data['env']['reason'] ?? 'Satisfies urban environmental safety standards with positive ecological resilience.') : 'Awaiting evaluation.',
+                'legalLevel' => $has_evaluation ? ($criteria_data['legal']['level'] ?? 'High') : 'Awaiting',
+                'legalReason' => $has_evaluation ? ($criteria_data['legal']['reason'] ?? 'Within delegated municipal powers under RA 7160; drafting clarity and severability verified.') : 'Awaiting evaluation.',
+                'legalAuthority' => $notes_data['legal_authority'] ?? '',
+                'draftingQuality' => $notes_data['drafting_quality'] ?? '',
+                'proceduralCompliance' => $notes_data['procedural_compliance'] ?? '',
               ];
 
               // Read-only Status Pill Badge Styling

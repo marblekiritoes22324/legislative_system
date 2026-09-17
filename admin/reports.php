@@ -34,9 +34,19 @@ if (empty($report_policies)) {
 
   <!-- 1. Select Policy Record -->
   <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-    <h3 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2" style="font-size:1.05rem;">
-      <i class="bi bi-journal-check text-primary"></i> 1. Select Policy Record
-    </h3>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+      <div>
+        <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
+          <i class="bi bi-journal-check text-primary"></i> 1. Select Policy Record
+        </h3>
+        <p class="text-muted mb-0 small">Select a policy record from the list below to generate its official legislative report.</p>
+      </div>
+      <button type="button"
+        class="btn btn-primary px-3.5 py-2 rounded-3 d-inline-flex align-items-center gap-2 shadow-sm fw-semibold"
+        style="background: #0B2E59; border-color: #0B2E59;" onclick="printSelectedReport()">
+        <i class="bi bi-printer-fill fs-6"></i> Print Selected Report
+      </button>
+    </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0" style="font-size:0.88rem;">
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
@@ -151,97 +161,6 @@ if (empty($report_policies)) {
     </div>
   </div>
 
-  <!-- 2. Report Review -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-    <h3 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2" style="font-size:1.05rem;">
-      <i class="bi bi-journal-text text-success"></i> 2. Report Review
-    </h3>
-
-    <div class="row g-4 align-items-stretch">
-      <!-- Left Column: 2-Column Table (Field | Details) -->
-      <div class="col-12 col-lg-8">
-        <div class="table-responsive border rounded-4 overflow-hidden shadow-2xs">
-          <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
-            <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-              <tr>
-                <th style="width: 190px; font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;"
-                  class="py-3.5 ps-3 text-uppercase text-dark fw-bold">Field</th>
-                <th style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;"
-                  class="py-3.5 text-uppercase text-dark fw-bold">Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="fw-bold text-secondary ps-3 py-3" style="background-color: #f8fafc;">
-                  <i class="bi bi-journal-bookmark text-primary me-2"></i>Policy Title
-                </td>
-                <td class="fw-bold text-dark py-3" id="prevPolicyTitle">
-                  <?= htmlspecialchars($report_policies[0]['title'] ?? '—') ?>
-                </td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-secondary ps-3 py-3" style="background-color: #f8fafc;">
-                  <i class="bi bi-tag-fill text-info me-2"></i>Category
-                </td>
-                <td class="text-dark py-3" id="prevCategory">
-                  <?= htmlspecialchars($report_policies[0]['category'] ?? '—') ?>
-                </td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-secondary ps-3 py-3" style="background-color: #f8fafc;">
-                  <i class="bi bi-cpu-fill me-2" style="color: #9333ea;"></i>AI Summary
-                </td>
-                <td class="text-dark lh-base py-3" id="prevAISummary">
-                  <?= htmlspecialchars($initialAdminSummary ?? '') ?>
-                </td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-secondary ps-3 py-3" style="background-color: #f8fafc;">
-                  <i class="bi bi-shield-check text-success me-2"></i>Evaluation Result
-                </td>
-                <td class="py-3" id="prevEvalResult">
-                  <span
-                    class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-3 py-1.5 rounded-3 fw-semibold">
-                    Favorable for Implementation
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td class="fw-bold text-secondary ps-3 py-3" style="background-color: #f8fafc;">
-                  <i class="bi bi-lightbulb-fill text-warning me-2"></i>Recommendation
-                </td>
-                <td class="text-dark lh-base py-3" id="prevRecommendation">
-                  Proceed with implementation and continue monitoring the effectiveness of the policy.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Right Column: Report Actions Box -->
-      <div class="col-12 col-lg-4">
-        <div class="p-3.5 border rounded-4 bg-white h-100 d-flex flex-column shadow-2xs">
-          <div class="d-flex flex-column gap-3 my-auto">
-            <!-- Print Report Button (with Save as DOCX option inside) -->
-            <button type="button"
-              class="btn btn-outline-primary p-3 rounded-3 d-flex align-items-center gap-3 text-start bg-white shadow-sm border-opacity-30 w-100"
-              style="border-color: #0B2E59 !important;" onclick="printSelectedReport()">
-              <div class="rounded-3 p-2 d-flex align-items-center justify-content-center"
-                style="width: 44px; height: 44px; background: rgba(11, 46, 89, 0.08); color: #0B2E59;">
-                <i class="bi bi-printer-fill fs-4"></i>
-              </div>
-              <div>
-                <span class="fw-bold fs-6 d-block" style="color: #0B2E59;">Print Report</span>
-                <small class="text-muted" style="font-size:0.75rem;">Print or Save as DOCX / PDF</small>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <style>
     /* Clean Executive Recent Reports Styling */
     .badge-report-type {
@@ -287,12 +206,12 @@ if (empty($report_policies)) {
     }
   </style>
 
-  <!-- 3. Recent Generated Reports & Comparative Analyses -->
+  <!-- 2. Generated Reports & Comparative Analyses -->
   <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
       <div>
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
-          <i class="bi bi-clock-history text-primary"></i> 3. Generated Reports &amp; Comparative Analyses
+          <i class="bi bi-clock-history text-primary"></i> 2. Generated Reports &amp; Comparative Analyses
         </h3>
         <p class="text-muted mb-0 small">Access, browse, and download legislative policy evaluations and cross-city
           benchmarks.</p>

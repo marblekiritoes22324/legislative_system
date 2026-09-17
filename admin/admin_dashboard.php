@@ -886,11 +886,6 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
           onclick="showSection('activeUsersSection'); return false;" title="User Directory">
           <i class="bi bi-people me-2"></i><span class="nav-text">User Directory</span>
         </a>
-        <a class="nav-link <?= $active_section === 'databaseManagementSection' ? 'active' : '' ?> py-2.5 px-3 rounded-3"
-          href="javascript:void(0);" data-target="databaseManagementSection"
-          onclick="showSection('databaseManagementSection'); return false;" title="Database Management">
-          <i class="bi bi-database-check me-2"></i><span class="nav-text">Database Management</span>
-        </a>
       </nav>
     </aside>
 
@@ -1391,8 +1386,8 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
         <!-- 11. ACTIVE USER DIRECTORY -->
         <?php include 'user_directory.php'; ?>
 
-        <!-- 12. DATABASE MANAGEMENT MODULE -->
-        <?php include 'database_management.php'; ?>
+        <!-- 12. DATABASE MANAGEMENT MODULE (Hidden for now) -->
+        <?php // include 'database_management.php'; ?>
 
         <!-- 13. ADMIN PROFILE -->
         <?php include 'admin_profile.php'; ?>

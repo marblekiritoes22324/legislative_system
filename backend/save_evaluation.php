@@ -103,21 +103,30 @@ if (!$has_fk || $policy_id <= 0) {
     exit;
 }
 
-$econ_level = isset($_POST['economic_level']) ? trim($_POST['economic_level']) : 'Low';
+$econ_level = isset($_POST['economic_level']) ? trim($_POST['economic_level']) : 'High';
 $econ_reason = isset($_POST['economic_reason']) ? trim($_POST['economic_reason']) : 'Funding and implementation costs are manageable and available.';
 
-$social_level = isset($_POST['social_level']) ? trim($_POST['social_level']) : 'Low';
+$social_level = isset($_POST['social_level']) ? trim($_POST['social_level']) : 'High';
 $social_reason = isset($_POST['social_reason']) ? trim($_POST['social_reason']) : 'The policy provides benefits to affected communities and improves quality of life.';
 
-$env_level = isset($_POST['env_level']) ? trim($_POST['env_level']) : 'Low';
+$env_level = isset($_POST['env_level']) ? trim($_POST['env_level']) : 'High';
 $env_reason = isset($_POST['env_reason']) ? trim($_POST['env_reason']) : 'The policy has minimal expected environmental effects.';
 
-$legal_level = isset($_POST['legal_level']) ? trim($_POST['legal_level']) : 'Low';
-$legal_reason = isset($_POST['legal_reason']) ? trim($_POST['legal_reason']) : 'No major legal conflicts were identified with existing laws and regulations.';
+$legal_level = isset($_POST['legal_level']) ? trim($_POST['legal_level']) : 'High';
+$legal_reason = isset($_POST['legal_reason']) ? trim($_POST['legal_reason']) : 'Compliant with statutory requirements.';
+
+$legal_authority = isset($_POST['legal_authority']) ? trim($_POST['legal_authority']) : '';
+$drafting_quality = isset($_POST['drafting_quality']) ? trim($_POST['drafting_quality']) : '';
+$procedural_compliance = isset($_POST['procedural_compliance']) ? trim($_POST['procedural_compliance']) : '';
+$rec_type = isset($_POST['recommendation_type']) ? trim($_POST['recommendation_type']) : 'Approve & Proceed';
 
 $notes_payload = json_encode([
     'ai_analysis' => $ai_analysis,
     'reason' => $reason,
+    'recommendation_type' => $rec_type,
+    'legal_authority' => $legal_authority,
+    'drafting_quality' => $drafting_quality,
+    'procedural_compliance' => $procedural_compliance,
     'improvements' => $improvements,
     'criteria' => [
         'economic' => ['level' => $econ_level, 'reason' => $econ_reason],
