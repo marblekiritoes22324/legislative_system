@@ -9,5 +9,6 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Temporary uploads / logs (optional, keep uploads dir structure)
-# assets/uploads/*
+# Temporary scratch directory
+scratch/
+

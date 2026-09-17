@@ -17,6 +17,11 @@ try {
     if (!$conn) {
         throw new Exception(mysqli_connect_error());
     }
+
+    // Auto-seed default policy records and evaluations if the database is newly initialized
+    if (file_exists(__DIR__ . '/auto_seed.php')) {
+        require_once __DIR__ . '/auto_seed.php';
+    }
 } catch (Throwable $e) {
     die("
     <div style='font-family: system-ui, -apple-system, sans-serif; max-width: 650px; margin: 60px auto; padding: 32px; border-radius: 16px; background: #ffffff; border: 1px solid #fee2e2; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05); color: #1f2937;'>
