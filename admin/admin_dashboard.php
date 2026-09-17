@@ -20,7 +20,26 @@ function get_policy_table_name($conn)
 
 $policy_tbl = get_policy_table_name($conn);
 
-// Auto-ensure required columns exist in database tables
+// Auto-ensure policy_records table exists with proper schema
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS `policy_records` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `category` varchar(100) NOT NULL,
+  `city_origin` varchar(100) DEFAULT 'City of Manila',
+  `author` varchar(150) NOT NULL,
+  `department` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `keywords` varchar(255) DEFAULT NULL,
+  `publication_date` date DEFAULT NULL,
+  `related_record` varchar(100) DEFAULT NULL,
+  `file_path` varchar(255) DEFAULT NULL,
+  `status` enum('Published','Draft','Archived') DEFAULT 'Draft',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `ai_summary` longtext DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
 $col = mysqli_query($conn, "SHOW COLUMNS FROM $policy_tbl LIKE 'ai_summary'");
 if ($col && mysqli_num_rows($col) === 0) {
   mysqli_query($conn, "ALTER TABLE $policy_tbl ADD COLUMN ai_summary LONGTEXT NULL");
@@ -261,22 +280,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       }
     }
 
-    $stmt = mysqli_prepare($conn, "INSERT INTO policy_records (title, category, city_origin, author, department, description, keywords, publication_date, related_record, file_path, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    mysqli_stmt_bind_param($stmt, "sssssssssss", $title, $category, $city_origin, $author, $department, $description, $keywords, $publication_date, $related_record, $file_path, $status);
+    $stmt = mysqli_prepare($conn, "INSERT INTO $policy_tbl (title, category, city_origin, author, department, description, keywords, publication_date, related_record, file_path, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    if ($stmt) {
+      mysqli_stmt_bind_param($stmt, "sssssssssss", $title, $category, $city_origin, $author, $department, $description, $keywords, $publication_date, $related_record, $file_path, $status);
 
-    if (mysqli_stmt_execute($stmt)) {
-      $new_policy_id = mysqli_insert_id($conn);
-      // Policy starts as 'Draft' evaluation status until the user runs an evaluation.
-      if (function_exists('log_audit_action')) {
-        log_audit_action($conn, 'Admin', 'Policy Records', 'Uploaded ' . $title);
+      if (mysqli_stmt_execute($stmt)) {
+        $new_policy_id = mysqli_insert_id($conn);
+        // Policy starts as 'Draft' evaluation status until the user runs an evaluation.
+        if (function_exists('log_audit_action')) {
+          log_audit_action($conn, 'Admin', 'Policy Records', 'Uploaded ' . $title);
+        }
+        $message = "Policy Research added successfully.";
+        $messageType = "success";
+      } else {
+        $message = "Error adding record: " . mysqli_error($conn);
+        $messageType = "danger";
       }
-      $message = "Policy Research added successfully.";
-      $messageType = "success";
+      mysqli_stmt_close($stmt);
     } else {
-      $message = "Error adding record: " . mysqli_error($conn);
+      $message = "Database preparation error: " . mysqli_error($conn);
       $messageType = "danger";
     }
-    mysqli_stmt_close($stmt);
   } elseif ($action === 'edit') {
     $id = $_POST['id'];
     $title = $_POST['title'];
