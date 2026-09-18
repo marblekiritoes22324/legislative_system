@@ -177,15 +177,6 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                       title="View Evaluation Report">
                       <i class="bi bi-bar-chart-line-fill"></i> View Evaluation
                     </button>
-                    <?php if ($status === 'Needs Revision'): ?>
-                      <button id="eval-revision-btn-<?= (int) $eval['policy_id'] ?>"
-                        onclick='requestRevision(<?= (int) $eval['policy_id'] ?>, <?= htmlspecialchars(json_encode($title), ENT_QUOTES, "UTF-8") ?>, <?= htmlspecialchars(json_encode($evaluation_data), ENT_QUOTES, "UTF-8") ?>)'
-                        class="btn btn-sm btn-outline-danger"
-                        style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 11px; border-radius:7px; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.2s;"
-                        title="Send back to sponsor/drafter citing failed criteria">
-                        <i class="bi bi-arrow-counterclockwise"></i> Request Revision
-                      </button>
-                    <?php endif; ?>
                   </div>
                 </td>
               </tr>
