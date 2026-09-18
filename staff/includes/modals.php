@@ -422,13 +422,7 @@
                 <div class="col-7 col-sm-8 fw-semibold text-dark" id="evalModalTitle">Flood Risk Assessment and Drainage
                   Improvement Plan for Manila City</div>
               </div>
-              <div class="row mb-1">
-                <div class="col-4 col-sm-3 fw-bold">Status</div>
-                <div class="col-1 text-center">:</div>
-                <div class="col-7 col-sm-8 text-dark">
-                  <span id="evalModalStatus" class="badge bg-success px-2.5 py-1">Completed</span>
-                </div>
-              </div>
+              <div style="display: none !important;"><span id="evalModalStatus"></span></div>
               <div class="row mb-1">
                 <div class="col-4 col-sm-3 fw-bold">Evaluation Date</div>
                 <div class="col-1 text-center">:</div>
