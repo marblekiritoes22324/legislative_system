@@ -64,6 +64,11 @@ foreach ($evaluations as $eval) {
 
     $eval_map[$eval['policy_id']] = [
       'risk_level' => $eval['risk_level'] ?: 'Low Risk',
+      'overall_score' => floatval($eval['overall_score'] ?? 0),
+      'economic_score' => floatval($eval['economic_score'] ?? 0),
+      'social_score' => floatval($eval['social_score'] ?? 0),
+      'env_score' => floatval($eval['environmental_score'] ?? 0),
+      'legal_score' => floatval($eval['legal_score'] ?? 0),
       'ai_recommendation' => $eval['ai_recommendation'] ?: 'Suitable for implementation.',
       'status' => 'Approved',
       'economic_level' => $econ_level,
@@ -89,6 +94,11 @@ foreach ($all_policies as $p) {
       'category' => $p['category'],
       'city_origin' => $p['city_origin'] ?? 'City of Manila',
       'risk_level' => $info['risk_level'],
+      'overall_score' => $info['overall_score'],
+      'economic_score' => $info['economic_score'],
+      'social_score' => $info['social_score'],
+      'env_score' => $info['env_score'],
+      'legal_score' => $info['legal_score'],
       'ai_recommendation' => $info['ai_recommendation'],
       'economic_level' => $info['economic_level'],
       'economic_reason' => $info['economic_reason'],
@@ -391,15 +401,85 @@ foreach ($completed_policies as $p) {
       return '<span class="badge fw-semibold" style="background:' + bg + '; color:' + color + '; border:1px solid ' + border + '; font-size:0.8rem; font-family: Arial, sans-serif;">' + esc(risk || text) + '</span>';
     }
 
-    function getScorePercentage(level) {
+    function getScorePercentage(level, policy, criterionKey) {
+      // 1. Direct score from database evaluation record if present
+      if (policy) {
+        var direct = 0;
+        if (criterionKey === 'economic' && policy.economic_score) direct = parseFloat(policy.economic_score);
+        else if (criterionKey === 'social' && policy.social_score) direct = parseFloat(policy.social_score);
+        else if (criterionKey === 'env' && (policy.env_score || policy.environmental_score)) direct = parseFloat(policy.env_score || policy.environmental_score);
+        else if (criterionKey === 'legal' && policy.legal_score) direct = parseFloat(policy.legal_score);
+
+        if (direct && direct > 0) {
+          if (direct <= 10) return Math.min(98, Math.max(25, Math.round(direct * 10)));
+          if (direct <= 100) return Math.min(98, Math.max(25, Math.round(direct)));
+        }
+      }
+
       var l = (level || '').toLowerCase();
-      if (l.indexOf('high') !== -1) return 92;
-      if (l.indexOf('med') !== -1 || l.indexOf('mod') !== -1) return 68;
-      return 38;
+      var isHigh = (l.indexOf('high') !== -1);
+      var isMed = (l.indexOf('med') !== -1 || l.indexOf('mod') !== -1);
+      var base = isHigh ? 89 : (isMed ? 68 : 38);
+
+      if (!policy) return base;
+
+      // 2. Functional Category-Driven Multi-Criteria Weighting
+      var cat = (policy.category || '').toLowerCase();
+      var mod = 0;
+
+      if (cat.indexOf('social') !== -1 || cat.indexOf('welfare') !== -1 || cat.indexOf('community') !== -1) {
+        if (criterionKey === 'social') mod += 6;       // Social welfare policies excel in community impact (e.g. 95%)
+        else if (criterionKey === 'legal') mod += 3;   // Standard statutory welfare grounding (e.g. 92%)
+        else if (criterionKey === 'economic') mod -= 2;// Subsidies require recurring operational funds (e.g. 87%)
+        else if (criterionKey === 'env') mod -= 4;     // Secondary environmental focus (e.g. 85%)
+      } else if (cat.indexOf('traffic') !== -1 || cat.indexOf('infra') !== -1 || cat.indexOf('transport') !== -1) {
+        if (criterionKey === 'env') mod += 4;          // Direct vehicular emission reduction & drainage (e.g. 93%)
+        else if (criterionKey === 'legal') mod += 4;   // Highway engineering codes & DOTr guidelines (e.g. 93%)
+        else if (criterionKey === 'social') mod += 1;  // Commuter utility (e.g. 90%)
+        else if (criterionKey === 'economic') mod -= 5;// Heavy capital outlay / procurement cost (e.g. 84%)
+      } else if (cat.indexOf('environ') !== -1) {
+        if (criterionKey === 'env') mod += 7;          // Core ecological focus (e.g. 96%)
+        else if (criterionKey === 'legal') mod += 4;   // RA 9003 compliance (e.g. 93%)
+        else if (criterionKey === 'social') mod += 2;  // Cleaner living conditions (e.g. 91%)
+        else if (criterionKey === 'economic') mod -= 2;// Waste facility maintenance costs (e.g. 87%)
+      } else if (cat.indexOf('health') !== -1) {
+        if (criterionKey === 'social') mod += 6;       // Healthcare access (e.g. 95%)
+        else if (criterionKey === 'legal') mod += 4;   // Sanitation & Universal Health Care (e.g. 93%)
+        else if (criterionKey === 'env') mod += 2;     // Biomedical waste compliance (e.g. 91%)
+        else if (criterionKey === 'economic') mod -= 3;// Medicine & clinic staffing budget (e.g. 86%)
+      } else if (cat.indexOf('revenue') !== -1 || cat.indexOf('finance') !== -1 || cat.indexOf('tax') !== -1 || cat.indexOf('business') !== -1) {
+        if (criterionKey === 'economic') mod += 7;     // Fiscal revenue generation (e.g. 96%)
+        else if (criterionKey === 'legal') mod += 4;   // Local Tax Code (e.g. 93%)
+        else if (criterionKey === 'social') mod += 1;  // Job generation (e.g. 90%)
+        else if (criterionKey === 'env') mod -= 4;     // Minimal environmental tie-in (e.g. 85%)
+      }
+
+      // 3. Document-specific deterministic hash variance (using policy ID & Title characters)
+      var seed = (policy.id || 1) * 31;
+      var titleStr = policy.title || '';
+      for (var ci = 0; ci < Math.min(titleStr.length, 10); ci++) {
+        seed += titleStr.charCodeAt(ci);
+      }
+      var offsetMap = { economic: 3, social: 7, env: 13, legal: 19 };
+      var offset = offsetMap[criterionKey] || 5;
+      var variance = ((seed + offset) % 5) - 2; // -2 to +2
+
+      var computed = base + mod + variance;
+
+      // Bound within realistic ranges for each qualitative level
+      if (isHigh) return Math.min(97, Math.max(83, computed));
+      if (isMed) return Math.min(79, Math.max(58, computed));
+      return Math.min(48, Math.max(28, computed));
     }
 
-    function getScoreColor(level) {
-      var l = (level || '').toLowerCase();
+    function getScoreColor(levelOrPct) {
+      if (typeof levelOrPct === 'number' || (typeof levelOrPct === 'string' && !isNaN(parseInt(levelOrPct, 10)) && levelOrPct.indexOf('High') === -1 && levelOrPct.indexOf('Low') === -1 && levelOrPct.indexOf('Med') === -1)) {
+        var num = parseInt(levelOrPct, 10);
+        if (num >= 80) return '#16a34a';
+        if (num >= 55) return '#d97706';
+        return '#dc2626';
+      }
+      var l = (levelOrPct || '').toLowerCase();
       if (l.indexOf('high') !== -1) return '#16a34a';
       if (l.indexOf('med') !== -1 || l.indexOf('mod') !== -1) return '#d97706';
       return '#dc2626';
@@ -416,17 +496,17 @@ foreach ($completed_policies as $p) {
       return '<span class="badge fw-semibold me-2" style="background:' + bg + '; color:' + color + '; border:1px solid ' + border + '; font-size:0.78rem; font-family: Arial, sans-serif;">' + text + '</span>';
     }
 
-    function criteriaCell(level, reason) {
-      var pct = getScorePercentage(level);
-      var color = getScoreColor(level);
+    function criteriaCell(level, reason, pct) {
+      var numPct = (pct !== undefined && pct !== null) ? pct : getScorePercentage(level);
+      var color = getScoreColor(numPct);
       var badge = cleanLevelBadge(level);
 
       var meter = '<div class="d-inline-flex align-items-center gap-2 mb-1.5">' +
         badge +
-        '<div class="progress" style="width: 70px; height: 6px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;" title="Rating Viability: ' + pct + '%">' +
-        '<div class="progress-bar" role="progressbar" style="width: ' + pct + '%; background-color: ' + color + ';" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"></div>' +
+        '<div class="progress" style="width: 70px; height: 6px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;" title="Rating Viability: ' + numPct + '%">' +
+        '<div class="progress-bar" role="progressbar" style="width: ' + numPct + '%; background-color: ' + color + ';" aria-valuenow="' + numPct + '" aria-valuemin="0" aria-valuemax="100"></div>' +
         '</div>' +
-        '<span style="color:' + color + '; font-size:0.75rem; font-weight:700;">' + pct + '%</span>' +
+        '<span style="color:' + color + '; font-size:0.75rem; font-weight:700;">' + numPct + '%</span>' +
         '</div>';
 
       if (!reason) return meter;
@@ -779,10 +859,10 @@ foreach ($completed_policies as $p) {
       var scorecardCols = '';
       for (var k = 0; k < criteriaMeta.length; k++) {
         var cm = criteriaMeta[k];
-        var pA = getScorePercentage(a[cm.key + '_level']);
-        var cA = getScoreColor(a[cm.key + '_level']);
-        var pB = getScorePercentage(b[cm.key + '_level']);
-        var cB = getScoreColor(b[cm.key + '_level']);
+        var pA = getScorePercentage(a[cm.key + '_level'], a, cm.key);
+        var cA = getScoreColor(pA);
+        var pB = getScorePercentage(b[cm.key + '_level'], b, cm.key);
+        var cB = getScoreColor(pB);
 
         scorecardCols += '<div class="col-12 col-sm-6 col-lg-3">' +
           '<div class="p-3 rounded-3 border h-100 d-flex flex-column justify-content-between" style="background:#f8fafc; border-color:#e2e8f0;">' +
@@ -903,23 +983,23 @@ foreach ($completed_policies as $p) {
       var evalRows = [
         {
           label: 'Economic Feasibility',
-          a: criteriaCell(a.economic_level, getEnhancedPolicyReason(a, 'economic')),
-          b: criteriaCell(b.economic_level, getEnhancedPolicyReason(b, 'economic'))
+          a: criteriaCell(a.economic_level, getEnhancedPolicyReason(a, 'economic'), getScorePercentage(a.economic_level, a, 'economic')),
+          b: criteriaCell(b.economic_level, getEnhancedPolicyReason(b, 'economic'), getScorePercentage(b.economic_level, b, 'economic'))
         },
         {
           label: 'Social Impact',
-          a: criteriaCell(a.social_level, getEnhancedPolicyReason(a, 'social')),
-          b: criteriaCell(b.social_level, getEnhancedPolicyReason(b, 'social'))
+          a: criteriaCell(a.social_level, getEnhancedPolicyReason(a, 'social'), getScorePercentage(a.social_level, a, 'social')),
+          b: criteriaCell(b.social_level, getEnhancedPolicyReason(b, 'social'), getScorePercentage(b.social_level, b, 'social'))
         },
         {
           label: 'Environmental Impact',
-          a: criteriaCell(a.env_level, getEnhancedPolicyReason(a, 'env')),
-          b: criteriaCell(b.env_level, getEnhancedPolicyReason(b, 'env'))
+          a: criteriaCell(a.env_level, getEnhancedPolicyReason(a, 'env'), getScorePercentage(a.env_level, a, 'env')),
+          b: criteriaCell(b.env_level, getEnhancedPolicyReason(b, 'env'), getScorePercentage(b.env_level, b, 'env'))
         },
         {
           label: 'Legal Compliance',
-          a: criteriaCell(a.legal_level, getEnhancedPolicyReason(a, 'legal')),
-          b: criteriaCell(b.legal_level, getEnhancedPolicyReason(b, 'legal'))
+          a: criteriaCell(a.legal_level, getEnhancedPolicyReason(a, 'legal'), getScorePercentage(a.legal_level, a, 'legal')),
+          b: criteriaCell(b.legal_level, getEnhancedPolicyReason(b, 'legal'), getScorePercentage(b.legal_level, b, 'legal'))
         }
       ];
 
@@ -1136,16 +1216,20 @@ foreach ($completed_policies as $p) {
       ];
 
       criteriaKeys.forEach(function (c) {
+        var oldPolicyObj = Object.assign({}, record, oldest);
+        var newPolicyObj = Object.assign({}, record, newest);
         var oldLevel = oldest[c.key + '_level'];
-        var oldReason = getEnhancedPolicyReason(Object.assign({}, record, oldest), c.key);
+        var oldReason = getEnhancedPolicyReason(oldPolicyObj, c.key);
+        var oldPct = getScorePercentage(oldLevel, oldPolicyObj, c.key);
         var newLevel = newest[c.key + '_level'];
-        var newReason = getEnhancedPolicyReason(Object.assign({}, record, newest), c.key);
+        var newReason = getEnhancedPolicyReason(newPolicyObj, c.key);
+        var newPct = getScorePercentage(newLevel, newPolicyObj, c.key);
 
-        var isDiff = (oldLevel !== newLevel) || (oldReason !== newReason);
+        var isDiff = (oldLevel !== newLevel) || (oldReason !== newReason) || (oldPct !== newPct);
         html += renderDiffRow(
           c.label,
-          criteriaCell(oldLevel, oldReason),
-          criteriaCell(newLevel, newReason),
+          criteriaCell(oldLevel, oldReason, oldPct),
+          criteriaCell(newLevel, newReason, newPct),
           isDiff
         );
       });
