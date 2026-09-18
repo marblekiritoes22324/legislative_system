@@ -40,14 +40,14 @@ if (empty($u_report_policies)) {
   ];
 }
 
-// Compute counts for filter tabs
+// Compute counts for filter tabs (Only policies with status 'Approved' in evaluation count as Approved)
 $total_user_report_count = count($u_report_policies);
-$evaluated_user_report_count = 0;
+$approved_user_report_count = 0;
 $pending_user_report_count = 0;
 foreach ($u_report_policies as $pol) {
-  $has_eval = !empty($pol['evaluation_id']) && ($pol['eval_status'] ?? '') !== 'Draft' && ($pol['eval_status'] ?? '') !== 'Pending';
-  if ($has_eval) {
-    $evaluated_user_report_count++;
+  $is_approved = !empty($pol['evaluation_id']) && ($pol['eval_status'] ?? '') === 'Approved';
+  if ($is_approved) {
+    $approved_user_report_count++;
   } else {
     $pending_user_report_count++;
   }
@@ -84,11 +84,11 @@ foreach ($u_report_policies as $pol) {
           <button type="button" class="btn btn-sm rounded-pill px-3 fw-bold active btn-primary user-policy-filter-tab" onclick="filterUserReportPolicies('all', this)">
             All Policies <span class="badge bg-white text-primary rounded-pill ms-1"><?= $total_user_report_count ?></span>
           </button>
-          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary user-policy-filter-tab" onclick="filterUserReportPolicies('evaluated', this)">
-            <i class="bi bi-check-circle-fill text-success me-1"></i>Evaluated <span class="badge bg-success-subtle text-success rounded-pill ms-1"><?= $evaluated_user_report_count ?></span>
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary user-policy-filter-tab" onclick="filterUserReportPolicies('approved', this)">
+            <i class="bi bi-check-circle-fill text-success me-1"></i>Approved <span class="badge bg-success-subtle text-success rounded-pill ms-1"><?= $approved_user_report_count ?></span>
           </button>
           <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary user-policy-filter-tab" onclick="filterUserReportPolicies('pending', this)">
-            <i class="bi bi-clock-fill text-warning me-1"></i>Pending Evaluation <span class="badge bg-warning-subtle text-dark rounded-pill ms-1"><?= $pending_user_report_count ?></span>
+            <i class="bi bi-clock-fill text-warning me-1"></i>Pending Approval <span class="badge bg-warning-subtle text-dark rounded-pill ms-1"><?= $pending_user_report_count ?></span>
           </button>
         </div>
       </div>
@@ -137,14 +137,14 @@ foreach ($u_report_policies as $pol) {
             $risk = !empty($pol['risk_level']) ? $pol['risk_level'] : 'Low Risk';
             $recText = !empty($pol['ai_recommendation']) ? $pol['ai_recommendation'] : 'Proceed with implementation and continue monitoring the effectiveness of the policy.';
 
-            $has_eval = !empty($pol['evaluation_id']) && ($pol['eval_status'] ?? '') !== 'Draft' && ($pol['eval_status'] ?? '') !== 'Pending';
-            $eval_state = $has_eval ? 'evaluated' : 'pending';
+            $is_approved = !empty($pol['evaluation_id']) && ($pol['eval_status'] ?? '') === 'Approved';
+            $eval_state = $is_approved ? 'approved' : 'pending';
 
             $policyData = [
               'title' => $pol['title'],
               'policy_title' => $pol['title'],
               'category' => $pol['category'] ?? 'General Legislation',
-              'status' => $has_eval ? ($pol['eval_status'] ?? 'Approved') : 'Draft',
+              'status' => $is_approved ? 'Approved' : 'Draft',
               'date' => $dateStr,
               'date_uploaded' => $dateStr,
               'summary' => $summary,
@@ -152,7 +152,7 @@ foreach ($u_report_policies as $pol) {
               'recommendation' => $recText,
               'author' => $pol['author'] ?? 'City Council of Manila',
               'ordinance_number' => $pol['ordinance_number'] ?? '',
-              'report_type' => $has_eval ? 'Evaluation Report' : 'Policy Research Brief'
+              'report_type' => $is_approved ? 'Evaluation Report' : 'Policy Research Brief'
             ];
             $policyJson = json_encode($policyData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
             ?>
@@ -163,9 +163,9 @@ foreach ($u_report_policies as $pol) {
               <td class="py-3">
                 <div class="d-flex align-items-center gap-2.5">
                   <div
-                    class="rounded-3 p-1.5 <?= $has_eval ? 'bg-primary bg-opacity-10 text-primary' : 'bg-warning bg-opacity-10 text-warning' ?> d-flex align-items-center justify-content-center flex-shrink-0"
+                    class="rounded-3 p-1.5 <?= $is_approved ? 'bg-primary bg-opacity-10 text-primary' : 'bg-warning bg-opacity-10 text-warning' ?> d-flex align-items-center justify-content-center flex-shrink-0"
                     style="width: 32px; height: 32px;">
-                    <i class="bi <?= $has_eval ? 'bi-file-earmark-check-fill' : 'bi-file-earmark-text' ?> fs-6"></i>
+                    <i class="bi <?= $is_approved ? 'bi-file-earmark-check-fill' : 'bi-file-earmark-text' ?> fs-6"></i>
                   </div>
                   <div>
                     <a href="javascript:void(0)" class="fw-bold text-dark text-decoration-none policy-title-link"
@@ -182,15 +182,15 @@ foreach ($u_report_policies as $pol) {
                 </span>
               </td>
               <td class="text-center py-3">
-                <?php if ($has_eval): ?>
+                <?php if ($is_approved): ?>
                   <span class="badge rounded-pill fw-bold px-3 py-1.5 d-inline-flex align-items-center gap-1 shadow-2xs"
                     style="background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.78rem;">
-                    <i class="bi bi-check-circle-fill text-success"></i> Evaluated
+                    <i class="bi bi-check-circle-fill text-success"></i> Approved
                   </span>
                 <?php else: ?>
                   <span class="badge rounded-pill fw-bold px-3 py-1.5 d-inline-flex align-items-center gap-1 shadow-2xs"
                     style="background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 0.78rem;">
-                    <i class="bi bi-hourglass-split text-warning"></i> Pending Eval
+                    <i class="bi bi-hourglass-split text-warning"></i> Pending Approval
                   </span>
                 <?php endif; ?>
               </td>
@@ -198,7 +198,7 @@ foreach ($u_report_policies as $pol) {
                 <i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i><?= $dateStr ?>
               </td>
               <td class="text-center py-3">
-                <?php if ($has_eval): ?>
+                <?php if ($is_approved): ?>
                   <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
                     style="font-size:0.8rem;"
                     onclick="event.stopPropagation(); openUserPolicyRowReport(this.closest('tr'));">
@@ -219,14 +219,13 @@ foreach ($u_report_policies as $pol) {
       </table>
     </div>
     <div class="d-flex align-items-center justify-content-between pt-1">
-      <small class="text-muted fw-medium">Showing <span id="userReportPoliciesVisibleCount"><?= count($u_report_policies) ?></span> of
-        <?= count($u_report_policies) ?>
-        records</small>
-      <div class="d-flex align-items-center gap-1">
-        <button class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" disabled><i
-            class="bi bi-chevron-left"></i></button>
-        <button class="btn btn-sm btn-primary rounded-2 px-3 py-1 fw-bold">1</button>
-        <button class="btn btn-sm btn-light border rounded-2 px-2.5 py-1"><i class="bi bi-chevron-right"></i></button>
+      <small class="text-muted fw-medium" id="userReportPoliciesSummaryText">Showing 1 to 10 of <?= count($u_report_policies) ?> records</small>
+      <div class="d-flex align-items-center gap-1" id="userReportPolicyPagination">
+        <button type="button" class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" id="userReportPolicyPrevBtn" onclick="changeUserReportPolicyPage(-1)" title="Previous page"><i class="bi bi-chevron-left"></i></button>
+        <div id="userReportPolicyPageNumbers" class="d-flex align-items-center gap-1">
+          <button type="button" class="btn btn-sm btn-primary rounded-2 px-3 py-1 fw-bold">1</button>
+        </div>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" id="userReportPolicyNextBtn" onclick="changeUserReportPolicyPage(1)" title="Next page"><i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -1193,7 +1192,14 @@ foreach ($u_report_policies as $pol) {
     };
   }
 
+  var _userReportPolicyFilter = 'all';
+  var _userReportPolicyCurrentPage = 1;
+  var _userReportPolicyPageSize = 10;
+
   function filterUserReportPolicies(type, btn) {
+    _userReportPolicyFilter = type || 'all';
+    _userReportPolicyCurrentPage = 1;
+
     var group = btn ? btn.closest('#userReportPolicyFilterGroup') : document.getElementById('userReportPolicyFilterGroup');
     if (group && btn) {
       var btns = group.querySelectorAll('.user-policy-filter-tab');
@@ -1205,24 +1211,92 @@ foreach ($u_report_policies as $pol) {
       btn.classList.remove('text-secondary');
     }
 
-    var rows = document.querySelectorAll('#userReportPolicyTableBody .user-report-policy-row');
-    var visible = 0;
-    rows.forEach(function(r) {
+    renderUserReportPolicyPagination();
+  }
+
+  function changeUserReportPolicyPage(delta) {
+    goToUserReportPolicyPage(_userReportPolicyCurrentPage + delta);
+  }
+
+  function goToUserReportPolicyPage(page) {
+    _userReportPolicyCurrentPage = page;
+    renderUserReportPolicyPagination();
+  }
+
+  function renderUserReportPolicyPagination() {
+    var allRows = Array.from(document.querySelectorAll('#userReportPolicyTableBody .user-report-policy-row'));
+    if (!allRows.length) return;
+
+    var matchingRows = allRows.filter(function(r) {
       var state = r.getAttribute('data-eval-state');
-      if (type === 'all' || state === type) {
+      return (_userReportPolicyFilter === 'all' || state === _userReportPolicyFilter);
+    });
+
+    var totalMatching = matchingRows.length;
+    var totalPages = Math.max(1, Math.ceil(totalMatching / _userReportPolicyPageSize));
+
+    if (_userReportPolicyCurrentPage < 1) _userReportPolicyCurrentPage = 1;
+    if (_userReportPolicyCurrentPage > totalPages) _userReportPolicyCurrentPage = totalPages;
+
+    var startIdx = (_userReportPolicyCurrentPage - 1) * _userReportPolicyPageSize;
+    var endIdx = Math.min(startIdx + _userReportPolicyPageSize, totalMatching);
+
+    allRows.forEach(function(r) {
+      var matchIdx = matchingRows.indexOf(r);
+      if (matchIdx >= startIdx && matchIdx < endIdx) {
         r.style.display = '';
-        visible++;
       } else {
         r.style.display = 'none';
       }
     });
 
-    var countEl = document.getElementById('userReportPoliciesVisibleCount');
-    if (countEl) {
-      countEl.textContent = visible;
+    var summaryEl = document.getElementById('userReportPoliciesSummaryText');
+    if (summaryEl) {
+      if (totalMatching === 0) {
+        summaryEl.textContent = 'Showing 0 records';
+      } else {
+        summaryEl.textContent = 'Showing ' + (startIdx + 1) + ' to ' + endIdx + ' of ' + totalMatching + ' records';
+      }
+    }
+
+    var prevBtn = document.getElementById('userReportPolicyPrevBtn');
+    if (prevBtn) {
+      prevBtn.disabled = (_userReportPolicyCurrentPage <= 1);
+      if (_userReportPolicyCurrentPage <= 1) {
+        prevBtn.classList.add('opacity-50');
+      } else {
+        prevBtn.classList.remove('opacity-50');
+      }
+    }
+
+    var nextBtn = document.getElementById('userReportPolicyNextBtn');
+    if (nextBtn) {
+      nextBtn.disabled = (_userReportPolicyCurrentPage >= totalPages);
+      if (_userReportPolicyCurrentPage >= totalPages) {
+        nextBtn.classList.add('opacity-50');
+      } else {
+        nextBtn.classList.remove('opacity-50');
+      }
+    }
+
+    var pagesContainer = document.getElementById('userReportPolicyPageNumbers');
+    if (pagesContainer) {
+      var pagesHtml = '';
+      for (var p = 1; p <= totalPages; p++) {
+        var isActive = (p === _userReportPolicyCurrentPage);
+        var cls = isActive ? 'btn-primary text-white fw-bold' : 'btn-light border text-dark';
+        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 px-3 py-1 ' + cls + '" onclick="goToUserReportPolicyPage(' + p + ')">' + p + '</button>';
+      }
+      pagesContainer.innerHTML = pagesHtml;
     }
   }
+
   window.filterUserReportPolicies = filterUserReportPolicies;
+  window.changeUserReportPolicyPage = changeUserReportPolicyPage;
+  window.goToUserReportPolicyPage = goToUserReportPolicyPage;
+  window.renderUserReportPolicyPagination = renderUserReportPolicyPagination;
+  document.addEventListener('DOMContentLoaded', renderUserReportPolicyPagination);
+  window.addEventListener('load', renderUserReportPolicyPagination);
 
   function openUserPolicyRowReport(trEl) {
     if (!trEl) return;
