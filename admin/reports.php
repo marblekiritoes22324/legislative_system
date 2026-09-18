@@ -11,6 +11,7 @@ if (!empty($conn)) {
       p.created_at, 
       p.ai_summary, 
       p.author,
+      p.file_path,
       COALESCE(p.related_record, '') AS ordinance_number,
       e.id AS evaluation_id,
       e.overall_score,
@@ -149,6 +150,7 @@ foreach ($report_policies as $pol) {
               'risk' => $risk,
               'recommendation' => $recText,
               'author' => $pol['author'] ?? 'City Council of Manila',
+              'file_path' => $pol['file_path'] ?? '',
               'ordinance_number' => $pol['ordinance_number'] ?? '',
               'report_type' => $is_approved ? 'Evaluation Report' : 'Policy Research Brief'
             ];
@@ -375,7 +377,7 @@ foreach ($report_policies as $pol) {
 
   <!-- Official Document Report Viewer Modal -->
   <div class="modal fade" id="reportDocumentViewerModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 820px;">
+    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 840px;">
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden bg-white">
         <div class="modal-header border-bottom px-4 py-3 bg-light d-flex align-items-center justify-content-between">
           <div class="d-flex align-items-center gap-2">
@@ -383,26 +385,20 @@ foreach ($report_policies as $pol) {
             <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative Document</h5>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <!-- Download Button Dropdown -->
-            <div class="dropdown">
-              <button class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm dropdown-toggle" type="button" id="reportModalDownloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-download"></i> Download
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-1.5" aria-labelledby="reportModalDownloadDropdown">
-                <li>
-                  <a class="dropdown-item py-2 px-3 rounded-2 d-flex align-items-center gap-2 fw-medium text-dark" href="javascript:void(0)" id="reportModalDownloadPdfBtn">
-                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-6"></i> Download as PDF
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item py-2 px-3 rounded-2 d-flex align-items-center gap-2 fw-medium text-dark" href="javascript:void(0)" id="reportModalDownloadDocxBtn">
-                    <i class="bi bi-file-earmark-word-fill text-primary fs-6"></i> Download as Word (.docx)
-                  </a>
-                </li>
-              </ul>
-            </div>
+            <!-- View Original Document Button -->
+            <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs" id="reportModalViewOriginalBtn" title="Open the original uploaded source document">
+              <i class="bi bi-box-arrow-up-right"></i> View Original
+            </button>
+            <!-- Download PDF -->
+            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" id="reportModalDownloadPdfBtn">
+              <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+            </button>
+            <!-- Download Word -->
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs" id="reportModalDownloadDocxBtn">
+              <i class="bi bi-file-earmark-word-fill text-primary"></i> Word (.docx)
+            </button>
             <!-- Print Button -->
-            <button type="button" class="btn btn-sm text-white rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn">
+            <button type="button" class="btn btn-sm text-white rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn" title="Print Document">
               <i class="bi bi-printer-fill"></i> Print
             </button>
             <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -415,18 +411,7 @@ foreach ($report_policies as $pol) {
         </div>
         <div class="modal-footer border-top px-4 py-2.5 bg-light d-flex align-items-center justify-content-between">
           <span class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i> Official City Council of Manila Legislative Document</span>
-          <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-3 px-3" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 fw-semibold" id="reportModalDownloadDocxBtnFooter">
-              <i class="bi bi-file-earmark-word-fill me-1"></i> Word (.docx)
-            </button>
-            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 fw-semibold" id="reportModalDownloadPdfBtnFooter">
-              <i class="bi bi-download me-1"></i> Download PDF
-            </button>
-            <button type="button" class="btn btn-sm text-white rounded-3 px-3.5 fw-semibold" style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtnFooter">
-              <i class="bi bi-printer-fill me-1"></i> Print Report
-            </button>
-          </div>
+          <button type="button" class="btn btn-sm btn-secondary rounded-3 px-3.5 py-1.5 fw-medium" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -598,6 +583,15 @@ foreach ($report_policies as $pol) {
         '        <td style="padding:10px 14px; border:1px solid #cbd5e1; font-weight:700; color:#0f172a;" colspan="3">' + esc(rTitle) + '</td>' +
         '      </tr>' +
         '      <tr>' +
+        '        <th width="170" style="padding:10px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Original Document</th>' +
+        '        <td style="padding:10px 14px; border:1px solid #cbd5e1; color:#0f172a;" colspan="3">' +
+        (rep.file_path && rep.file_path.trim() !== '' ?
+          ('<a href="../assets/uploads/policies/' + encodeURIComponent(rep.file_path) + '" target="_blank" style="color:#0f766e; font-weight:600; text-decoration:underline; display:inline-flex; align-items:center; gap:5px;"><i class="bi bi-box-arrow-up-right"></i> ' + esc(rep.file_path) + ' (View Original Document)</a>') :
+          ('<span style="color:#64748b; font-style:italic;"><i class="bi bi-archive me-1"></i> Official City Council Legislative Archive (Digital Record)</span>')
+        ) +
+        '        </td>' +
+        '      </tr>' +
+        '      <tr>' +
         '        <th width="170" style="padding:10px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Primary Policy (A)</th>' +
         '        <td style="padding:10px 14px; border:1px solid #cbd5e1; color:#1e293b; width:35%;">' + esc(policyA) + ' <span style="font-size:0.75rem; color:#64748b; font-weight:600;">(Manila)</span></td>' +
         '        <th width="140" style="padding:10px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Benchmark (B)</th>' +
@@ -698,6 +692,15 @@ foreach ($report_policies as $pol) {
       '      <tr>' +
       '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Category</th>' +
       '        <td style="padding:12px 16px; border:1px solid #cbd5e1; color:#1e293b;">' + esc(rep.category || 'General Legislation') + '</td>' +
+      '      </tr>' +
+      '      <tr>' +
+      '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Original Document</th>' +
+      '        <td style="padding:12px 16px; border:1px solid #cbd5e1; color:#1e293b;">' +
+      (rep.file_path && rep.file_path.trim() !== '' ?
+        ('<a href="../assets/uploads/policies/' + encodeURIComponent(rep.file_path) + '" target="_blank" style="color:#0d6efd; font-weight:600; text-decoration:underline; display:inline-flex; align-items:center; gap:5px;"><i class="bi bi-box-arrow-up-right"></i> ' + esc(rep.file_path) + ' (View Original Document)</a>') :
+        ('<span style="color:#64748b; font-style:italic;"><i class="bi bi-archive me-1"></i> Official Manila City Legislative Record (Digital Archive)</span>')
+      ) +
+      '        </td>' +
       '      </tr>' +
       '      <tr>' +
       '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">AI Executive Summary</th>' +
@@ -1300,6 +1303,21 @@ foreach ($report_policies as $pol) {
     var titleEl = document.getElementById('reportViewerModalTitle');
     if (titleEl) titleEl.textContent = rep.report_type || 'Official Legislative Document';
 
+    var viewOrigBtn = document.getElementById('reportModalViewOriginalBtn');
+    if (viewOrigBtn) {
+      if (rep.file_path && rep.file_path.trim() !== '') {
+        viewOrigBtn.classList.remove('d-none');
+        viewOrigBtn.onclick = function() {
+          window.open('../assets/uploads/policies/' + encodeURIComponent(rep.file_path), '_blank');
+        };
+      } else {
+        viewOrigBtn.classList.remove('d-none');
+        viewOrigBtn.onclick = function() {
+          alert('No uploaded source document attachment is associated with this policy record.');
+        };
+      }
+    }
+
     var pdfBtn = document.getElementById('reportModalDownloadPdfBtn');
     if (pdfBtn) {
       pdfBtn.onclick = function() {
@@ -1318,28 +1336,6 @@ foreach ($report_policies as $pol) {
     var printBtn = document.getElementById('reportModalPrintBtn');
     if (printBtn) {
       printBtn.onclick = function() {
-        printSelectedReport(_activeModalReport);
-      };
-    }
-
-    var pdfBtnFooter = document.getElementById('reportModalDownloadPdfBtnFooter');
-    if (pdfBtnFooter) {
-      pdfBtnFooter.onclick = function() {
-        saveReportAsPDF(_activeModalFileName, _activeModalReport);
-      };
-    }
-
-    var docxBtnFooter = document.getElementById('reportModalDownloadDocxBtnFooter');
-    if (docxBtnFooter) {
-      docxBtnFooter.onclick = function() {
-        var docxName = _activeModalFileName.replace(/\.pdf$/i, '') + '.docx';
-        generateWordDoc(docxName, _activeModalReport);
-      };
-    }
-
-    var printBtnFooter = document.getElementById('reportModalPrintBtnFooter');
-    if (printBtnFooter) {
-      printBtnFooter.onclick = function() {
         printSelectedReport(_activeModalReport);
       };
     }
