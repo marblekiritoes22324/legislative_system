@@ -251,6 +251,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             In</button>
         </form>
 
+        <!-- OTP VERIFICATION FORM (Shown when 2FA is required) -->
+        <div id="otpSection" style="display: none;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="width: 52px; height: 52px; background: #e0f2fe; color: #0284c7; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px;">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #0B2E59; margin-bottom: 6px;">Security Verification</h3>
+            <p style="font-size: 0.85rem; color: #64748b; margin: 0;">
+              Enter the 6-digit verification code sent to<br>
+              <strong id="otpMaskedEmail" style="color: #0B2E59;">your email</strong>
+            </p>
+          </div>
+
+          <div id="otpAlertBox" style="display: none; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 16px;"></div>
+
+          <form id="otpForm" onsubmit="return window.handleOtpFormSubmit(event)">
+            <div class="form-group" style="margin-bottom: 18px;">
+              <label for="otpCodeInput" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; text-align: center; margin-bottom: 8px; color: #0B2E59;">6-Digit Security Code</label>
+              <input type="text" id="otpCodeInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="form-control" 
+                     placeholder="123456" 
+                     style="width: 100%; font-size: 1.8rem; font-weight: 800; letter-spacing: 8px; text-align: center; height: 54px; border: 2px solid #cbd5e1; border-radius: 12px; background: #F8FAFC; box-sizing: border-box;" required autocomplete="one-time-code">
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; font-size: 0.82rem;">
+              <span style="color: #64748b;">
+                <i class="bi bi-clock-history me-1"></i>Expires: <strong id="otpTimerDisplay" style="color: #0B2E59;">10:00</strong>
+              </span>
+              <button type="button" id="otpResendBtn" onclick="window.handleOtpResend()" style="background: none; border: none; padding: 0; font-size: 0.82rem; color: #2563eb; font-weight: 600; cursor: pointer;" disabled>
+                Resend code
+              </button>
+            </div>
+
+            <button type="submit" id="otpSubmitBtn" class="btn-primary" style="width: 100%; padding: 14px; background: #0B1B3D; color: #FFFFFF; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer;">
+              Verify &amp; Sign In <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+
+            <button type="button" onclick="window.backToPasswordLogin()" style="width: 100%; padding: 10px; margin-top: 8px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+              <i class="bi bi-arrow-left me-1"></i> Back to sign in
+            </button>
+          </form>
+        </div>
+
         <div class="auth-footer"
           style="text-align: center; margin-top: 24px; font-size: 0.82rem; color: var(--text-muted); border-top: 1px solid #F1F5F9; padding-top: 16px;">
           <i class="bi bi-shield-lock me-1"></i> Manila City Hall System — Accounts are provisioned by IT
