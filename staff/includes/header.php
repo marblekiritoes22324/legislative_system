@@ -81,6 +81,50 @@
       font-size: 0.88rem !important;
       letter-spacing: normal !important;
     }
+    /* ── MOBILE OVERRIDE: beat the !important rules above on small screens ── */
+    @media (max-width: 991px) {
+      body:not(.sidebar-collapsed) .sidebar,
+      body.sidebar-collapsed .sidebar,
+      .sidebar {
+        position: fixed !important;
+        left: -320px !important;
+        top: 0 !important;
+        width: 270px !important;
+        flex: 0 0 270px !important;
+        height: 100vh !important;
+        z-index: 1040 !important;
+        transition: left 0.3s cubic-bezier(0.4,0,0.2,1) !important;
+        padding: 18px 12px !important;
+      }
+      .sidebar.mobile-open {
+        left: 0 !important;
+      }
+      body:not(.sidebar-collapsed) .main-panel,
+      body.sidebar-collapsed .main-panel,
+      .main-panel {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 0 40px !important;
+      }
+      .topbar {
+        margin: 6px 6px 0 6px !important;
+        padding: 8px 10px !important;
+        border-radius: 10px !important;
+        flex-wrap: nowrap !important;
+      }
+      .topbar .text-uppercase.small { display: none !important; }
+      .topbar .fs-5.fw-bold { font-size: 0.82rem !important; line-height: 1.2 !important; }
+      .header-divider { margin: 0 6px !important; }
+      .header-admin-name, .header-admin-pipe { display: none !important; }
+      .header-admin-role { font-size: 0.8rem !important; }
+      .dark-mode-switch { width: 38px !important; height: 22px !important; }
+      .header-avatar-wrap { width: 34px !important; height: 34px !important; min-width: 34px !important; min-height: 34px !important; max-width: 34px !important; max-height: 34px !important; }
+    }
+    @media (max-width: 480px) {
+      .topbar .fs-5.fw-bold { display: none !important; }
+      .topbar { padding: 6px 8px !important; }
+    }
   </style>
 </head>
 

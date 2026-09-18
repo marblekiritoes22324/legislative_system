@@ -425,11 +425,11 @@ body {
     left: -270px !important;
   }
 
-  /* Topbar stacks logo/title on top, controls on bottom */
+  /* Topbar compact on mobile */
   .topbar {
     margin: 6px !important;
     padding: 8px 12px !important;
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important;
     gap: 8px !important;
   }
 

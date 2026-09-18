@@ -149,7 +149,7 @@ foreach ($completed_policies as $p) {
     <div class="row g-3 align-items-end mb-4" id="policyCompareForm">
 
       <!-- Policy A -->
-      <div class="col-lg-5 col-md-5">
+      <div class="col-12 col-md-5 col-lg-5">
         <label for="comparePolicyA" class="form-label fw-semibold small mb-2">
           <span class="badge rounded-pill px-2.5 py-1 me-1" style="background:#1d4ed8; font-size:0.75rem;">
             <i class="bi bi-building me-1"></i>Policy / Ordinance A
@@ -189,7 +189,7 @@ foreach ($completed_policies as $p) {
       </div>
 
       <!-- VS Badge -->
-      <div class="col-lg-1 col-md-1 d-flex justify-content-center align-items-center pb-1">
+      <div class="col-12 col-md-1 col-lg-1 d-flex justify-content-center align-items-center pb-1">
         <span class="badge rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
           style="width:36px; height:36px; background:#0B2E59 !important; font-size:0.72rem;">
           VS
@@ -197,7 +197,7 @@ foreach ($completed_policies as $p) {
       </div>
 
       <!-- Policy B -->
-      <div class="col-lg-5 col-md-5">
+      <div class="col-12 col-md-5 col-lg-5">
         <label for="comparePolicyB" class="form-label fw-semibold small mb-2">
           <span class="badge rounded-pill px-2.5 py-1 me-1" style="background:#15803d; font-size:0.75rem;">
             <i class="bi bi-pin-map-fill me-1"></i>Policy / Benchmark B
@@ -237,7 +237,7 @@ foreach ($completed_policies as $p) {
       </div>
 
       <!-- Compare Button -->
-      <div class="col-lg-1 col-md-1 d-grid">
+      <div class="col-12 col-md-1 col-lg-1 d-grid">
         <button type="button" id="compareBtn"
           class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1 rounded-3 py-2"
           onclick="runPolicyComparison()"
