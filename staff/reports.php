@@ -283,13 +283,15 @@ foreach ($report_policies as $pol) {
       background: #FFFFFF !important;
       color: #0B2E59 !important;
       border: 1.5px solid #CBD5E1 !important;
-      padding: 6px 14px !important;
+      padding: 5px 12px !important;
       border-radius: 8px !important;
-      font-size: 0.83rem !important;
+      font-size: 0.82rem !important;
       font-weight: 600 !important;
       display: inline-flex !important;
       align-items: center !important;
       gap: 6px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
       transition: all 0.18s ease !important;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
       text-decoration: none !important;
@@ -334,16 +336,16 @@ foreach ($report_policies as $pol) {
       <table class="table table-hover align-middle mb-0" style="font-size:0.88rem;">
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
           <tr>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
               Report Name</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
               Policy / Subject</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">Type
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap" style="font-size: 0.88rem; letter-spacing: 0.03em; width: 140px;">Type
             </th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">Date
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap" style="font-size: 0.88rem; letter-spacing: 0.03em; width: 180px;">Date
               Generated</th>
-            <th class="py-3.5 text-end text-uppercase text-dark fw-bold"
-              style="font-size: 0.88rem; letter-spacing: 0.03em;">Action</th>
+            <th class="py-3 px-3 text-end text-uppercase text-dark fw-bold text-nowrap"
+              style="font-size: 0.88rem; letter-spacing: 0.03em; width: 160px;">Action</th>
           </tr>
         </thead>
         <tbody id="recentGeneratedReportsBody">
@@ -1025,20 +1027,20 @@ foreach ($report_policies as $pol) {
       }
 
       html += '<tr class="align-middle">' +
-        '<td class="py-3 px-3">' +
+        '<td class="py-2.5 px-3">' +
         '<div class="d-flex align-items-center gap-2">' +
-        '<i class="bi ' + fileIcon + ' fs-5"></i>' +
-        '<span class="fw-semibold text-dark font-monospace" style="font-size: 0.86rem;">' + esc(r.report_name) + '</span>' +
+        '<i class="bi ' + fileIcon + ' fs-5 flex-shrink-0"></i>' +
+        '<span class="fw-semibold text-dark font-monospace" style="font-size: 0.86rem; word-break: break-all;">' + esc(r.report_name) + '</span>' +
         '</div>' +
         '</td>' +
-        '<td class="py-3 px-3 text-dark fw-medium" style="font-size: 0.88rem;">' + esc(r.policy_title) + '</td>' +
-        '<td class="py-3 px-3">' +
+        '<td class="py-2.5 px-3 text-dark fw-medium" style="font-size: 0.88rem; word-break: break-word;">' + esc(r.policy_title) + '</td>' +
+        '<td class="py-2.5 px-3 text-nowrap">' +
         typeBadge +
         '</td>' +
-        '<td class="py-3 px-3 text-muted small">' +
+        '<td class="py-2.5 px-3 text-muted small text-nowrap">' +
         '<i class="bi bi-calendar3 me-1.5 text-muted"></i>' + esc(r.date_generated) +
         '</td>' +
-        '<td class="py-3 px-3 text-end">' +
+        '<td class="py-2.5 px-3 text-end text-nowrap">' +
         '<button type="button" class="btn btn-sm btn-report-download" onclick="downloadRecentGeneratedReport(' + downloadIdx + ')">' +
         '<i class="bi bi-download text-primary"></i>' +
         '<span>Download / View</span>' +
