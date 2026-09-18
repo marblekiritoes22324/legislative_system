@@ -11,7 +11,9 @@ if (!empty($conn)) {
       p.created_at, 
       p.ai_summary, 
       p.author,
-      p.ordinance_number,
+      COALESCE(p.related_record, '') AS ordinance_number,
+      e.id AS evaluation_id,
+      e.overall_score,
       e.risk_level,
       e.ai_recommendation,
       e.status AS eval_status
@@ -19,7 +21,7 @@ if (!empty($conn)) {
     LEFT JOIN evaluations e ON p.id = e.policy_id
     WHERE (p.status IS NULL OR p.status != 'Archived')
     ORDER BY p.created_at DESC 
-    LIMIT 30
+    LIMIT 100
   ");
   if ($rq) {
     while ($row = mysqli_fetch_assoc($rq)) {
@@ -34,6 +36,19 @@ if (empty($report_policies)) {
     ['id' => 2, 'title' => 'Traffic Congestion Study', 'category' => 'Transportation', 'status' => 'Evaluated', 'created_at' => '2026-05-08'],
     ['id' => 3, 'title' => 'Public Health Program', 'category' => 'Health', 'status' => 'Evaluated', 'created_at' => '2026-05-05'],
   ];
+}
+
+// Compute counts for filter tabs
+$total_report_count = count($report_policies);
+$evaluated_report_count = 0;
+$pending_report_count = 0;
+foreach ($report_policies as $pol) {
+  $has_eval = !empty($pol['evaluation_id']) && ($pol['eval_status'] ?? '') !== 'Draft' && ($pol['eval_status'] ?? '') !== 'Pending';
+  if ($has_eval) {
+    $evaluated_report_count++;
+  } else {
+    $pending_report_count++;
+  }
 }
 ?>
 <section id="reportGenerationSection"
@@ -57,7 +72,22 @@ if (empty($report_policies)) {
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
           <i class="bi bi-journal-check text-primary"></i> 1. Select Policy Record
         </h3>
-        <p class="text-muted mb-0 small">Click any policy title below to view its full official legislative report, download, or print.</p>
+        <p class="text-muted mb-0 small">Browse policies, view evaluation status, or click to generate the official legislative report.</p>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="d-flex align-items-center gap-2">
+        <div class="btn-group btn-group-sm p-1 bg-light rounded-pill border" role="group" id="reportPolicyFilterGroup">
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-bold active btn-primary policy-filter-tab" onclick="filterReportPolicies('all', this)">
+            All Policies <span class="badge bg-white text-primary rounded-pill ms-1"><?= $total_report_count ?></span>
+          </button>
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary policy-filter-tab" onclick="filterReportPolicies('evaluated', this)">
+            <i class="bi bi-check-circle-fill text-success me-1"></i>Evaluated <span class="badge bg-success-subtle text-success rounded-pill ms-1"><?= $evaluated_report_count ?></span>
+          </button>
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary policy-filter-tab" onclick="filterReportPolicies('pending', this)">
+            <i class="bi bi-clock-fill text-warning me-1"></i>Pending Evaluation <span class="badge bg-warning-subtle text-dark rounded-pill ms-1"><?= $pending_report_count ?></span>
+          </button>
+        </div>
       </div>
     </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
@@ -65,13 +95,15 @@ if (empty($report_policies)) {
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
           <tr>
             <th class="py-3.5 text-uppercase text-dark fw-bold"
-              style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Policy Title</th>
+              style="width: 38%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Policy Title</th>
             <th class="py-3.5 text-uppercase text-dark fw-bold"
-              style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Category</th>
+              style="width: 18%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Category</th>
             <th class="py-3.5 text-center text-uppercase text-dark fw-bold"
-              style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Status</th>
+              style="width: 16%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Status</th>
             <th class="py-3.5 text-uppercase text-dark fw-bold"
-              style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Date Uploaded</th>
+              style="width: 14%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Date Uploaded</th>
+            <th class="py-3.5 text-center text-uppercase text-dark fw-bold"
+              style="width: 14%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Action</th>
           </tr>
         </thead>
         <tbody id="reportPolicyTableBody">
@@ -103,11 +135,14 @@ if (empty($report_policies)) {
             $risk = !empty($pol['risk_level']) ? $pol['risk_level'] : 'Low Risk';
             $recText = !empty($pol['ai_recommendation']) ? $pol['ai_recommendation'] : 'Proceed with implementation and continue monitoring the effectiveness of the policy.';
 
+            $has_eval = !empty($pol['evaluation_id']) && ($pol['eval_status'] ?? '') !== 'Draft' && ($pol['eval_status'] ?? '') !== 'Pending';
+            $eval_state = $has_eval ? 'evaluated' : 'pending';
+
             $policyData = [
               'title' => $pol['title'],
               'policy_title' => $pol['title'],
               'category' => $pol['category'] ?? 'General Legislation',
-              'status' => $pol['status'] ?? 'Draft',
+              'status' => $has_eval ? ($pol['eval_status'] ?? 'Approved') : 'Draft',
               'date' => $dateStr,
               'date_uploaded' => $dateStr,
               'summary' => $summary,
@@ -115,19 +150,20 @@ if (empty($report_policies)) {
               'recommendation' => $recText,
               'author' => $pol['author'] ?? 'City Council of Manila',
               'ordinance_number' => $pol['ordinance_number'] ?? '',
-              'report_type' => 'Evaluation Report'
+              'report_type' => $has_eval ? 'Evaluation Report' : 'Policy Research Brief'
             ];
             $policyJson = json_encode($policyData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
             ?>
             <tr class="report-policy-row clickable-report-row" style="cursor:pointer;"
+              data-eval-state="<?= $eval_state ?>"
               data-policy='<?= htmlspecialchars($policyJson, ENT_QUOTES, 'UTF-8') ?>'
               onclick="openPolicyRowReport(this)">
               <td class="py-3">
                 <div class="d-flex align-items-center gap-2.5">
                   <div
-                    class="rounded-3 p-1.5 bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center flex-shrink-0"
+                    class="rounded-3 p-1.5 <?= $has_eval ? 'bg-primary bg-opacity-10 text-primary' : 'bg-warning bg-opacity-10 text-warning' ?> d-flex align-items-center justify-content-center flex-shrink-0"
                     style="width: 32px; height: 32px;">
-                    <i class="bi bi-file-earmark-text-fill fs-6"></i>
+                    <i class="bi <?= $has_eval ? 'bi-file-earmark-check-fill' : 'bi-file-earmark-text' ?> fs-6"></i>
                   </div>
                   <div>
                     <a href="javascript:void(0)" class="fw-bold text-dark text-decoration-none policy-title-link"
@@ -144,27 +180,36 @@ if (empty($report_policies)) {
                 </span>
               </td>
               <td class="text-center py-3">
-                <?php
-                $st_val = htmlspecialchars($pol['status'] ?? 'Draft');
-                if ($st_val === 'Archived'): ?>
-                  <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs"
-                    style="background-color: #dc3545 !important; color: #ffffff !important; font-size: 0.78rem;">
-                    <?= $st_val ?>
-                  </span>
-                <?php elseif ($st_val === 'Draft' || $st_val === 'Pending'): ?>
-                  <span class="badge rounded-pill text-dark fw-bold px-3 py-1.5 shadow-2xs"
-                    style="background-color: #ffc107 !important; color: #000000 !important; font-size: 0.78rem;">
-                    <?= $st_val ?>
+                <?php if ($has_eval): ?>
+                  <span class="badge rounded-pill fw-bold px-3 py-1.5 d-inline-flex align-items-center gap-1 shadow-2xs"
+                    style="background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.78rem;">
+                    <i class="bi bi-check-circle-fill text-success"></i> Evaluated
                   </span>
                 <?php else: ?>
-                  <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs"
-                    style="background-color: #198754 !important; color: #ffffff !important; font-size: 0.78rem;">
-                    <?= $st_val ?>
+                  <span class="badge rounded-pill fw-bold px-3 py-1.5 d-inline-flex align-items-center gap-1 shadow-2xs"
+                    style="background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 0.78rem;">
+                    <i class="bi bi-hourglass-split text-warning"></i> Pending Eval
                   </span>
                 <?php endif; ?>
               </td>
               <td class="text-secondary fw-medium py-3">
                 <i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i><?= $dateStr ?>
+              </td>
+              <td class="text-center py-3">
+                <?php if ($has_eval): ?>
+                  <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
+                    style="font-size:0.8rem;"
+                    onclick="event.stopPropagation(); openPolicyRowReport(this.closest('tr'));">
+                    <i class="bi bi-file-earmark-pdf"></i><span>Report</span>
+                  </button>
+                <?php else: ?>
+                  <a href="admin_dashboard.php?section=impactAssessmentSection"
+                    class="btn btn-sm btn-outline-warning rounded-3 px-2.5 py-1 fw-semibold text-dark d-inline-flex align-items-center gap-1"
+                    style="font-size:0.78rem;"
+                    onclick="event.stopPropagation();">
+                    <i class="bi bi-bar-chart-line text-warning"></i><span>Evaluate</span>
+                  </a>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; ?>
@@ -172,11 +217,10 @@ if (empty($report_policies)) {
       </table>
     </div>
     <div class="d-flex align-items-center justify-content-between pt-1">
-      <small class="text-muted fw-medium">Showing 1 to <?= count($report_policies) ?> of <?= count($report_policies) ?>
+      <small class="text-muted fw-medium">Showing <span id="reportPoliciesVisibleCount"><?= count($report_policies) ?></span> of <?= count($report_policies) ?>
         records</small>
       <div class="d-flex align-items-center gap-1">
-        <button class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" disabled><i
-            class="bi bi-chevron-left"></i></button>
+        <button class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" disabled><i class="bi bi-chevron-left"></i></button>
         <button class="btn btn-sm btn-primary rounded-2 px-3 py-1 fw-bold">1</button>
         <button class="btn btn-sm btn-light border rounded-2 px-2.5 py-1"><i class="bi bi-chevron-right"></i></button>
       </div>
@@ -995,6 +1039,37 @@ if (empty($report_policies)) {
       recommendation: rec || (_report ? _report.recommendation : 'Proceed with implementation and continue monitoring the effectiveness of the policy.')
     };
   }
+
+  function filterReportPolicies(type, btn) {
+    var group = btn ? btn.closest('#reportPolicyFilterGroup') : document.getElementById('reportPolicyFilterGroup');
+    if (group && btn) {
+      var btns = group.querySelectorAll('.policy-filter-tab');
+      btns.forEach(function(b) {
+        b.classList.remove('active', 'btn-primary', 'text-white');
+        b.classList.add('text-secondary');
+      });
+      btn.classList.add('active', 'btn-primary', 'text-white');
+      btn.classList.remove('text-secondary');
+    }
+
+    var rows = document.querySelectorAll('#reportPolicyTableBody .report-policy-row');
+    var visible = 0;
+    rows.forEach(function(r) {
+      var state = r.getAttribute('data-eval-state');
+      if (type === 'all' || state === type) {
+        r.style.display = '';
+        visible++;
+      } else {
+        r.style.display = 'none';
+      }
+    });
+
+    var countEl = document.getElementById('reportPoliciesVisibleCount');
+    if (countEl) {
+      countEl.textContent = visible;
+    }
+  }
+  window.filterReportPolicies = filterReportPolicies;
 
   function openPolicyRowReport(trEl) {
     if (!trEl) return;
