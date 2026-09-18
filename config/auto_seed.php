@@ -109,6 +109,8 @@ try {
         @mysqli_query($conn, "ALTER TABLE $u_tbl ADD COLUMN IF NOT EXISTS department VARCHAR(150) DEFAULT 'City Administration'");
         @mysqli_query($conn, "ALTER TABLE $u_tbl ADD COLUMN IF NOT EXISTS username VARCHAR(50) NULL");
         @mysqli_query($conn, "ALTER TABLE $u_tbl ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Active'");
+        @mysqli_query($conn, "ALTER TABLE $u_tbl ADD COLUMN IF NOT EXISTS otp_code VARCHAR(10) NULL");
+        @mysqli_query($conn, "ALTER TABLE $u_tbl ADD COLUMN IF NOT EXISTS otp_expires_at DATETIME NULL");
 
         $admin_email = 'christiancaspe19@gmail.com';
         $admin_user = 'christiancaspe19';
