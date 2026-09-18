@@ -217,16 +217,32 @@ foreach ($report_policies as $pol) {
     <div class="d-flex align-items-center justify-content-between pt-1">
       <small class="text-muted fw-medium" id="reportPoliciesSummaryText">Showing 1 to 10 of <?= count($report_policies) ?> records</small>
       <div class="d-flex align-items-center gap-1" id="reportPolicyPagination">
-        <button type="button" class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" id="reportPolicyPrevBtn" onclick="changeReportPolicyPage(-1)" title="Previous page"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyPrevBtn" onclick="changeReportPolicyPage(-1)" title="Previous page"><i class="bi bi-chevron-left"></i></button>
         <div id="reportPolicyPageNumbers" class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm btn-primary rounded-2 px-3 py-1 fw-bold">1</button>
+          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold">1</button>
         </div>
-        <button type="button" class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" id="reportPolicyNextBtn" onclick="changeReportPolicyPage(1)" title="Next page"><i class="bi bi-chevron-right"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyNextBtn" onclick="changeReportPolicyPage(1)" title="Next page"><i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
 
   <style>
+    .pagination-step-btn {
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      max-width: 32px !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 0.85rem !important;
+      font-weight: 600 !important;
+      line-height: 1 !important;
+      border-radius: 6px !important;
+      transition: all 0.15s ease !important;
+      box-sizing: border-box !important;
+    }
     /* Clickable Policy Records Table Styling */
     .clickable-report-row {
       transition: background-color 0.15s ease, transform 0.1s ease;
@@ -338,11 +354,11 @@ foreach ($report_policies as $pol) {
     <div class="d-flex align-items-center justify-content-between pt-2">
       <small class="text-muted fw-medium" id="recentGeneratedReportsCount">Showing 0 records</small>
       <div class="d-flex align-items-center gap-1" id="recentReportsPagination">
-        <button type="button" class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" id="recentReportsPrevBtn" onclick="changeRecentReportsPage(-1)" title="Previous page"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentReportsPrevBtn" onclick="changeRecentReportsPage(-1)" title="Previous page"><i class="bi bi-chevron-left"></i></button>
         <div id="recentReportsPageNumbers" class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm btn-primary rounded-2 px-3 py-1 fw-bold">1</button>
+          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold">1</button>
         </div>
-        <button type="button" class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" id="recentReportsNextBtn" onclick="changeRecentReportsPage(1)" title="Next page"><i class="bi bi-chevron-right"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentReportsNextBtn" onclick="changeRecentReportsPage(1)" title="Next page"><i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -1063,7 +1079,7 @@ foreach ($report_policies as $pol) {
       for (var p = 1; p <= totalPages; p++) {
         var isActive = (p === _recentStaffReportsCurrentPage);
         var cls = isActive ? 'btn-primary text-white fw-bold' : 'btn-light border text-dark';
-        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 px-3 py-1 ' + cls + '" onclick="goToRecentReportsPage(' + p + ')">' + p + '</button>';
+        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 pagination-step-btn ' + cls + '" onclick="goToRecentReportsPage(' + p + ')">' + p + '</button>';
       }
       pagesContainer.innerHTML = pagesHtml;
     }
@@ -1190,7 +1206,7 @@ foreach ($report_policies as $pol) {
       for (var p = 1; p <= totalPages; p++) {
         var isActive = (p === _reportPolicyCurrentPage);
         var cls = isActive ? 'btn-primary text-white fw-bold' : 'btn-light border text-dark';
-        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 px-3 py-1 ' + cls + '" onclick="goToReportPolicyPage(' + p + ')">' + p + '</button>';
+        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 pagination-step-btn ' + cls + '" onclick="goToReportPolicyPage(' + p + ')">' + p + '</button>';
       }
       pagesContainer.innerHTML = pagesHtml;
     }
