@@ -217,11 +217,11 @@ foreach ($report_policies as $pol) {
     <div class="d-flex align-items-center justify-content-between pt-1">
       <small class="text-muted fw-medium" id="reportPoliciesSummaryText">Showing 1 to 10 of <?= count($report_policies) ?> records</small>
       <div class="d-flex align-items-center gap-1" id="reportPolicyPagination">
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyPrevBtn" onclick="changeReportPolicyPage(-1)" title="Previous page"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyPrevBtn" onclick="changeReportPolicyPage(-1)" title="Previous page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-left"></i></button>
         <div id="reportPolicyPageNumbers" class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold">1</button>
+          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
         </div>
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyNextBtn" onclick="changeReportPolicyPage(1)" title="Next page"><i class="bi bi-chevron-right"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyNextBtn" onclick="changeReportPolicyPage(1)" title="Next page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -332,13 +332,20 @@ foreach ($report_policies as $pol) {
         </div>
       </div>
     </div>
-    <div class="table-responsive border rounded-4 overflow-hidden mb-2">
-      <table class="table table-hover align-middle mb-0" style="font-size:0.88rem;">
+    <div class="table-responsive border rounded-4 overflow-hidden mb-2" style="min-height: 520px;">
+      <table class="table table-hover align-middle mb-0" id="recentGeneratedReportsTable" style="font-size:0.88rem; table-layout: fixed; width: 100%;">
+        <colgroup>
+          <col style="width: 28%;">
+          <col style="width: 32%;">
+          <col style="width: 14%;">
+          <col style="width: 14%;">
+          <col style="width: 12%;">
+        </colgroup>
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
           <tr>
-            <th class="py-3 px-3 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-truncate" style="font-size: 0.88rem; letter-spacing: 0.03em;">
               Report Name</th>
-            <th class="py-3 px-3 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-truncate" style="font-size: 0.88rem; letter-spacing: 0.03em;">
               Policy / Subject</th>
             <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap" style="font-size: 0.88rem; letter-spacing: 0.03em; width: 140px;">Type
             </th>
@@ -356,11 +363,11 @@ foreach ($report_policies as $pol) {
     <div class="d-flex align-items-center justify-content-between pt-2">
       <small class="text-muted fw-medium" id="recentGeneratedReportsCount">Showing 0 records</small>
       <div class="d-flex align-items-center gap-1" id="recentReportsPagination">
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentReportsPrevBtn" onclick="changeRecentReportsPage(-1)" title="Previous page"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentReportsPrevBtn" onclick="changeRecentReportsPage(-1)" title="Previous page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-left"></i></button>
         <div id="recentReportsPageNumbers" class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold">1</button>
+          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
         </div>
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentReportsNextBtn" onclick="changeRecentReportsPage(1)" title="Next page"><i class="bi bi-chevron-right"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentReportsNextBtn" onclick="changeRecentReportsPage(1)" title="Next page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -1026,14 +1033,14 @@ foreach ($report_policies as $pol) {
         typeBadge = '<span class="badge-report-type" style="background:#fefce8; color:#a16207; border-color:#fef08a;"><i class="bi bi-clock-history text-warning"></i><span>' + esc(r.report_type) + '</span></span>';
       }
 
-      html += '<tr class="align-middle">' +
-        '<td class="py-2.5 px-3">' +
-        '<div class="d-flex align-items-center gap-2">' +
+      html += '<tr class="align-middle" style="height: 52px;">' +
+        '<td class="py-2.5 px-3 text-truncate">' +
+        '<div class="d-flex align-items-center gap-2 overflow-hidden">' +
         '<i class="bi ' + fileIcon + ' fs-5 flex-shrink-0"></i>' +
-        '<span class="fw-semibold text-dark font-monospace" style="font-size: 0.86rem; word-break: break-all;">' + esc(r.report_name) + '</span>' +
+        '<span class="fw-semibold text-dark font-monospace text-truncate" style="font-size: 0.86rem;" title="' + esc(r.report_name) + '">' + esc(r.report_name) + '</span>' +
         '</div>' +
         '</td>' +
-        '<td class="py-2.5 px-3 text-dark fw-medium" style="font-size: 0.88rem; word-break: break-word;">' + esc(r.policy_title) + '</td>' +
+        '<td class="py-2.5 px-3 text-dark fw-medium text-truncate" style="font-size: 0.88rem;" title="' + esc(r.policy_title) + '">' + esc(r.policy_title) + '</td>' +
         '<td class="py-2.5 px-3 text-nowrap">' +
         typeBadge +
         '</td>' +
@@ -1081,7 +1088,7 @@ foreach ($report_policies as $pol) {
       for (var p = 1; p <= totalPages; p++) {
         var isActive = (p === _recentStaffReportsCurrentPage);
         var cls = isActive ? 'btn-primary text-white fw-bold' : 'btn-light border text-dark';
-        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 pagination-step-btn ' + cls + '" onclick="goToRecentReportsPage(' + p + ')">' + p + '</button>';
+        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 pagination-step-btn ' + cls + '" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;" onclick="goToRecentReportsPage(' + p + ')">' + p + '</button>';
       }
       pagesContainer.innerHTML = pagesHtml;
     }
@@ -1208,7 +1215,7 @@ foreach ($report_policies as $pol) {
       for (var p = 1; p <= totalPages; p++) {
         var isActive = (p === _reportPolicyCurrentPage);
         var cls = isActive ? 'btn-primary text-white fw-bold' : 'btn-light border text-dark';
-        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 pagination-step-btn ' + cls + '" onclick="goToReportPolicyPage(' + p + ')">' + p + '</button>';
+        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 pagination-step-btn ' + cls + '" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;" onclick="goToReportPolicyPage(' + p + ')">' + p + '</button>';
       }
       pagesContainer.innerHTML = pagesHtml;
     }
