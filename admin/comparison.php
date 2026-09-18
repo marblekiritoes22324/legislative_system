@@ -391,11 +391,25 @@ foreach ($completed_policies as $p) {
       return '<span class="badge fw-semibold" style="background:' + bg + '; color:' + color + '; border:1px solid ' + border + '; font-size:0.8rem; font-family: Arial, sans-serif;">' + esc(risk || text) + '</span>';
     }
 
+    function getScorePercentage(level) {
+      var l = (level || '').toLowerCase();
+      if (l.indexOf('high') !== -1) return 92;
+      if (l.indexOf('med') !== -1 || l.indexOf('mod') !== -1) return 68;
+      return 38;
+    }
+
+    function getScoreColor(level) {
+      var l = (level || '').toLowerCase();
+      if (l.indexOf('high') !== -1) return '#16a34a';
+      if (l.indexOf('med') !== -1 || l.indexOf('mod') !== -1) return '#d97706';
+      return '#dc2626';
+    }
+
     function cleanLevelBadge(level) {
       var l = (level || 'Low').toLowerCase();
-      var color = '#15803d', bg = '#f0fdf4', border = '#bbf7d0', text = 'Low';
+      var color = '#dc2626', bg = '#fef2f2', border = '#fca5a5', text = 'Low';
       if (l.indexOf('high') !== -1) {
-        color = '#b91c1c'; bg = '#fef2f2'; border = '#fca5a5'; text = 'High';
+        color = '#15803d'; bg = '#f0fdf4'; border = '#bbf7d0'; text = 'High';
       } else if (l.indexOf('med') !== -1 || l.indexOf('mod') !== -1) {
         color = '#b45309'; bg = '#fffbeb'; border = '#fde68a'; text = 'Medium';
       }
@@ -403,9 +417,20 @@ foreach ($completed_policies as $p) {
     }
 
     function criteriaCell(level, reason) {
+      var pct = getScorePercentage(level);
+      var color = getScoreColor(level);
       var badge = cleanLevelBadge(level);
-      if (!reason) return badge;
-      return '<div class="mb-1.5">' + badge + '</div>' +
+
+      var meter = '<div class="d-inline-flex align-items-center gap-2 mb-1.5">' +
+        badge +
+        '<div class="progress" style="width: 70px; height: 6px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;" title="Rating Viability: ' + pct + '%">' +
+        '<div class="progress-bar" role="progressbar" style="width: ' + pct + '%; background-color: ' + color + ';" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"></div>' +
+        '</div>' +
+        '<span style="color:' + color + '; font-size:0.75rem; font-weight:700;">' + pct + '%</span>' +
+        '</div>';
+
+      if (!reason) return meter;
+      return meter +
         '<div style="font-family: Arial, Helvetica, sans-serif; color: #000000; font-size: 0.88rem; line-height: 1.55; font-weight: 400;">' + esc(reason) + '</div>';
     }
 
@@ -438,32 +463,82 @@ foreach ($completed_policies as $p) {
         topicKey = 'health';
       }
 
-      var findingsText = '';
+      var strengthA = '';
+      var bestPracticeB = '';
       var takeawayText = '';
 
       if (isCrossCity) {
         if (topicKey === 'environment') {
-          findingsText = 'Comparing <strong>' + esc(cityA) + '</strong> with benchmark ordinance from <strong>' + esc(cityB) + '</strong> shows operational distinctions in waste reduction. While Policy A is tailored to Manila\'s dense retail hubs, ' + esc(cityB) + '\'s framework introduces structured merchant recovery quotas, dedicated green recovery trust accounts, and centralized EPWMD compliance teams.';
-          takeawayText = 'Manila City Council is advised to adopt ' + esc(cityB) + '\'s dedicated recovery fund model to finance Manila City Hall barangay material recovery facilities (MRFs) and establish joint inspection squads across major district markets.';
+          strengthA = 'Tailored specifically for Manila\'s dense commercial retail hubs (Divisoria, Quiapo), prioritizing grassroots barangay mobilization and market vendor waste segregation.';
+          bestPracticeB = esc(cityB) + '\'s institutionalized waste recovery fund, specialized EPWMD enforcement squads, and dedicated material recovery facility (MRF) financing quotas.';
+          takeawayText = 'Direct the Committee on Environmental Protection to draft an ordinance amendment incorporating ' + esc(cityB) + '\'s dedicated recovery trust fund model into Manila\'s local waste management framework.';
         } else if (topicKey === 'mobility') {
-          findingsText = 'Comparing transport initiatives between <strong>' + esc(cityA) + '</strong> and <strong>' + esc(cityB) + '</strong> demonstrates that physical lane bollards, designated active-mobility zones, and standardized route signaling achieve higher motorist compliance than advisory lane markings.';
-          takeawayText = 'Incorporate ' + esc(cityB) + '\'s protected barrier specifications into the Manila City Council infrastructure development program along Roxas Blvd and University Belt corridors.';
+          strengthA = 'Optimizes arterial traffic movement and active transport corridor integration across high-density Manila university belts and commercial centers.';
+          bestPracticeB = esc(cityB) + '\'s standardized physical bollard separation, traffic enforcement camera integration, and protected bike/pedestrian right-of-way protocols.';
+          takeawayText = 'Direct the Committee on Transportation to adopt ' + esc(cityB) + '\'s physical barrier engineering standards along Roxas Boulevard and Taft Avenue corridors.';
+        } else if (topicKey === 'drainage') {
+          strengthA = 'Targets immediate desiltation and operational readiness of Manila\'s historic esteros and low-lying district pump stations (Sampaloc, Santa Mesa).';
+          bestPracticeB = esc(cityB) + '\'s mandatory rainwater retention basin mandates for new commercial developments, automated flood sensors, and centralized inter-agency drainage teams.';
+          takeawayText = 'Direct the Committee on Disaster Resilience to incorporate ' + esc(cityB) + '\'s retention basin regulations into Manila Building Permitting and zoning guidelines.';
         } else if (topicKey === 'energy') {
-          findingsText = 'The benchmark ordinance in <strong>' + esc(cityB) + '</strong> leverages mandatory energy efficiency thresholds for commercial permit applicants, pairing statutory penalties with real property tax discounts for green-certified facilities.';
-          takeawayText = 'Incorporate green building permit incentives into the Manila City Revenue Code to attract sustainable commercial real estate developers in Binondo and Ermita.';
+          strengthA = 'Focuses on municipal building energy efficiency retrofits and gradual clean energy transitions across city-owned educational and healthcare facilities.';
+          bestPracticeB = esc(cityB) + '\'s mandatory green building certification thresholds paired with real property tax discounts for compliant commercial developments.';
+          takeawayText = 'Propose an amendment to the Manila Revenue Code offering graduated RPT incentives for LEED/BERDE-certified commercial developers in Binondo and Ermita.';
+        } else if (topicKey === 'health') {
+          strengthA = 'Grounded in Manila\'s grassroots barangay health center networks and community health worker mobilization across all 6 legislative districts.';
+          bestPracticeB = esc(cityB) + '\'s digitized surveillance reporting systems, structured inter-departmental task forces, and predictable penalty structures.';
+          takeawayText = 'Authorize the Manila Health Department to pilot ' + esc(cityB) + '\'s digitized reporting protocols to streamline epidemiological and sanitary inspections.';
         } else {
-          findingsText = 'Cross-city comparative analysis between <strong>' + esc(cityA) + '</strong> and <strong>' + esc(cityB) + '</strong> demonstrates complementary regulatory provisions for ' + topic + '. The benchmark city provides proven administrative templates with minimal legal friction.';
-          takeawayText = 'Adopt ' + esc(cityB) + '\'s multi-agency enforcement guidelines to optimize Manila City Hall operational costs and accelerate inter-departmental rollout.';
+          strengthA = 'Establishes a localized regulatory baseline tailored to Manila\'s administrative realities, emphasizing municipal department alignment.';
+          bestPracticeB = esc(cityB) + '\'s multi-agency compliance protocols, structured penalty tiers, and clear operational milestones.';
+          takeawayText = 'Direct the Manila City Council secretariat to benchmark administrative monitoring tools from ' + esc(cityB) + ' to reduce implementation friction.';
         }
       } else {
-        findingsText = 'Side-by-side analysis of <strong>' + esc(a.title) + '</strong> and <strong>' + esc(b.title) + '</strong> within ' + esc(cityA) + ' confirms complementary municipal objectives in ' + topic + '. Both initiatives demonstrate feasible budget allocations (' + esc(a.economic_level) + ' vs ' + esc(b.economic_level) + ' impact) and zero statutory contradictions.';
-        takeawayText = 'Harmonize implementation calendars between both Manila ordinances to share administrative monitoring resources between City Engineering, Health, and DPS bureaus.';
+        strengthA = 'Establishes focused statutory mandates for <strong>' + esc(a.title) + '</strong>, supported by ' + esc(a.economic_level) + ' economic feasibility and localized enforcement guidelines.';
+        bestPracticeB = '<strong>' + esc(b.title) + '</strong> provides complementary administrative mechanisms, reinforcing civic compliance with ' + esc(b.risk_level) + ' operational risk.';
+        takeawayText = 'Harmonize implementation calendars and joint inspection schedules between both Manila measures to eliminate administrative redundancies across city departments.';
+      }
+
+      var vTitle = '', vBg = '', vColor = '', vBorder = '', vIcon = '', vNote = '';
+      if (isCrossCity) {
+        vTitle = 'Complementary & Synergistic Policy Formulation';
+        vBg = '#f0fdf4';
+        vColor = '#15803d';
+        vBorder = '#bbf7d0';
+        vIcon = 'bi-patch-check-fill text-success';
+        vNote = 'Cross-city comparative assessment confirms high strategic compatibility. Benchmark mechanisms from ' + esc(cityB) + ' provide proven operational templates directly adoptable into Manila municipal regulation.';
+      } else {
+        var aRiskHigh = (a.risk_level || '').toLowerCase().indexOf('high') !== -1;
+        var bRiskHigh = (b.risk_level || '').toLowerCase().indexOf('high') !== -1;
+        if (!aRiskHigh && !bRiskHigh) {
+          vTitle = 'Harmonized & Synergistic Local Ordinances';
+          vBg = '#f0fdf4';
+          vColor = '#15803d';
+          vBorder = '#bbf7d0';
+          vIcon = 'bi-check-circle-fill text-success';
+          vNote = 'Both Manila measures exhibit aligned statutory objectives, manageable risk profiles, and mutually supportive municipal enforcement frameworks.';
+        } else {
+          vTitle = 'Divergent Risk & Regulatory Profiles';
+          vBg = '#fffbeb';
+          vColor = '#b45309';
+          vBorder = '#fde68a';
+          vIcon = 'bi-exclamation-triangle-fill text-warning';
+          vNote = 'Elevated risk profile detected in one of the compared measures; committee reconciliation recommended prior to unified council endorsement.';
+        }
       }
 
       return {
         topic: topic,
-        diffSummary: findingsText,
-        takeaway: takeawayText
+        strengthA: strengthA,
+        bestPracticeB: bestPracticeB,
+        diffSummary: strengthA + ' ' + bestPracticeB,
+        takeaway: takeawayText,
+        verdictTitle: vTitle,
+        verdictBg: vBg,
+        verdictColor: vColor,
+        verdictBorder: vBorder,
+        verdictIcon: vIcon,
+        verdictNote: vNote
       };
     }
 
@@ -577,8 +652,81 @@ foreach ($completed_policies as $p) {
       if (!a || !b) { showMsg('danger', 'bi-x-circle-fill', 'Policy comparison data unavailable.'); return; }
 
       var isCrossCity = (a.city_origin !== b.city_origin);
+      var dynamicAI = buildDynamicAIComparisonInsights(a, b, isCrossCity);
+      var comparisonTitle = a.title + ' vs ' + b.title;
+      var reportType = isCrossCity ? 'Cross-LGU Benchmark' : 'Policy Comparison';
 
-      var html = '';
+      // --- EXECUTIVE COMPARISON SCORECARD (TOP HEADER) ---
+      var criteriaMeta = [
+        { key: 'economic', label: 'Economic Feasibility', icon: 'bi-cash-coin' },
+        { key: 'social', label: 'Social Impact', icon: 'bi-people-fill' },
+        { key: 'env', label: 'Environmental Safeguards', icon: 'bi-tree-fill' },
+        { key: 'legal', label: 'Legal Compliance', icon: 'bi-shield-check' }
+      ];
+
+      var scorecardCols = '';
+      for (var k = 0; k < criteriaMeta.length; k++) {
+        var cm = criteriaMeta[k];
+        var pA = getScorePercentage(a[cm.key + '_level']);
+        var cA = getScoreColor(a[cm.key + '_level']);
+        var pB = getScorePercentage(b[cm.key + '_level']);
+        var cB = getScoreColor(b[cm.key + '_level']);
+
+        scorecardCols += '<div class="col-12 col-sm-6 col-lg-3">' +
+          '<div class="p-3 rounded-3 border h-100 d-flex flex-column justify-content-between" style="background:#f8fafc; border-color:#e2e8f0;">' +
+            '<div>' +
+              '<div class="d-flex justify-content-between align-items-center mb-2">' +
+                '<span class="fw-bold text-dark" style="font-size:0.8rem;">' + cm.label + '</span>' +
+                '<i class="bi ' + cm.icon + ' text-secondary" style="font-size:0.9rem;"></i>' +
+              '</div>' +
+              '<div class="mb-2">' +
+                '<div class="d-flex justify-content-between align-items-center mb-1" style="font-size:0.73rem;">' +
+                  '<span class="text-primary fw-semibold text-truncate me-1" style="max-width:115px;" title="' + esc(a.title) + '">Policy A (' + esc(a.city_origin || 'Manila') + ')</span>' +
+                  '<span class="fw-bold" style="color:' + cA + ';">' + pA + '%</span>' +
+                '</div>' +
+                '<div class="progress" style="height:6px; background:#e2e8f0; border-radius:3px;">' +
+                  '<div class="progress-bar" style="width:' + pA + '%; background-color:' + cA + ';"></div>' +
+                '</div>' +
+              '</div>' +
+              '<div>' +
+                '<div class="d-flex justify-content-between align-items-center mb-1" style="font-size:0.73rem;">' +
+                  '<span class="text-success fw-semibold text-truncate me-1" style="max-width:115px;" title="' + esc(b.title) + '">Policy B (' + esc(b.city_origin || 'Benchmark') + ')</span>' +
+                  '<span class="fw-bold" style="color:' + cB + ';">' + pB + '%</span>' +
+                '</div>' +
+                '<div class="progress" style="height:6px; background:#e2e8f0; border-radius:3px;">' +
+                  '<div class="progress-bar" style="width:' + pB + '%; background-color:' + cB + ';"></div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }
+
+      var execCard = '<div class="card border-0 rounded-4 shadow-sm mt-4 bg-white" style="border: 1px solid #e2e8f0 !important;">' +
+        '<div class="card-body p-3 p-md-4">' +
+          '<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 pb-3 border-bottom">' +
+            '<div>' +
+              '<div class="d-flex flex-wrap align-items-center gap-2 mb-1.5">' +
+                '<span class="badge px-3 py-1.5 rounded-pill fw-bold shadow-2xs" style="background:' + dynamicAI.verdictBg + '; color:' + dynamicAI.verdictColor + '; border:1px solid ' + dynamicAI.verdictBorder + '; font-size:0.83rem;">' +
+                  '<i class="bi ' + dynamicAI.verdictIcon + ' me-1.5"></i> ' + esc(dynamicAI.verdictTitle) +
+                '</span>' +
+                '<span class="badge rounded-pill bg-light text-muted border px-2.5 py-1" style="font-size:0.75rem;">' +
+                  '<i class="bi bi-shield-check me-1 text-primary"></i> 4-Dimensional Multi-Criteria Assessment' +
+                '</span>' +
+              '</div>' +
+              '<p class="text-secondary small mb-0" style="line-height:1.5;">' + dynamicAI.verdictNote + '</p>' +
+            '</div>' +
+            '<div class="d-flex align-items-center gap-2 text-nowrap">' +
+              '<span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-3 fw-semibold" style="font-size:0.78rem;">' +
+                '<i class="bi bi-bar-chart-fill me-1"></i> Comparative Alignment Scorecard' +
+              '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="row g-3 pt-3">' + scorecardCols + '</div>' +
+        '</div>' +
+      '</div>';
+
+      var html = execCard;
       html += '<div class="border rounded-3 overflow-hidden shadow-sm mt-4 bg-white" style="font-family: Arial, Helvetica, sans-serif;">';
       html += '<table class="table table-bordered align-middle mb-0" style="border-color:#e2e8f0;">';
 
@@ -685,11 +833,7 @@ foreach ($completed_policies as $p) {
 
       html += '</tbody></table></div>';
 
-      // --- DYNAMIC & RESPONSIVE AI EXECUTIVE COMPARISON INSIGHTS ---
-      var dynamicAI = buildDynamicAIComparisonInsights(a, b, isCrossCity);
-      var comparisonTitle = a.title + ' vs ' + b.title;
-      var reportType = isCrossCity ? 'Cross-LGU Benchmark' : 'Policy Comparison';
-
+      // --- STRUCTURED 3-CARD AI EXECUTIVE COMPARISON INSIGHTS ---
       html += '<div class="card border-0 rounded-4 shadow-sm mt-4 p-3 p-md-4" style="background: linear-gradient(135deg, #f8fafc 0%, #f0fdfa 100%); border-left: 5px solid #0284c7 !important;">' +
         '<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-3 pb-2 border-bottom">' +
         '<div class="d-flex align-items-center gap-3">' +
@@ -703,7 +847,7 @@ foreach ($completed_policies as $p) {
         '<i class="bi bi-tag-fill me-1"></i> ' + esc(dynamicAI.topic) +
         '</span>' +
         '</div>' +
-        '<p class="text-muted small mb-0 mt-0.5">Automated synthesis comparing <strong>' + esc(a.title) + '</strong> with <strong>' + esc(b.title) + '</strong></p>' +
+        '<p class="text-muted small mb-0 mt-0.5">Automated multi-criteria synthesis comparing <strong>' + esc(a.title) + '</strong> with <strong>' + esc(b.title) + '</strong></p>' +
         '</div>' +
         '</div>' +
         '<span class="badge rounded-pill bg-white text-dark border px-3 py-1.5 shadow-2xs small font-monospace align-self-start align-self-md-center">' +
@@ -712,22 +856,36 @@ foreach ($completed_policies as $p) {
         '</div>' +
 
         '<div class="row g-3 mt-1">' +
-        '<div class="col-12 col-md-6 col-lg-6">' +
-        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column">' +
-        '<div class="fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">' +
-        '<i class="bi bi-intersect text-primary fs-6"></i> Domain Divergences &amp; Regulatory Findings' +
+        '<div class="col-12 col-md-4">' +
+        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column" style="border-top: 3px solid #2563eb !important;">' +
+        '<div class="fw-bold text-primary small mb-2 d-flex align-items-center gap-1.5">' +
+        '<i class="bi bi-trophy-fill text-primary fs-6"></i> Policy A Core Strength' +
         '</div>' +
+        '<div class="text-muted fw-semibold mb-1.5 text-truncate" style="font-size:0.75rem;" title="' + esc(a.title) + '">' + esc(a.title) + '</div>' +
         '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
-        dynamicAI.diffSummary +
+        dynamicAI.strengthA +
         '</p>' +
         '</div>' +
         '</div>' +
 
-        '<div class="col-12 col-md-6 col-lg-6">' +
-        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column">' +
-        '<div class="fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">' +
-        '<i class="bi bi-lightbulb-fill text-warning fs-6"></i> Actionable Recommendation for Manila City Council' +
+        '<div class="col-12 col-md-4">' +
+        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column" style="border-top: 3px solid #16a34a !important;">' +
+        '<div class="fw-bold text-success small mb-2 d-flex align-items-center gap-1.5">' +
+        '<i class="bi bi-lightbulb-fill text-success fs-6"></i> Adoptable Best Practice' +
         '</div>' +
+        '<div class="text-muted fw-semibold mb-1.5 text-truncate" style="font-size:0.75rem;" title="' + esc(b.title) + '">' + esc(b.title) + '</div>' +
+        '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
+        dynamicAI.bestPracticeB +
+        '</p>' +
+        '</div>' +
+        '</div>' +
+
+        '<div class="col-12 col-md-4">' +
+        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column" style="border-top: 3px solid #d97706 !important;">' +
+        '<div class="fw-bold text-warning-emphasis small mb-2 d-flex align-items-center gap-1.5">' +
+        '<i class="bi bi-bullseye text-warning fs-6"></i> Actionable Council Action' +
+        '</div>' +
+        '<div class="text-muted fw-semibold mb-1.5" style="font-size:0.75rem;">Manila City Council Directive</div>' +
         '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
         dynamicAI.takeaway +
         '</p>' +
