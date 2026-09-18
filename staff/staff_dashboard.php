@@ -1,4 +1,7 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 // staff/staff_dashboard.php — Staff Portal Main Controller & Dashboard
 require_once __DIR__ . '/../config/db.php';
 if (file_exists(__DIR__ . '/../backend/log_activity.php')) {

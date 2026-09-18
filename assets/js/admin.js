@@ -1244,6 +1244,31 @@ function getEvaluationScoreBadge(score) {
   return '<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 fw-semibold" style="font-size:0.75rem;">' + s + '</span>';
 }
 
+// Helper to resolve the active administrator's real name for Evaluated By
+function getActiveAdminEvaluatorName(existingEvaluator) {
+  const ex = (existingEvaluator || '').trim();
+  if (ex && ex !== '—' && ex !== 'Admin' && ex !== 'Staff' && ex !== 'A.I. Evaluator') {
+    return ex;
+  }
+  try {
+    const saved = JSON.parse(localStorage.getItem('admin_profile_data') || '{}');
+    if (saved.name && saved.name.trim() && saved.name.trim().toLowerCase() !== 'admin') {
+      return saved.name.trim();
+    }
+    const curr = JSON.parse(localStorage.getItem('current_user') || '{}');
+    if (curr.name && curr.name.trim() && curr.name.trim().toLowerCase() !== 'admin') {
+      return curr.name.trim();
+    }
+  } catch (e) {}
+  const topbar = document.getElementById('topbarAdminName');
+  if (topbar && topbar.textContent && topbar.textContent.trim()) {
+    const t = topbar.textContent.trim();
+    if (t && t.toLowerCase() !== 'admin') return t;
+  }
+  return ex || 'Admin';
+}
+window.getActiveAdminEvaluatorName = getActiveAdminEvaluatorName;
+
 // ── Evaluation Modal (Official Impact Evaluation System) ─────────
 function openEvaluationModal(evaluation) {
   const details = typeof evaluation === 'string' ? { title: evaluation } : Object.assign({}, evaluation);
@@ -1315,7 +1340,14 @@ function openEvaluationModal(evaluation) {
   if (evalDateEl) evalDateEl.textContent = hasEvaluation ? (details.evaluationDate || '—') : '—';
 
   const evalByEl = document.getElementById('evalModalEvaluator');
-  if (evalByEl) evalByEl.textContent = hasEvaluation ? ((details.evaluator && details.evaluator !== 'Administration' && details.evaluator !== 'System Administrator') ? details.evaluator : 'Admin') : '—';
+  if (evalByEl) {
+    const rawEval = (details.evaluator || '').trim();
+    let displayEval = '—';
+    if (hasEvaluation) {
+      displayEval = getActiveAdminEvaluatorName(rawEval);
+    }
+    evalByEl.textContent = displayEval;
+  }
 
   // Status badge (3-State Model: Draft, Approved, Needs Revision)
   setModalStatusBadge(currentStatus);
@@ -1563,7 +1595,18 @@ async function submitNewEvaluationVersion(e) {
   }
 
   const isStaff = window.location.pathname.includes('/staff/') || document.body.classList.contains('staff-portal');
-  const currentEvaluator = isStaff ? 'Staff' : 'Admin';
+  let currentEvaluator = 'Admin';
+  if (isStaff) {
+    try {
+      const curr = JSON.parse(localStorage.getItem('current_user') || '{}');
+      const staffProf = JSON.parse(localStorage.getItem('staff_profile_data') || '{}');
+      currentEvaluator = staffProf.name || curr.name || 'Staff';
+    } catch (e) {
+      currentEvaluator = 'Staff';
+    }
+  } else {
+    currentEvaluator = typeof getActiveAdminEvaluatorName === 'function' ? getActiveAdminEvaluatorName('') : 'Admin';
+  }
 
   const econReason = (document.getElementById('reEvalEconomicReason') ? document.getElementById('reEvalEconomicReason').value : '').trim();
   const socialReason = (document.getElementById('reEvalSocialReason') ? document.getElementById('reEvalSocialReason').value : '').trim();
@@ -1794,7 +1837,18 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
     // Evaluator determination
     let savedDateStr = '';
     const isStaffPortal = window.location.pathname.includes('/staff/') || document.body.classList.contains('staff-portal') || !!document.querySelector('.brand-text .small')?.textContent?.includes('Staff');
-    const currentEvaluator = isStaffPortal ? 'Staff' : 'Admin';
+    let currentEvaluator = 'Admin';
+    if (isStaffPortal) {
+      try {
+        const curr = JSON.parse(localStorage.getItem('current_user') || '{}');
+        const staffProf = JSON.parse(localStorage.getItem('staff_profile_data') || '{}');
+        currentEvaluator = staffProf.name || curr.name || 'Staff';
+      } catch (e) {
+        currentEvaluator = 'Staff';
+      }
+    } else {
+      currentEvaluator = typeof getActiveAdminEvaluatorName === 'function' ? getActiveAdminEvaluatorName('') : 'Admin';
+    }
 
     try {
       const formData = new FormData();
@@ -1820,8 +1874,9 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
         body: formData
       });
       const saveJson = await saveRes.json();
-      if (saveJson && saveJson.success && saveJson.evaluation_date) {
-        savedDateStr = saveJson.evaluation_date;
+      if (saveJson && saveJson.success) {
+        if (saveJson.evaluation_date) savedDateStr = saveJson.evaluation_date;
+        if (saveJson.evaluator) currentEvaluator = saveJson.evaluator;
       }
     } catch (e) {
       console.warn("Save evaluation error:", e);

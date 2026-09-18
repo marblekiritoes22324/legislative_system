@@ -439,7 +439,7 @@ function openEvaluationModal(evaluation) {
 
     // Evaluated By & Date
     const evalByEl = document.getElementById('evalModalEvaluator');
-    if (evalByEl) evalByEl.textContent = isCompleted ? ((details.evaluator && details.evaluator !== 'Administration' && details.evaluator !== 'System Administrator') ? details.evaluator : 'Admin') : '—';
+    if (evalByEl) evalByEl.textContent = isCompleted ? (details.evaluator || 'Admin') : '—';
 
     const dateEl = document.getElementById('evalModalDate');
     if (dateEl) dateEl.textContent = isCompleted ? (details.evaluationDate || '—') : '—';

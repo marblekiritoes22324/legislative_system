@@ -92,9 +92,17 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                 ? 'Evidence-based impact analysis confirms alignment with statutory governance and municipal operational criteria.'
                 : 'Awaiting evaluation. Click "Evaluate Policy" to generate evidence-based assessment.');
 
-              $evaluator_name = $has_evaluation
-                ? ((!empty($eval['evaluator']) && $eval['evaluator'] !== 'Administration' && $eval['evaluator'] !== 'System Administrator') ? $eval['evaluator'] : 'Admin')
-                : '—';
+              $admin_session_name = $_SESSION['full_name'] ?? ($_SESSION['username'] ?? '');
+              $evaluator_name = '—';
+              if ($has_evaluation) {
+                if (!empty($eval['evaluator']) && $eval['evaluator'] !== 'Admin') {
+                  $evaluator_name = $eval['evaluator'];
+                } elseif (!empty($admin_session_name)) {
+                  $evaluator_name = $admin_session_name;
+                } else {
+                  $evaluator_name = !empty($eval['evaluator']) ? $eval['evaluator'] : 'Admin';
+                }
+              }
 
               $approved_at_fmt = (!empty($eval['approved_at'])) ? date('M d, Y h:i A', strtotime($eval['approved_at'])) : null;
 

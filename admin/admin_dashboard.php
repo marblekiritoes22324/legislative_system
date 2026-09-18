@@ -1,4 +1,7 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 require_once __DIR__ . '/../config/db.php';
 if (file_exists(__DIR__ . '/../backend/log_activity.php')) {
   require_once __DIR__ . '/../backend/log_activity.php';
@@ -447,12 +450,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       mysqli_stmt_close($p_stmt);
 
       $p_title = $p_title ?: ('Policy #' . $policy_id);
+      $evaluator_admin = !empty($_SESSION['full_name']) ? trim($_SESSION['full_name']) : (!empty($_SESSION['username']) ? trim($_SESSION['username']) : 'Admin User');
       if ($new_status === 'Approved') {
-        $insert_stmt = mysqli_prepare($conn, "INSERT INTO evaluations (policy_id, policy_title, evaluator, status, risk_level, ai_recommendation, overall_score, approved_by, approved_at) VALUES (?, ?, 'A.I. Evaluator', ?, 'Low', 'Suitable for implementation.', 8.5, ?, NOW())");
-        mysqli_stmt_bind_param($insert_stmt, "isss", $policy_id, $p_title, $new_status, $approved_by);
+        $insert_stmt = mysqli_prepare($conn, "INSERT INTO evaluations (policy_id, policy_title, evaluator, status, risk_level, ai_recommendation, overall_score, approved_by, approved_at) VALUES (?, ?, ?, ?, 'Low', 'Suitable for implementation.', 8.5, ?, NOW())");
+        mysqli_stmt_bind_param($insert_stmt, "issss", $policy_id, $p_title, $evaluator_admin, $new_status, $approved_by);
       } else {
-        $insert_stmt = mysqli_prepare($conn, "INSERT INTO evaluations (policy_id, policy_title, evaluator, status, risk_level, ai_recommendation, overall_score) VALUES (?, ?, 'A.I. Evaluator', ?, 'Low', 'Suitable for implementation.', 8.5)");
-        mysqli_stmt_bind_param($insert_stmt, "iss", $policy_id, $p_title, $new_status);
+        $insert_stmt = mysqli_prepare($conn, "INSERT INTO evaluations (policy_id, policy_title, evaluator, status, risk_level, ai_recommendation, overall_score) VALUES (?, ?, ?, ?, 'Low', 'Suitable for implementation.', 8.5)");
+        mysqli_stmt_bind_param($insert_stmt, "isss", $policy_id, $p_title, $evaluator_admin, $new_status);
       }
       mysqli_stmt_execute($insert_stmt);
       mysqli_stmt_close($insert_stmt);

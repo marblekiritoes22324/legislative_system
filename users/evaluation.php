@@ -122,7 +122,7 @@ if (!empty($conn)) {
                 : 'Awaiting evaluation.');
 
               $evaluator_name = $has_evaluation
-                ? ((!empty($eval['evaluator']) && $eval['evaluator'] !== 'Administration' && $eval['evaluator'] !== 'System Administrator') ? $eval['evaluator'] : 'Admin')
+                ? (!empty($eval['evaluator']) ? $eval['evaluator'] : 'Admin')
                 : '—';
 
               $approved_at_fmt = (!empty($eval['approved_at'])) ? date('M d, Y h:i A', strtotime($eval['approved_at'])) : null;

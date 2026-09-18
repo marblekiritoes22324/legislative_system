@@ -21,8 +21,18 @@ $risk_level = isset($_POST['risk_level']) ? trim($_POST['risk_level']) : 'Low Ri
 $ai_analysis = isset($_POST['ai_analysis']) ? trim($_POST['ai_analysis']) : '';
 $recommendation = isset($_POST['recommendation']) ? trim($_POST['recommendation']) : '';
 $reason = isset($_POST['reason']) ? trim($_POST['reason']) : '';
-$evaluator = !empty($_POST['evaluator']) ? trim($_POST['evaluator']) : 'Admin';
-if ($evaluator === 'Administration' || $evaluator === 'System Administrator') {
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$evaluator = !empty($_POST['evaluator']) ? trim($_POST['evaluator']) : '';
+if (empty($evaluator) || $evaluator === 'Admin' || $evaluator === 'Staff') {
+    if (!empty($_SESSION['full_name']) && trim($_SESSION['full_name']) !== '') {
+        $evaluator = trim($_SESSION['full_name']);
+    } elseif (!empty($_SESSION['username']) && trim($_SESSION['username']) !== '') {
+        $evaluator = trim($_SESSION['username']);
+    }
+}
+if (empty($evaluator)) {
     $evaluator = 'Admin';
 }
 $status = 'Completed';
