@@ -1244,28 +1244,53 @@ function getEvaluationScoreBadge(score) {
   return '<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 fw-semibold" style="font-size:0.75rem;">' + s + '</span>';
 }
 
-// Helper to resolve the active administrator's real name for Evaluated By
+// Helper to resolve the active administrator's real name with role prefix (e.g., "Admin - Quintana")
 function getActiveAdminEvaluatorName(existingEvaluator) {
-  const ex = (existingEvaluator || '').trim();
-  if (ex && ex !== '—' && ex !== 'Admin' && ex !== 'Staff' && ex !== 'A.I. Evaluator') {
-    return ex;
-  }
-  try {
-    const saved = JSON.parse(localStorage.getItem('admin_profile_data') || '{}');
-    if (saved.name && saved.name.trim() && saved.name.trim().toLowerCase() !== 'admin') {
-      return saved.name.trim();
+  const isStaffPortal = window.location.pathname.includes('/staff/') || document.body.classList.contains('staff-portal') || !!document.querySelector('.brand-text .small')?.textContent?.includes('Staff');
+  const defaultRole = isStaffPortal ? 'Staff' : 'Admin';
+
+  let raw = (existingEvaluator || '').trim();
+  if (raw && raw !== '—') {
+    if (/^(Admin|Staff|Administrator)\s*[-:]\s*/i.test(raw)) {
+      return raw;
     }
-    const curr = JSON.parse(localStorage.getItem('current_user') || '{}');
-    if (curr.name && curr.name.trim() && curr.name.trim().toLowerCase() !== 'admin') {
-      return curr.name.trim();
+    if (raw.toLowerCase() !== 'admin' && raw.toLowerCase() !== 'staff' && raw !== 'A.I. Evaluator') {
+      return `${defaultRole} - ${raw}`;
+    }
+  }
+
+  // Look up logged in person's name
+  let personName = '';
+  try {
+    const saved = JSON.parse(localStorage.getItem(isStaffPortal ? 'staff_profile_data' : 'admin_profile_data') || '{}');
+    if (saved.name && saved.name.trim() && saved.name.trim().toLowerCase() !== 'admin' && saved.name.trim().toLowerCase() !== 'staff') {
+      personName = saved.name.trim();
+    } else {
+      const curr = JSON.parse(localStorage.getItem('current_user') || '{}');
+      if (curr.name && curr.name.trim() && curr.name.trim().toLowerCase() !== 'admin' && curr.name.trim().toLowerCase() !== 'staff') {
+        personName = curr.name.trim();
+      }
     }
   } catch (e) {}
-  const topbar = document.getElementById('topbarAdminName');
-  if (topbar && topbar.textContent && topbar.textContent.trim()) {
-    const t = topbar.textContent.trim();
-    if (t && t.toLowerCase() !== 'admin') return t;
+
+  if (!personName) {
+    const topbar = document.getElementById('topbarAdminName');
+    if (topbar && topbar.textContent && topbar.textContent.trim()) {
+      const t = topbar.textContent.trim();
+      if (t && t.toLowerCase() !== 'admin' && t.toLowerCase() !== 'staff') {
+        personName = t;
+      }
+    }
   }
-  return ex || 'Admin';
+
+  if (personName) {
+    if (/^(Admin|Staff|Administrator)\s*[-:]\s*/i.test(personName)) {
+      return personName;
+    }
+    return `${defaultRole} - ${personName}`;
+  }
+
+  return raw || defaultRole;
 }
 window.getActiveAdminEvaluatorName = getActiveAdminEvaluatorName;
 

@@ -97,12 +97,21 @@ if (!isset($evaluations) || !is_array($evaluations)) {
               $staff_session_name = $_SESSION['full_name'] ?? ($_SESSION['username'] ?? '');
               $evaluator_name = '—';
               if ($has_evaluation) {
-                if (!empty($eval['evaluator']) && $eval['evaluator'] !== 'Staff' && $eval['evaluator'] !== 'Admin') {
-                  $evaluator_name = $eval['evaluator'];
-                } elseif (!empty($staff_session_name)) {
-                  $evaluator_name = $staff_session_name;
+                $raw = !empty($eval['evaluator']) ? trim($eval['evaluator']) : '';
+                if (!empty($raw) && $raw !== 'Staff' && $raw !== 'Admin' && $raw !== '—') {
+                  if (preg_match('/^(Admin|Staff|Administrator)\s*[-:]\s*/i', $raw)) {
+                    $evaluator_name = $raw;
+                  } else {
+                    $evaluator_name = 'Staff - ' . $raw;
+                  }
+                } elseif (!empty($staff_session_name) && strtolower($staff_session_name) !== 'staff') {
+                  if (preg_match('/^(Admin|Staff|Administrator)\s*[-:]\s*/i', $staff_session_name)) {
+                    $evaluator_name = $staff_session_name;
+                  } else {
+                    $evaluator_name = 'Staff - ' . $staff_session_name;
+                  }
                 } else {
-                  $evaluator_name = !empty($eval['evaluator']) ? $eval['evaluator'] : 'Staff';
+                  $evaluator_name = !empty($raw) ? $raw : 'Staff';
                 }
               }
 

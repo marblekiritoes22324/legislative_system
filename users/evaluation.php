@@ -121,9 +121,21 @@ if (!empty($conn)) {
                 ? 'Evidence-based impact analysis confirms alignment with statutory governance and municipal operational criteria.'
                 : 'Awaiting evaluation.');
 
-              $evaluator_name = $has_evaluation
-                ? (!empty($eval['evaluator']) ? $eval['evaluator'] : 'Admin')
-                : '—';
+              $evaluator_name = '—';
+              if ($has_evaluation) {
+                $raw = !empty($eval['evaluator']) ? trim($eval['evaluator']) : '';
+                if (!empty($raw) && $raw !== '—') {
+                  if (preg_match('/^(Admin|Staff|Administrator)\s*[-:]\s*/i', $raw)) {
+                    $evaluator_name = $raw;
+                  } elseif ($raw !== 'Admin' && $raw !== 'Staff' && $raw !== 'A.I. Evaluator') {
+                    $evaluator_name = 'Admin - ' . $raw;
+                  } else {
+                    $evaluator_name = $raw;
+                  }
+                } else {
+                  $evaluator_name = 'Admin';
+                }
+              }
 
               $approved_at_fmt = (!empty($eval['approved_at'])) ? date('M d, Y h:i A', strtotime($eval['approved_at'])) : null;
 

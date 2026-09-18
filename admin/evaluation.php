@@ -95,12 +95,21 @@ if (!isset($evaluations) || !is_array($evaluations)) {
               $admin_session_name = $_SESSION['full_name'] ?? ($_SESSION['username'] ?? '');
               $evaluator_name = '—';
               if ($has_evaluation) {
-                if (!empty($eval['evaluator']) && $eval['evaluator'] !== 'Admin') {
-                  $evaluator_name = $eval['evaluator'];
-                } elseif (!empty($admin_session_name)) {
-                  $evaluator_name = $admin_session_name;
+                $raw = !empty($eval['evaluator']) ? trim($eval['evaluator']) : '';
+                if (!empty($raw) && $raw !== 'Admin' && $raw !== '—') {
+                  if (preg_match('/^(Admin|Staff|Administrator)\s*[-:]\s*/i', $raw)) {
+                    $evaluator_name = $raw;
+                  } else {
+                    $evaluator_name = 'Admin - ' . $raw;
+                  }
+                } elseif (!empty($admin_session_name) && strtolower($admin_session_name) !== 'admin') {
+                  if (preg_match('/^(Admin|Staff|Administrator)\s*[-:]\s*/i', $admin_session_name)) {
+                    $evaluator_name = $admin_session_name;
+                  } else {
+                    $evaluator_name = 'Admin - ' . $admin_session_name;
+                  }
                 } else {
-                  $evaluator_name = !empty($eval['evaluator']) ? $eval['evaluator'] : 'Admin';
+                  $evaluator_name = !empty($raw) ? $raw : 'Admin';
                 }
               }
 

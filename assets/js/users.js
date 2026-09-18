@@ -439,7 +439,20 @@ function openEvaluationModal(evaluation) {
 
     // Evaluated By & Date
     const evalByEl = document.getElementById('evalModalEvaluator');
-    if (evalByEl) evalByEl.textContent = isCompleted ? (details.evaluator || 'Admin') : '—';
+    if (evalByEl) {
+      let raw = (details.evaluator || '').trim();
+      if (isCompleted && raw && raw !== '—') {
+        if (/^(Admin|Staff|Administrator)\s*[-:]\s*/i.test(raw)) {
+          evalByEl.textContent = raw;
+        } else if (raw.toLowerCase() !== 'admin' && raw.toLowerCase() !== 'staff' && raw !== 'A.I. Evaluator') {
+          evalByEl.textContent = 'Admin - ' + raw;
+        } else {
+          evalByEl.textContent = raw;
+        }
+      } else {
+        evalByEl.textContent = isCompleted ? 'Admin' : '—';
+      }
+    }
 
     const dateEl = document.getElementById('evalModalDate');
     if (dateEl) dateEl.textContent = isCompleted ? (details.evaluationDate || '—') : '—';

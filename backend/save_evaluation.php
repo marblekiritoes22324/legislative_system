@@ -24,16 +24,23 @@ $reason = isset($_POST['reason']) ? trim($_POST['reason']) : '';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+$default_role = (!empty($_SESSION['role']) && strtolower($_SESSION['role']) === 'staff') ? 'Staff' : 'Admin';
 $evaluator = !empty($_POST['evaluator']) ? trim($_POST['evaluator']) : '';
 if (empty($evaluator) || $evaluator === 'Admin' || $evaluator === 'Staff') {
     if (!empty($_SESSION['full_name']) && trim($_SESSION['full_name']) !== '') {
-        $evaluator = trim($_SESSION['full_name']);
+        $person = trim($_SESSION['full_name']);
+        $evaluator = preg_match('/^(Admin|Staff|Administrator)\s*[-:]\s*/i', $person) ? $person : ($default_role . ' - ' . $person);
     } elseif (!empty($_SESSION['username']) && trim($_SESSION['username']) !== '') {
-        $evaluator = trim($_SESSION['username']);
+        $person = trim($_SESSION['username']);
+        $evaluator = preg_match('/^(Admin|Staff|Administrator)\s*[-:]\s*/i', $person) ? $person : ($default_role . ' - ' . $person);
+    }
+} else {
+    if (!preg_match('/^(Admin|Staff|Administrator)\s*[-:]\s*/i', $evaluator)) {
+        $evaluator = $default_role . ' - ' . $evaluator;
     }
 }
 if (empty($evaluator)) {
-    $evaluator = 'Admin';
+    $evaluator = $default_role;
 }
 $status = 'Completed';
 
