@@ -31,9 +31,9 @@ if (!empty($conn)) {
 }
 if (empty($report_policies)) {
   $report_policies = [
-    ['id' => 1, 'title' => 'Plastic Reduction Ordinance', 'category' => 'Environment', 'status' => 'Evaluated', 'created_at' => '2026-05-10'],
-    ['id' => 2, 'title' => 'Traffic Congestion Study', 'category' => 'Transportation', 'status' => 'Evaluated', 'created_at' => '2026-05-08'],
-    ['id' => 3, 'title' => 'Public Health Program', 'category' => 'Health', 'status' => 'Evaluated', 'created_at' => '2026-05-05'],
+    ['id' => 1, 'title' => 'Plastic Reduction Ordinance', 'category' => 'Environment', 'status' => 'Pending', 'eval_status' => 'Draft', 'created_at' => '2026-05-10'],
+    ['id' => 2, 'title' => 'Traffic Congestion Study', 'category' => 'Transportation', 'status' => 'Pending', 'eval_status' => 'Draft', 'created_at' => '2026-05-08'],
+    ['id' => 3, 'title' => 'Public Health Program', 'category' => 'Health', 'status' => 'Pending', 'eval_status' => 'Draft', 'created_at' => '2026-05-05'],
   ];
 }
 

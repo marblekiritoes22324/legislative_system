@@ -34,9 +34,9 @@ if (!empty($conn)) {
 // Fallback demo records if DB is empty
 if (empty($u_report_policies)) {
   $u_report_policies = [
-    ['id' => 1, 'title' => 'Plastic Reduction Ordinance', 'category' => 'Environment', 'status' => 'Evaluated', 'created_at' => '2026-05-10', 'ai_summary' => 'This ordinance restricts single-use plastics across commercial establishments in Manila City.'],
-    ['id' => 2, 'title' => 'Traffic Congestion Study', 'category' => 'Transportation', 'status' => 'Evaluated', 'created_at' => '2026-05-08', 'ai_summary' => 'Proposes smart traffic management and vehicle reduction strategies along major roads.'],
-    ['id' => 3, 'title' => 'Public Health Program', 'category' => 'Health', 'status' => 'Evaluated', 'created_at' => '2026-05-05', 'ai_summary' => 'Expands barangay health center services and medical assistance programs.'],
+    ['id' => 1, 'title' => 'Plastic Reduction Ordinance', 'category' => 'Environment', 'status' => 'Pending', 'eval_status' => 'Draft', 'created_at' => '2026-05-10', 'ai_summary' => 'This ordinance restricts single-use plastics across commercial establishments in Manila City.'],
+    ['id' => 2, 'title' => 'Traffic Congestion Study', 'category' => 'Transportation', 'status' => 'Pending', 'eval_status' => 'Draft', 'created_at' => '2026-05-08', 'ai_summary' => 'Proposes smart traffic management and vehicle reduction strategies along major roads.'],
+    ['id' => 3, 'title' => 'Public Health Program', 'category' => 'Health', 'status' => 'Pending', 'eval_status' => 'Draft', 'created_at' => '2026-05-05', 'ai_summary' => 'Expands barangay health center services and medical assistance programs.'],
   ];
 }
 
