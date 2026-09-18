@@ -69,10 +69,67 @@ document.addEventListener("DOMContentLoaded", function () {
   };
   initSidebarState();
 
+  // ── Mobile Sidebar Drawer Helpers ──
+  function getSidebarElements() {
+    return {
+      sidebar: document.getElementById('mainSidebar') || document.querySelector('.sidebar'),
+      overlay: document.getElementById('sidebarOverlay'),
+      menuBtn: document.getElementById('mobileMenuBtn')
+    };
+  }
+
+  function openMobileSidebar() {
+    const { sidebar, overlay, menuBtn } = getSidebarElements();
+    if (sidebar) sidebar.classList.add('mobile-open');
+    if (overlay) overlay.classList.add('active');
+    if (menuBtn) {
+      const icon = menuBtn.querySelector('i');
+      if (icon) icon.className = 'bi bi-x-lg';
+    }
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileSidebar() {
+    const { sidebar, overlay, menuBtn } = getSidebarElements();
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('active');
+    if (menuBtn) {
+      const icon = menuBtn.querySelector('i');
+      if (icon) icon.className = 'bi bi-list';
+    }
+    document.body.style.overflow = '';
+  }
+
   document.addEventListener('click', function (event) {
+    // 1. Mobile hamburger button toggle
+    const mobileBtn = event.target.closest('#mobileMenuBtn, .mobile-menu-btn');
+    if (mobileBtn) {
+      event.preventDefault();
+      event.stopPropagation();
+      const { sidebar } = getSidebarElements();
+      if (sidebar && sidebar.classList.contains('mobile-open')) {
+        closeMobileSidebar();
+      } else {
+        openMobileSidebar();
+      }
+      return;
+    }
+
+    // 2. Mobile overlay backdrop click to close
+    if (event.target.matches('#sidebarOverlay, .sidebar-overlay')) {
+      event.preventDefault();
+      closeMobileSidebar();
+      return;
+    }
+
+    // 3. Desktop sidebar toggle button (or close drawer if tapped inside sidebar on mobile)
     const toggleBtn = event.target.closest('.sidebar-toggle-btn, #sidebarToggleBtn');
     if (toggleBtn) {
       event.preventDefault();
+      if (window.innerWidth <= 991) {
+        closeMobileSidebar();
+        return;
+      }
       const isCurrentlyCollapsed = document.body.classList.contains('sidebar-collapsed');
       const newState = !isCurrentlyCollapsed;
 
@@ -93,6 +150,16 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
         showSection(targetId);
       }
+      // On mobile, auto-close the sidebar after selecting a section
+      if (window.innerWidth <= 991) {
+        closeMobileSidebar();
+      }
+    }
+  });
+
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 991) {
+      closeMobileSidebar();
     }
   });
 

@@ -745,6 +745,97 @@ if (!empty($conn)) {
       opacity: 0.95 !important;
       text-shadow: none !important;
     }
+
+    /* ── MOBILE OVERRIDE: beat the !important desktop rules on screens <= 991px ── */
+    @media (max-width: 991px) {
+      body:not(.sidebar-collapsed) .sidebar,
+      body.sidebar-collapsed .sidebar,
+      .sidebar {
+        position: fixed !important;
+        left: -320px !important;
+        top: 0 !important;
+        width: 280px !important;
+        flex: 0 0 280px !important;
+        height: 100vh !important;
+        z-index: 1045 !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        padding: 18px 12px !important;
+        overflow-y: auto !important;
+        box-shadow: none !important;
+      }
+
+      .sidebar.mobile-open {
+        left: 0 !important;
+        box-shadow: 6px 0 25px rgba(0, 0, 0, 0.5) !important;
+      }
+
+      body:not(.sidebar-collapsed) .main-panel,
+      body.sidebar-collapsed .main-panel,
+      .main-panel {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 0 40px !important;
+      }
+
+      .content-area {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+      }
+
+      .topbar {
+        margin: 8px 8px 16px 8px !important;
+        padding: 8px 12px !important;
+        border-radius: 12px !important;
+        flex-wrap: nowrap !important;
+      }
+
+      .topbar h2.fs-4 {
+        font-size: 0.9rem !important;
+        line-height: 1.2 !important;
+      }
+
+      .topbar .text-secondary.small {
+        display: none !important;
+      }
+
+      .mobile-menu-btn {
+        display: inline-flex !important;
+      }
+
+      .header-divider {
+        margin: 0 6px !important;
+      }
+
+      .dark-mode-switch {
+        width: 38px !important;
+        height: 22px !important;
+      }
+
+      .header-avatar-wrap {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+        max-width: 34px !important;
+        max-height: 34px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .topbar h2.fs-4 {
+        display: none !important;
+      }
+
+      .topbar {
+        padding: 6px 8px !important;
+      }
+
+      .content-area {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+      }
+    }
   </style>
 </head>
 
@@ -759,9 +850,12 @@ if (!empty($conn)) {
     }
   </script>
 
+  <!-- Mobile sidebar overlay backdrop -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <div class="app-shell">
     <!-- USER SIDEBAR NAVIGATION -->
-    <aside class="sidebar d-flex flex-column p-3">
+    <aside class="sidebar d-flex flex-column p-3" id="mainSidebar">
       <div class="brand mb-4 d-flex flex-column gap-2">
         <div class="d-flex align-items-center gap-3 brand-info">
           <img src="../assets/images/manilacityhall.svg" alt="Manila City Hall Logo"
@@ -822,6 +916,10 @@ if (!empty($conn)) {
       <header
         class="topbar d-flex align-items-center justify-content-between px-4 py-3 mb-4 shadow-sm bg-white rounded-4 border border-light">
         <div class="d-flex align-items-center gap-3">
+          <!-- Mobile hamburger (only visible on <=991px) -->
+          <button class="mobile-menu-btn me-1" id="mobileMenuBtn" type="button" aria-label="Open navigation menu" title="Open Menu">
+            <i class="bi bi-list"></i>
+          </button>
           <img src="../assets/images/manilacityhall.svg" alt="Manila Seal"
             style="width:44px; height:44px; object-fit:contain;">
           <div>
