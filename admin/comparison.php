@@ -685,8 +685,8 @@ foreach ($completed_policies as $p) {
           bestPracticeB = 'Establishes essential physical infrastructure connectivity, pedestrian right-of-way, and commuter road safety under Manila City Engineering guidelines.';
           takeawayText = 'Direct the Committee on Social Services and the Committee on Transportation to hold joint hearings to ensure transit infrastructure incorporates accessible community welfare and disability-friendly amenities.';
         } else {
-          strengthA = 'Establishes focused statutory mandates for <strong>' + esc(a.title) + '</strong> (' + esc(catA) + '), supported by ' + esc(a.economic_level) + ' economic feasibility and localized enforcement guidelines.';
-          bestPracticeB = '<strong>' + esc(b.title) + '</strong> (' + esc(catB) + ') provides complementary administrative mechanisms, reinforcing civic compliance with ' + esc(b.risk_level) + ' operational risk.';
+          var bRiskDescriptor = (b.risk_level || 'Low Risk').toLowerCase().indexOf('high') !== -1 ? 'elevated' : 'controlled';
+          bestPracticeB = '<strong>' + esc(b.title) + '</strong> (' + esc(catB) + ') provides complementary administrative mechanisms, reinforcing civic compliance while managing ' + bRiskDescriptor + ' operational parameters.';
           takeawayText = 'Harmonize implementation calendars and joint inspection schedules between both Manila measures to eliminate administrative redundancies across city departments.';
         }
       }
