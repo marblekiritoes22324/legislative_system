@@ -77,29 +77,16 @@
     })
     .then(function (res) { return res.json(); })
     .then(function (data) {
+      // ── STEP 1: Two-Factor Verification Required ──
+      if (data && data.step === 'otp_required') {
+        window.pendingOtpUsername = data.username || username;
+        window.showOtpScreen(data);
+        return;
+      }
+
+      // ── Direct Login Success (if OTP not enabled for role) ──
       if (data && data.success && data.user) {
-        var u = data.user;
-        var role = (u.role || '').toLowerCase();
-        var displayName = u.name || username;
-
-        sessionStorage.setItem('pending_login_audit', displayName);
-
-        if (role === 'admin' || role === 'administrator') {
-          localStorage.setItem('admin_logged_in', 'true');
-          localStorage.removeItem('staff_logged_in');
-          localStorage.setItem('current_user', JSON.stringify(u));
-          window.location.href = '../admin/admin_dashboard.php';
-        } else if (role === 'staff' || role === 'legislative staff') {
-          localStorage.setItem('staff_logged_in', 'true');
-          localStorage.removeItem('admin_logged_in');
-          localStorage.setItem('current_user', JSON.stringify(u));
-          window.location.href = '../staff/staff_dashboard.php';
-        } else {
-          // Councilor / User -> Redirect to User Portal
-          localStorage.setItem('user_logged_in', 'true');
-          localStorage.setItem('current_user', JSON.stringify(u));
-          window.location.href = '../users/user_dashboard.php?username=' + encodeURIComponent(u.username) + '&name=' + encodeURIComponent(u.name || '') + '&email=' + encodeURIComponent(u.email || '');
-        }
+        window.completeLoginSuccess(data.user, username);
       } else {
         // Fallback for provisioned accounts matched in localStorage
         if (matchedLocal) {
@@ -142,5 +129,239 @@
     });
 
     return false;
+  };
+
+  // ── OTP UI Control & Handlers ──
+  var otpTimerInterval = null;
+  var resendTimerInterval = null;
+
+  window.showOtpScreen = function (data) {
+    var loginForm = document.getElementById('loginForm');
+    var otpSection = document.getElementById('otpSection');
+    var maskedEmailEl = document.getElementById('otpMaskedEmail');
+    var alertBox = document.getElementById('otpAlertBox');
+    var input = document.getElementById('otpCodeInput');
+
+    if (loginForm) loginForm.style.display = 'none';
+    if (otpSection) otpSection.style.display = 'block';
+
+    if (maskedEmailEl) {
+      maskedEmailEl.textContent = data.email || data.full_email || 'your email';
+    }
+
+    if (alertBox) {
+      if (data.dev_hint) {
+        alertBox.style.display = 'flex';
+        alertBox.style.background = '#f0fdf4';
+        alertBox.style.border = '1px solid #bbf7d0';
+        alertBox.style.color = '#15803d';
+        alertBox.innerHTML = '<i class="bi bi-info-circle-fill"></i><span>Security PIN generated: <strong>' + data.dev_hint + '</strong></span>';
+      } else {
+        alertBox.style.display = 'none';
+      }
+    }
+
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+
+    window.startOtpTimer(600); // 10 minutes
+    window.startResendCooldown(60); // 60 seconds
+  };
+
+  window.backToPasswordLogin = function () {
+    clearInterval(otpTimerInterval);
+    clearInterval(resendTimerInterval);
+    var loginForm = document.getElementById('loginForm');
+    var otpSection = document.getElementById('otpSection');
+    if (loginForm) loginForm.style.display = 'block';
+    if (otpSection) otpSection.style.display = 'none';
+  };
+
+  window.startOtpTimer = function (totalSeconds) {
+    clearInterval(otpTimerInterval);
+    var timerDisplay = document.getElementById('otpTimerDisplay');
+    var remaining = totalSeconds;
+
+    function update() {
+      var mins = Math.floor(remaining / 60);
+      var secs = remaining % 60;
+      if (timerDisplay) {
+        timerDisplay.textContent = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+      }
+      if (remaining <= 0) {
+        clearInterval(otpTimerInterval);
+        var alertBox = document.getElementById('otpAlertBox');
+        if (alertBox) {
+          alertBox.style.display = 'flex';
+          alertBox.style.background = '#fef2f2';
+          alertBox.style.border = '1px solid #fecaca';
+          alertBox.style.color = '#dc2626';
+          alertBox.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i><span>Verification code expired. Please click Resend Code.</span>';
+        }
+      }
+      remaining--;
+    }
+    update();
+    otpTimerInterval = setInterval(update, 1000);
+  };
+
+  window.startResendCooldown = function (seconds) {
+    clearInterval(resendTimerInterval);
+    var resendBtn = document.getElementById('otpResendBtn');
+    if (!resendBtn) return;
+    var cd = seconds;
+    resendBtn.disabled = true;
+
+    function updateCd() {
+      if (cd > 0) {
+        resendBtn.textContent = 'Resend (' + cd + 's)';
+        cd--;
+      } else {
+        clearInterval(resendTimerInterval);
+        resendBtn.disabled = false;
+        resendBtn.textContent = 'Resend code';
+      }
+    }
+    updateCd();
+    resendTimerInterval = setInterval(updateCd, 1000);
+  };
+
+  window.handleOtpFormSubmit = function (e) {
+    if (e) e.preventDefault();
+    var input = document.getElementById('otpCodeInput');
+    var submitBtn = document.getElementById('otpSubmitBtn');
+    var alertBox = document.getElementById('otpAlertBox');
+
+    if (!input) return false;
+    var code = input.value.trim();
+    if (code.length < 6) {
+      if (alertBox) {
+        alertBox.style.display = 'flex';
+        alertBox.style.background = '#fef2f2';
+        alertBox.style.border = '1px solid #fecaca';
+        alertBox.style.color = '#dc2626';
+        alertBox.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i><span>Please enter all 6 digits.</span>';
+      }
+      return false;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Verifying...';
+    }
+
+    var formData = new FormData();
+    formData.append('verify_otp', '1');
+    formData.append('username', window.pendingOtpUsername || '');
+    formData.append('otp_code', code);
+
+    var authUrl = window.location.pathname.includes('/auth/') ? 'login.php' : '../auth/login.php';
+
+    fetch(authUrl, {
+      method: 'POST',
+      body: formData
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Verify &amp; Sign In <i class="bi bi-arrow-right ms-1"></i>';
+      }
+
+      if (data && data.success && data.user) {
+        clearInterval(otpTimerInterval);
+        clearInterval(resendTimerInterval);
+        window.completeLoginSuccess(data.user, window.pendingOtpUsername);
+      } else {
+        if (alertBox) {
+          alertBox.style.display = 'flex';
+          alertBox.style.background = '#fef2f2';
+          alertBox.style.border = '1px solid #fecaca';
+          alertBox.style.color = '#dc2626';
+          alertBox.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i><span>' + (data.error || 'Invalid code.') + '</span>';
+        }
+        input.select();
+      }
+    })
+    .catch(function () {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Verify &amp; Sign In <i class="bi bi-arrow-right ms-1"></i>';
+      }
+      alert('Verification request failed. Please check your connection.');
+    });
+
+    return false;
+  };
+
+  window.handleOtpResend = function () {
+    var resendBtn = document.getElementById('otpResendBtn');
+    var alertBox = document.getElementById('otpAlertBox');
+    if (resendBtn) resendBtn.disabled = true;
+
+    var formData = new FormData();
+    formData.append('resend_otp', '1');
+    formData.append('username', window.pendingOtpUsername || '');
+
+    var authUrl = window.location.pathname.includes('/auth/') ? 'login.php' : '../auth/login.php';
+
+    fetch(authUrl, {
+      method: 'POST',
+      body: formData
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      window.startResendCooldown(60);
+      window.startOtpTimer(600);
+
+      if (alertBox) {
+        alertBox.style.display = 'flex';
+        alertBox.style.background = '#f0fdf4';
+        alertBox.style.border = '1px solid #bbf7d0';
+        alertBox.style.color = '#15803d';
+        var msg = data.message || 'New verification code sent!';
+        if (data.dev_hint) msg += ' (PIN: ' + data.dev_hint + ')';
+        alertBox.innerHTML = '<i class="bi bi-check-circle-fill"></i><span>' + msg + '</span>';
+      }
+    })
+    .catch(function () {
+      window.startResendCooldown(15);
+      alert('Could not resend code. Please try again.');
+    });
+  };
+
+  // ── Auto-submit OTP when 6 digits are reached ──
+  document.addEventListener('input', function (e) {
+    if (e.target && e.target.id === 'otpCodeInput') {
+      var val = e.target.value.replace(/\D/g, '');
+      e.target.value = val;
+      if (val.length === 6) {
+        window.handleOtpFormSubmit();
+      }
+    }
+  });
+
+  window.completeLoginSuccess = function (u, username) {
+    var role = (u.role || '').toLowerCase();
+    var displayName = u.name || username;
+    sessionStorage.setItem('pending_login_audit', displayName);
+
+    if (role === 'admin' || role === 'administrator') {
+      localStorage.setItem('admin_logged_in', 'true');
+      localStorage.removeItem('staff_logged_in');
+      localStorage.setItem('current_user', JSON.stringify(u));
+      window.location.href = '../admin/admin_dashboard.php';
+    } else if (role === 'staff' || role === 'legislative staff') {
+      localStorage.setItem('staff_logged_in', 'true');
+      localStorage.removeItem('admin_logged_in');
+      localStorage.setItem('current_user', JSON.stringify(u));
+      window.location.href = '../staff/staff_dashboard.php';
+    } else {
+      localStorage.setItem('user_logged_in', 'true');
+      localStorage.setItem('current_user', JSON.stringify(u));
+      window.location.href = '../users/user_dashboard.php?username=' + encodeURIComponent(u.username) + '&name=' + encodeURIComponent(u.name || '') + '&email=' + encodeURIComponent(u.email || '');
+    }
   };
 })();

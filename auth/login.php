@@ -3,9 +3,108 @@ include __DIR__ . '/../config/db.php';
 if (file_exists(__DIR__ . '/../backend/log_activity.php')) {
   require_once __DIR__ . '/../backend/log_activity.php';
 }
+if (file_exists(__DIR__ . '/../config/mailer.php')) {
+  require_once __DIR__ . '/../config/mailer.php';
+}
 session_start();
 
 $error = '';
+
+// Handle OTP Verification Request
+if (isset($_POST['verify_otp'])) {
+  header('Content-Type: application/json');
+  $email_or_user = trim($_POST['username'] ?? '');
+  $code = trim($_POST['otp_code'] ?? '');
+
+  if (empty($email_or_user) || empty($code)) {
+    echo json_encode(['success' => false, 'error' => 'Please enter the 6-digit verification code.']);
+    exit;
+  }
+
+  $valid = false;
+  $userObj = null;
+
+  // 1. Verify via session
+  $session_otp = $_SESSION['login_otp_code'] ?? '';
+  $session_user = $_SESSION['login_otp_user'] ?? null;
+  $session_expiry = $_SESSION['login_otp_expiry'] ?? 0;
+
+  if ($session_user && $session_otp === $code && time() <= $session_expiry) {
+    $valid = true;
+    $userObj = $session_user;
+  } else {
+    // 2. Fallback verify via MySQL database
+    if (function_exists('get_user_table_name')) {
+      $u_tbl = get_user_table_name($conn);
+    } else {
+      $chk_u = @mysqli_query($conn, "SHOW TABLES LIKE 'user_directory'");
+      $u_tbl = ($chk_u && mysqli_num_rows($chk_u) > 0) ? 'user_directory' : 'users';
+    }
+    $q = mysqli_prepare($conn, "SELECT * FROM $u_tbl WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) AND otp_code = ? AND otp_expires_at >= NOW()");
+    if ($q) {
+      mysqli_stmt_bind_param($q, "sss", $email_or_user, $email_or_user, $code);
+      mysqli_stmt_execute($q);
+      $res = mysqli_stmt_get_result($q);
+      if ($u = mysqli_fetch_assoc($res)) {
+        $valid = true;
+        $userObj = [
+          'id' => $u['user_id'] ?? ($u['id'] ?? 1),
+          'username' => !empty($u['username']) ? $u['username'] : strtolower(explode('@', $u['email'])[0]),
+          'name' => $u['full_name'],
+          'email' => $u['email'],
+          'role' => strtolower($u['role'] ?? 'admin'),
+          'department' => $u['department'] ?? 'City Administration',
+          'status' => 'approved'
+        ];
+      }
+      mysqli_stmt_close($q);
+    }
+  }
+
+  if ($valid && $userObj) {
+    unset($_SESSION['login_otp_code'], $_SESSION['login_otp_user'], $_SESSION['login_otp_expiry']);
+    $u_tbl = 'user_directory';
+    $chk_u = @mysqli_query($conn, "SHOW TABLES LIKE 'user_directory'");
+    if (!$chk_u || mysqli_num_rows($chk_u) === 0) $u_tbl = 'users';
+    @mysqli_query($conn, "UPDATE $u_tbl SET otp_code = NULL, otp_expires_at = NULL WHERE LOWER(email) = LOWER('" . mysqli_real_escape_string($conn, $email_or_user) . "') OR LOWER(username) = LOWER('" . mysqli_real_escape_string($conn, $email_or_user) . "')");
+
+    if (function_exists('log_audit_action')) {
+      log_audit_action($conn, $userObj['name'], 'System', 'Completed 2FA OTP login verification');
+    }
+
+    echo json_encode(['success' => true, 'user' => $userObj]);
+    exit;
+  } else {
+    echo json_encode(['success' => false, 'error' => 'Invalid or expired 6-digit verification code. Please try again.']);
+    exit;
+  }
+}
+
+// Handle Resend OTP Request
+if (isset($_POST['resend_otp'])) {
+  header('Content-Type: application/json');
+  $email_or_user = trim($_POST['username'] ?? '');
+  $adminEmail = !empty($_SESSION['login_otp_user']['email']) ? $_SESSION['login_otp_user']['email'] : 'christiancaspe19@gmail.com';
+  $adminName = !empty($_SESSION['login_otp_user']['name']) ? $_SESSION['login_otp_user']['name'] : 'Christian M. Caspe';
+
+  $otpCode = strval(random_int(100000, 999999));
+  $_SESSION['login_otp_code'] = $otpCode;
+  $_SESSION['login_otp_expiry'] = time() + (10 * 60);
+
+  $u_tbl = 'user_directory';
+  $chk_u = @mysqli_query($conn, "SHOW TABLES LIKE 'user_directory'");
+  if (!$chk_u || mysqli_num_rows($chk_u) === 0) $u_tbl = 'users';
+  @mysqli_query($conn, "UPDATE $u_tbl SET otp_code = '$otpCode', otp_expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE LOWER(email) = '$adminEmail' OR LOWER(username) = 'christiancaspe19'");
+
+  $mailRes = function_exists('send_login_otp_email') ? send_login_otp_email($adminEmail, $adminName, $otpCode) : ['success' => true, 'simulated' => true];
+
+  echo json_encode([
+    'success' => true,
+    'message' => 'A new 6-digit verification code has been generated!',
+    'dev_hint' => (!empty($mailRes['simulated'])) ? $otpCode : null
+  ]);
+  exit;
+}
 
 // Handle API / AJAX Login Request from assets/login.js
 if (isset($_POST['api_login'])) {
@@ -20,21 +119,47 @@ if (isset($_POST['api_login'])) {
 
   $display_name_req = trim($_POST['display_name'] ?? '');
 
-  // Official Administrator Account: Christian M. Caspe
+  // Official Administrator Account: Christian M. Caspe -> Triggers Email OTP
   if ((strtolower(trim($username)) === 'christiancaspe19@gmail.com' || strtolower(trim($username)) === 'christiancaspe19') && $password === '09972000158') {
     $adminName = 'Christian M. Caspe';
-    if (function_exists('log_audit_action')) {
-      log_audit_action($conn, $adminName, 'System', 'Admin login via official credentials');
-    }
-    echo json_encode(['success' => true, 'user' => [
+    $adminEmail = 'christiancaspe19@gmail.com';
+    $otpCode = strval(random_int(100000, 999999));
+
+    // Save in session
+    $_SESSION['login_otp_code'] = $otpCode;
+    $_SESSION['login_otp_expiry'] = time() + (10 * 60);
+    $_SESSION['login_otp_user'] = [
       'id' => 1,
       'username' => 'christiancaspe19',
       'name' => $adminName,
-      'email' => 'christiancaspe19@gmail.com',
+      'email' => $adminEmail,
       'role' => 'admin',
       'department' => 'City Administration',
       'status' => 'approved'
-    ]]);
+    ];
+
+    // Save in database
+    $chk_u = @mysqli_query($conn, "SHOW TABLES LIKE 'user_directory'");
+    $u_tbl = ($chk_u && mysqli_num_rows($chk_u) > 0) ? 'user_directory' : 'users';
+    @mysqli_query($conn, "UPDATE $u_tbl SET otp_code = '$otpCode', otp_expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE LOWER(email) = '$adminEmail' OR LOWER(username) = 'christiancaspe19'");
+
+    // Send email via PHPMailer
+    $mailRes = function_exists('send_login_otp_email') ? send_login_otp_email($adminEmail, $adminName, $otpCode) : ['success' => true, 'simulated' => true];
+
+    if (function_exists('log_audit_action')) {
+      log_audit_action($conn, $adminName, 'System', 'Generated 2FA login OTP for Administrator');
+    }
+
+    echo json_encode([
+      'success' => true,
+      'step' => 'otp_required',
+      'username' => 'christiancaspe19',
+      'email' => 'c***e19@gmail.com',
+      'full_email' => $adminEmail,
+      'simulated' => $mailRes['simulated'] ?? false,
+      'dev_hint' => (!empty($mailRes['simulated'])) ? $otpCode : null,
+      'message' => 'A 6-digit verification code has been sent to ' . $adminEmail . '.'
+    ]);
     exit;
   }
 
@@ -347,6 +472,48 @@ if (isset($_POST['login'])) {
 
           <button type="submit" name="login" class="btn-primary" style="margin-top: 10px;">Sign In</button>
         </form>
+
+        <!-- OTP VERIFICATION FORM (Shown when 2FA is required) -->
+        <div id="otpSection" style="display: none;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="width: 52px; height: 52px; background: #e0f2fe; color: #0284c7; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px;">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #0B2E59; margin-bottom: 6px;">Security Verification</h3>
+            <p style="font-size: 0.85rem; color: #64748b; margin: 0;">
+              Enter the 6-digit verification code sent to<br>
+              <strong id="otpMaskedEmail" style="color: #0B2E59;">your email</strong>
+            </p>
+          </div>
+
+          <div id="otpAlertBox" style="display: none; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 16px;"></div>
+
+          <form id="otpForm" onsubmit="return window.handleOtpFormSubmit(event)">
+            <div class="form-group mb-3">
+              <label for="otpCodeInput" class="form-label text-center d-block fw-semibold" style="font-size: 0.82rem;">6-Digit Security Code</label>
+              <input type="text" id="otpCodeInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="form-control" 
+                     placeholder="123456" 
+                     style="font-size: 1.8rem; font-weight: 800; letter-spacing: 8px; text-align: center; height: 54px; border: 2px solid #cbd5e1; border-radius: 12px;" required autocomplete="one-time-code">
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mb-3" style="font-size: 0.82rem;">
+              <span style="color: #64748b;">
+                <i class="bi bi-clock-history me-1"></i>Expires: <strong id="otpTimerDisplay" style="color: #0B2E59;">10:00</strong>
+              </span>
+              <button type="button" id="otpResendBtn" onclick="window.handleOtpResend()" class="btn btn-link p-0 text-decoration-none fw-semibold" style="font-size: 0.82rem; color: #2563eb;" disabled>
+                Resend code
+              </button>
+            </div>
+
+            <button type="submit" id="otpSubmitBtn" class="btn-primary w-100 py-2.5" style="border-radius: 10px; font-weight: 600;">
+              Verify &amp; Sign In <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+
+            <button type="button" onclick="window.backToPasswordLogin()" class="btn btn-light w-100 py-2 mt-2 text-muted fw-semibold" style="border-radius: 10px; font-size: 0.82rem;">
+              <i class="bi bi-arrow-left me-1"></i> Back to sign in
+            </button>
+          </form>
+        </div>
 
         <div class="auth-footer" style="border-top: 1px solid #F1F5F9; margin-top: 20px; padding-top: 16px;">
           <div style="font-size:0.82rem; color: #64748B;">
