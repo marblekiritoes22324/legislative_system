@@ -137,6 +137,7 @@ foreach ($completed_policies as $p) {
         </span>
         <div>
           <h2 class="h4 fw-bold text-dark mb-1">Benchmarking &amp; Comparative Analysis</h2>
+          <!-- BUILD:v2026-09-18-003 -->
           <p class="text-muted mb-0 small" id="comparisonSubtitle">
             Compare local Manila ordinances side by side with external city benchmarks (e.g., Quezon City, Pasig).
           </p>
