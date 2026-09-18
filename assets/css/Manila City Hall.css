@@ -331,55 +331,176 @@ body {
   font-size: 1rem;
 }
 
+/* ============================================================
+   MOBILE RESPONSIVE LAYOUT SYSTEM
+   ============================================================ */
+
+/* --- Mobile overlay backdrop --- */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1039;
+  backdrop-filter: blur(2px);
+  transition: opacity 0.3s ease;
+}
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* --- Mobile hamburger button (hidden on desktop) --- */
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #0B2E59;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  align-items: center;
+  justify-content: center;
+}
+.mobile-menu-btn:hover {
+  background: rgba(11, 46, 89, 0.08);
+}
+
+/* ---- Tablet breakpoint (≤991px) ---- */
 @media (max-width: 991px) {
+  /* Sidebar slides in from left as overlay */
+  .sidebar {
+    position: fixed !important;
+    left: -320px !important;
+    top: 0 !important;
+    width: 280px !important;
+    flex: 0 0 280px !important;
+    height: 100vh !important;
+    z-index: 1040 !important;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    padding: 20px 14px !important;
+  }
+
+  .sidebar.mobile-open {
+    left: 0 !important;
+  }
+
+  /* Main panel takes full width */
   .main-panel {
-    margin-left: 0;
-    width: 100%;
-    padding-left: 16px;
-    padding-right: 16px;
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 12px 40px !important;
   }
 
-  .sidebar {
-    position: relative;
-    width: 100%;
-    min-height: auto;
-    left: 0;
-    top: 0;
-    padding: 24px 20px;
-  }
-}
-
-@media (max-width: 767px) {
+  /* Topbar layout on tablet */
   .topbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    margin: 8px !important;
+    padding: 10px 14px !important;
+    border-radius: 12px !important;
   }
 
-  .sidebar {
-    padding: 20px;
+  /* Show hamburger button */
+  .mobile-menu-btn {
+    display: inline-flex !important;
   }
 
-  .sidebar-nav .nav-link {
-    padding: 10px 12px;
+  /* Hide the sidebar collapse toggle on mobile (we use hamburger instead) */
+  .sidebar-toggle-btn {
+    display: none !important;
+  }
+
+  /* Admin name text shorter on tablet */
+  .header-admin-name {
+    max-width: 180px !important;
   }
 }
 
+/* ---- Mobile breakpoint (≤767px) ---- */
 @media (max-width: 767px) {
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
   .sidebar {
-    padding: 20px;
+    width: 260px !important;
+    flex: 0 0 260px !important;
+    left: -270px !important;
   }
 
-  .sidebar-nav .nav-link {
-    padding: 10px 12px;
+  /* Topbar stacks logo/title on top, controls on bottom */
+  .topbar {
+    margin: 6px !important;
+    padding: 8px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  /* Hide the long admin name text, keep only role + avatar */
+  .header-admin-name,
+  .header-admin-pipe {
+    display: none !important;
+  }
+
+  .header-admin-role {
+    font-size: 0.88rem !important;
+  }
+
+  /* Reduce topbar title font size */
+  .topbar .fs-5 {
+    font-size: 0.95rem !important;
+  }
+
+  .topbar .text-uppercase.small {
+    font-size: 0.65rem !important;
+  }
+
+  /* Main panel tighter on phone */
+  .main-panel {
+    padding: 8px 8px 40px !important;
+  }
+
+  /* Cards full width on mobile */
+  .col-md-3, .col-md-4, .col-lg-3, .col-lg-4 {
+    min-width: 100% !important;
+  }
+
+  /* Tables scroll horizontally */
+  .table-responsive-force {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reduce heading sizes */
+  .h4, h4 { font-size: 1rem !important; }
+  .h5, h5 { font-size: 0.9rem !important; }
+
+  /* Comparison dropdowns stack */
+  .comparison-selectors {
+    flex-direction: column !important;
+    gap: 8px !important;
   }
 }
+
+/* ---- Small phone (≤480px) ---- */
+@media (max-width: 480px) {
+  .topbar {
+    margin: 4px !important;
+    padding: 6px 10px !important;
+  }
+
+  .main-panel {
+    padding: 4px 4px 40px !important;
+  }
+
+  /* Even more compact cards */
+  .card-body {
+    padding: 12px !important;
+  }
+
+  /* Badge text stays readable */
+  .badge {
+    font-size: 0.72rem !important;
+  }
+}
+
 
 body.dark-mode {
   background: #0B192E !important;

@@ -102,9 +102,12 @@
     }
   </script>
 
+  <!-- Mobile sidebar overlay backdrop -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <div class="app-shell">
     <!-- SIDEBAR -->
-    <aside class="sidebar d-flex flex-column p-3">
+    <aside class="sidebar d-flex flex-column p-3" id="mainSidebar">
       <div class="brand mb-4 d-flex flex-column gap-2">
         <div class="d-flex align-items-center gap-3 brand-info">
           <img src="../assets/images/manilacityhall.svg" alt="Manila City Hall Logo"
@@ -194,6 +197,10 @@
       <header
         class="topbar d-flex align-items-center justify-content-between px-4 py-3 mb-4 shadow-sm bg-white rounded-4 border mx-4 mt-3">
         <div class="d-flex align-items-center gap-3">
+          <!-- Mobile hamburger (only visible on ≤991px) -->
+          <button class="mobile-menu-btn me-1" id="mobileMenuBtn" type="button" aria-label="Open navigation menu" title="Open Menu">
+            <i class="bi bi-list"></i>
+          </button>
           <div
             class="logo-circle d-flex align-items-center justify-content-center rounded-circle fw-bold text-white shadow-sm"
             style="background:#0B2E59;width:42px;height:42px;">M</div>
@@ -267,3 +274,50 @@
       </header>
 
       <main class="content-area px-4 pb-5">
+
+  <script>
+    // --- Mobile sidebar toggle ---
+    (function () {
+      var sidebar = document.getElementById('mainSidebar');
+      var overlay = document.getElementById('sidebarOverlay');
+      var menuBtn = document.getElementById('mobileMenuBtn');
+
+      function openSidebar() {
+        if (sidebar) sidebar.classList.add('mobile-open');
+        if (overlay) overlay.classList.add('active');
+        if (menuBtn) menuBtn.querySelector('i').className = 'bi bi-x-lg';
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSidebar() {
+        if (sidebar) sidebar.classList.remove('mobile-open');
+        if (overlay) overlay.classList.remove('active');
+        if (menuBtn) menuBtn.querySelector('i').className = 'bi bi-list';
+        document.body.style.overflow = '';
+      }
+
+      if (menuBtn) menuBtn.addEventListener('click', function () {
+        if (sidebar && sidebar.classList.contains('mobile-open')) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+      });
+
+      if (overlay) overlay.addEventListener('click', closeSidebar);
+
+      // Close sidebar when a nav link is tapped on mobile
+      if (sidebar) {
+        sidebar.querySelectorAll('.nav-link').forEach(function (link) {
+          link.addEventListener('click', function () {
+            if (window.innerWidth <= 991) closeSidebar();
+          });
+        });
+      }
+
+      // Close on resize back to desktop
+      window.addEventListener('resize', function () {
+        if (window.innerWidth > 991) closeSidebar();
+      });
+    })();
+  </script>
