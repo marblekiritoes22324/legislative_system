@@ -84,23 +84,49 @@ if (isset($_POST['verify_otp'])) {
 if (isset($_POST['resend_otp'])) {
   header('Content-Type: application/json');
   $email_or_user = trim($_POST['username'] ?? '');
-  $adminEmail = !empty($_SESSION['login_otp_user']['email']) ? $_SESSION['login_otp_user']['email'] : 'christiancaspe19@gmail.com';
-  $adminName = !empty($_SESSION['login_otp_user']['name']) ? $_SESSION['login_otp_user']['name'] : 'Christian M. Caspe';
+
+  $targetEmail = !empty($_SESSION['login_otp_user']['email']) ? $_SESSION['login_otp_user']['email'] : '';
+  $targetName = !empty($_SESSION['login_otp_user']['name']) ? $_SESSION['login_otp_user']['name'] : 'User';
+  $targetUsername = !empty($_SESSION['login_otp_user']['username']) ? $_SESSION['login_otp_user']['username'] : $email_or_user;
+
+  $u_tbl = function_exists('get_user_table_name') ? get_user_table_name($conn) : 'user_directory';
+  $chk_u = @mysqli_query($conn, "SHOW TABLES LIKE '$u_tbl'");
+  if (!$chk_u || mysqli_num_rows($chk_u) === 0) $u_tbl = 'users';
+
+  if (empty($targetEmail) && !empty($email_or_user)) {
+    $q = mysqli_prepare($conn, "SELECT email, full_name, username FROM $u_tbl WHERE LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?) LIMIT 1");
+    if ($q) {
+      mysqli_stmt_bind_param($q, "ss", $email_or_user, $email_or_user);
+      mysqli_stmt_execute($q);
+      $res = mysqli_stmt_get_result($q);
+      if ($row = mysqli_fetch_assoc($res)) {
+        $targetEmail = $row['email'];
+        $targetName = !empty($row['full_name']) ? $row['full_name'] : $row['username'];
+        $targetUsername = $row['username'];
+      }
+      mysqli_stmt_close($q);
+    }
+  }
+
+  if (empty($targetEmail)) {
+    $targetEmail = 'christiancaspe19@gmail.com';
+    $targetName = 'Christian M. Caspe';
+    $targetUsername = 'christiancaspe19';
+  }
 
   $otpCode = strval(random_int(100000, 999999));
   $_SESSION['login_otp_code'] = $otpCode;
   $_SESSION['login_otp_expiry'] = time() + (10 * 60);
 
-  $u_tbl = 'user_directory';
-  $chk_u = @mysqli_query($conn, "SHOW TABLES LIKE 'user_directory'");
-  if (!$chk_u || mysqli_num_rows($chk_u) === 0) $u_tbl = 'users';
-  @mysqli_query($conn, "UPDATE $u_tbl SET otp_code = '$otpCode', otp_expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE LOWER(email) = '$adminEmail' OR LOWER(username) = 'christiancaspe19'");
+  $safeEmail = mysqli_real_escape_string($conn, $targetEmail);
+  $safeUser = mysqli_real_escape_string($conn, $targetUsername);
+  @mysqli_query($conn, "UPDATE $u_tbl SET otp_code = '$otpCode', otp_expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE LOWER(email) = LOWER('$safeEmail') OR LOWER(username) = LOWER('$safeUser')");
 
-  $mailRes = function_exists('send_login_otp_email') ? send_login_otp_email($adminEmail, $adminName, $otpCode) : ['success' => true, 'simulated' => true];
+  $mailRes = function_exists('send_login_otp_email') ? send_login_otp_email($targetEmail, $targetName, $otpCode) : ['success' => true, 'simulated' => true];
 
   echo json_encode([
     'success' => true,
-    'message' => 'A new 6-digit verification code has been generated!',
+    'message' => 'A new 6-digit verification code has been sent to ' . $targetEmail . '!',
     'dev_hint' => (!empty($mailRes['simulated'])) ? $otpCode : null
   ]);
   exit;
@@ -225,6 +251,47 @@ if (isset($_POST['api_login'])) {
           'department' => $user['department'] ?? 'Secretariat',
           'status' => 'approved'
         ];
+
+        // If the user has a valid real email, trigger OTP verification!
+        $targetEmail = trim($user['email'] ?? '');
+        if (!empty($targetEmail) && filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+          $targetName = !empty($user['full_name']) ? $user['full_name'] : $userObj['username'];
+          $otpCode = strval(random_int(100000, 999999));
+
+          // Save OTP in session
+          $_SESSION['login_otp_code'] = $otpCode;
+          $_SESSION['login_otp_expiry'] = time() + (10 * 60);
+          $_SESSION['login_otp_user'] = $userObj;
+
+          // Save OTP in database
+          $safeEmail = mysqli_real_escape_string($conn, $targetEmail);
+          $safeUser = mysqli_real_escape_string($conn, $userObj['username']);
+          @mysqli_query($conn, "UPDATE $u_tbl SET otp_code = '$otpCode', otp_expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE) WHERE LOWER(email) = LOWER('$safeEmail') OR LOWER(username) = LOWER('$safeUser')");
+
+          // Send real email via PHPMailer
+          $mailRes = function_exists('send_login_otp_email') ? send_login_otp_email($targetEmail, $targetName, $otpCode) : ['success' => true, 'simulated' => true];
+
+          if (function_exists('log_audit_action')) {
+            log_audit_action($conn, $targetName, 'System', 'Generated 2FA login OTP');
+          }
+
+          $emailParts = explode('@', $targetEmail);
+          $maskedName = substr($emailParts[0], 0, 1) . '***' . substr($emailParts[0], -1);
+          $maskedEmail = $maskedName . '@' . ($emailParts[1] ?? 'gmail.com');
+
+          echo json_encode([
+            'success' => true,
+            'step' => 'otp_required',
+            'username' => $userObj['username'],
+            'email' => $maskedEmail,
+            'full_email' => $targetEmail,
+            'simulated' => $mailRes['simulated'] ?? false,
+            'dev_hint' => (!empty($mailRes['simulated'])) ? $otpCode : null,
+            'message' => 'A 6-digit verification code has been sent to ' . $targetEmail . '.'
+          ]);
+          exit;
+        }
+
         if (function_exists('log_audit_action')) {
           log_audit_action($conn, $user['full_name'] ?? 'User', 'System', 'User login');
         }
