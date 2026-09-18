@@ -20,6 +20,24 @@ if (isset($_POST['api_login'])) {
 
   $display_name_req = trim($_POST['display_name'] ?? '');
 
+  // Official Administrator Account: Christian M. Caspe
+  if ((strtolower(trim($username)) === 'christiancaspe19@gmail.com' || strtolower(trim($username)) === 'christiancaspe19') && $password === '09972000158') {
+    $adminName = 'Christian M. Caspe';
+    if (function_exists('log_audit_action')) {
+      log_audit_action($conn, $adminName, 'System', 'Admin login via official credentials');
+    }
+    echo json_encode(['success' => true, 'user' => [
+      'id' => 1,
+      'username' => 'christiancaspe19',
+      'name' => $adminName,
+      'email' => 'christiancaspe19@gmail.com',
+      'role' => 'admin',
+      'department' => 'City Administration',
+      'status' => 'approved'
+    ]]);
+    exit;
+  }
+
   if ((strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $username)) === 'admin' || strtolower($username) === 'admin@manila.gov.ph') && $password === 'admin123') {
     $adminName = !empty($display_name_req) ? $display_name_req : 'Admin';
     if (function_exists('log_audit_action')) {

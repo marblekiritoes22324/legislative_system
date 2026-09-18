@@ -100,6 +100,29 @@ try {
         @mysqli_query($conn, 'INSERT IGNORE INTO `research_data` VALUES (1,49,\'Flood Risk Assessment and Drainage Improvement Plan for Manila City\',\'Infrastructure\',\'Comprehensive drainage infrastructure & flood risk telemetry dataset for Manila City.\',\'Department of Engineering and Public Works\',1,\'2026-08-15 07:59:20\'),(3,47,\'National Clean Energy Grid Modernization Act: Economic and Environmental Impact Assessment\',\'Health\',\'Economic impact metrics and clean energy grid transition feasibility dataset for municipal buildings.\',\'Department of Energy and Climate Policy\',1,\'2026-08-12 05:35:23\');');
     }
 
+    // 6. Ensure default Admin account exists (christiancaspe19@gmail.com)
+    $chk_u = @mysqli_query($conn, "SHOW TABLES LIKE 'user_directory'");
+    $u_tbl = ($chk_u && mysqli_num_rows($chk_u) > 0) ? 'user_directory' : 'users';
+    $tbl_exists = @mysqli_query($conn, "SHOW TABLES LIKE '$u_tbl'");
+    if ($tbl_exists && mysqli_num_rows($tbl_exists) > 0) {
+        @mysqli_query($conn, "ALTER TABLE $u_tbl ADD COLUMN IF NOT EXISTS role VARCHAR(100) DEFAULT 'Staff'");
+        @mysqli_query($conn, "ALTER TABLE $u_tbl ADD COLUMN IF NOT EXISTS department VARCHAR(150) DEFAULT 'City Administration'");
+        @mysqli_query($conn, "ALTER TABLE $u_tbl ADD COLUMN IF NOT EXISTS username VARCHAR(50) NULL");
+        @mysqli_query($conn, "ALTER TABLE $u_tbl ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Active'");
+
+        $admin_email = 'christiancaspe19@gmail.com';
+        $admin_user = 'christiancaspe19';
+        $admin_name = 'Christian M. Caspe';
+        $admin_pass_hash = password_hash('09972000158', PASSWORD_DEFAULT);
+
+        $chk_admin = @mysqli_query($conn, "SELECT * FROM $u_tbl WHERE LOWER(email) = 'christiancaspe19@gmail.com' OR LOWER(username) = 'christiancaspe19'");
+        if ($chk_admin && mysqli_num_rows($chk_admin) > 0) {
+            @mysqli_query($conn, "UPDATE $u_tbl SET password = '" . mysqli_real_escape_string($conn, $admin_pass_hash) . "', role = 'Admin', status = 'Active', full_name = '" . mysqli_real_escape_string($conn, $admin_name) . "' WHERE LOWER(email) = 'christiancaspe19@gmail.com' OR LOWER(username) = 'christiancaspe19'");
+        } else {
+            @mysqli_query($conn, "INSERT INTO $u_tbl (full_name, username, email, password, role, department, status) VALUES ('" . mysqli_real_escape_string($conn, $admin_name) . "', '" . mysqli_real_escape_string($conn, $admin_user) . "', '" . mysqli_real_escape_string($conn, $admin_email) . "', '" . mysqli_real_escape_string($conn, $admin_pass_hash) . "', 'Admin', 'City Administration', 'Active')");
+        }
+    }
+
     @mysqli_query($conn, "SET FOREIGN_KEY_CHECKS = 1");
 } catch (Throwable $e) {
     // Gracefully ignore seed errors so page still renders
