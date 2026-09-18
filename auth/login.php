@@ -136,7 +136,7 @@ if (isset($_POST['resend_otp'])) {
 if (isset($_POST['api_login'])) {
   header('Content-Type: application/json');
   $username = trim($_POST['username'] ?? '');
-  $password = $_POST['password'] ?? '';
+  $password = trim($_POST['password'] ?? '');
 
   if (empty($username) || empty($password)) {
     echo json_encode(['success' => false, 'error' => 'Please enter username/email and password.']);

@@ -1,5 +1,5 @@
 FROM php:8.2-apache
-# Build version: 2026-09-18-v3
+# Build version: 2026-09-19-v4-otp-release
 
 # Install required PHP extensions for MySQL (mysqli & pdo_mysql) and enable mod_rewrite
 RUN docker-php-ext-install mysqli pdo pdo_mysql && a2enmod rewrite
