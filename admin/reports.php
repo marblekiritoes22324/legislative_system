@@ -336,7 +336,16 @@ foreach ($report_policies as $pol) {
         </tbody>
       </table>
     </div>
-    <small class="text-muted" id="recentGeneratedReportsCount">Showing 0 records</small>
+    <div class="d-flex align-items-center justify-content-between pt-2">
+      <small class="text-muted fw-medium" id="recentGeneratedReportsCount">Showing 0 records</small>
+      <div class="d-flex align-items-center gap-1" id="recentReportsPagination">
+        <button type="button" class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" id="recentReportsPrevBtn" onclick="changeRecentReportsPage(-1)" title="Previous page"><i class="bi bi-chevron-left"></i></button>
+        <div id="recentReportsPageNumbers" class="d-flex align-items-center gap-1">
+          <button type="button" class="btn btn-sm btn-primary rounded-2 px-3 py-1 fw-bold">1</button>
+        </div>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" id="recentReportsNextBtn" onclick="changeRecentReportsPage(1)" title="Next page"><i class="bi bi-chevron-right"></i></button>
+      </div>
+    </div>
   </div>
 
   <!-- Official Document Report Viewer Modal -->
@@ -804,9 +813,12 @@ foreach ($report_policies as $pol) {
   // --- Dynamic Recent Generated Reports Storage & Table Management ---
   var ADMIN_RECENT_REPORTS_KEY = 'legislative_admin_recent_reports_v4';
   var currentReportFilter = 'All';
+  var _recentReportsCurrentPage = 1;
+  var _recentReportsPageSize = 10;
 
   function filterReportsTable(filterType, btnEl) {
     currentReportFilter = filterType;
+    _recentReportsCurrentPage = 1;
     var btns = document.querySelectorAll('.btn-group button[id^="filterReport"]');
     btns.forEach(function (b) {
       b.style.background = 'transparent';
@@ -819,6 +831,17 @@ foreach ($report_policies as $pol) {
     renderRecentGeneratedReportsTable();
   }
   window.filterReportsTable = filterReportsTable;
+
+  function changeRecentReportsPage(delta) {
+    goToRecentReportsPage(_recentReportsCurrentPage + delta);
+  }
+  window.changeRecentReportsPage = changeRecentReportsPage;
+
+  function goToRecentReportsPage(page) {
+    _recentReportsCurrentPage = page;
+    renderRecentGeneratedReportsTable();
+  }
+  window.goToRecentReportsPage = goToRecentReportsPage;
 
   function loadRecentGeneratedReports() {
     try {
@@ -954,6 +977,7 @@ foreach ($report_policies as $pol) {
   function renderRecentGeneratedReportsTable() {
     var tbody = document.getElementById('recentGeneratedReportsBody');
     var countEl = document.getElementById('recentGeneratedReportsCount');
+    var paginationContainer = document.getElementById('recentReportsPagination');
     if (!tbody) return;
 
     var allList = loadRecentGeneratedReports();
@@ -970,12 +994,26 @@ foreach ($report_policies as $pol) {
     if (!list || list.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4"><i class="bi bi-info-circle me-1"></i> No matching reports found for this filter.</td></tr>';
       if (countEl) countEl.textContent = 'Showing 0 records';
+      if (paginationContainer) paginationContainer.style.display = 'none';
       return;
     }
 
+    if (paginationContainer) paginationContainer.style.display = 'flex';
+
+    var totalMatching = list.length;
+    var totalPages = Math.max(1, Math.ceil(totalMatching / _recentReportsPageSize));
+
+    if (_recentReportsCurrentPage < 1) _recentReportsCurrentPage = 1;
+    if (_recentReportsCurrentPage > totalPages) _recentReportsCurrentPage = totalPages;
+
+    var startIdx = (_recentReportsCurrentPage - 1) * _recentReportsPageSize;
+    var endIdx = Math.min(startIdx + _recentReportsPageSize, totalMatching);
+
     var html = '';
-    for (var i = 0; i < list.length; i++) {
+    for (var i = startIdx; i < endIdx; i++) {
       var r = list[i];
+      var originalIdx = allList.indexOf(r);
+      var downloadIdx = (originalIdx !== -1) ? originalIdx : i;
       var isDocx = (r.format === 'DOCX') || (r.report_name && r.report_name.toLowerCase().endsWith('.docx'));
       var fileIcon = isDocx ? 'bi-file-earmark-word-fill text-primary' : 'bi-file-earmark-pdf-fill text-danger';
 
@@ -1001,7 +1039,7 @@ foreach ($report_policies as $pol) {
         '<i class="bi bi-calendar3 me-1.5 text-muted"></i>' + esc(r.date_generated) +
         '</td>' +
         '<td class="py-3 px-3 text-end">' +
-        '<button type="button" class="btn btn-sm btn-report-download" onclick="downloadRecentGeneratedReport(' + i + ')">' +
+        '<button type="button" class="btn btn-sm btn-report-download" onclick="downloadRecentGeneratedReport(' + downloadIdx + ')">' +
         '<i class="bi bi-download text-primary"></i>' +
         '<span>Download / View</span>' +
         '</button>' +
@@ -1010,7 +1048,41 @@ foreach ($report_policies as $pol) {
     }
 
     tbody.innerHTML = html;
-    if (countEl) countEl.textContent = 'Showing 1 to ' + list.length + ' of ' + allList.length + ' records';
+
+    if (countEl) {
+      countEl.textContent = 'Showing ' + (startIdx + 1) + ' to ' + endIdx + ' of ' + totalMatching + ' records';
+    }
+
+    var prevBtn = document.getElementById('recentReportsPrevBtn');
+    if (prevBtn) {
+      prevBtn.disabled = (_recentReportsCurrentPage <= 1);
+      if (_recentReportsCurrentPage <= 1) {
+        prevBtn.classList.add('opacity-50');
+      } else {
+        prevBtn.classList.remove('opacity-50');
+      }
+    }
+
+    var nextBtn = document.getElementById('recentReportsNextBtn');
+    if (nextBtn) {
+      nextBtn.disabled = (_recentReportsCurrentPage >= totalPages);
+      if (_recentReportsCurrentPage >= totalPages) {
+        nextBtn.classList.add('opacity-50');
+      } else {
+        nextBtn.classList.remove('opacity-50');
+      }
+    }
+
+    var pagesContainer = document.getElementById('recentReportsPageNumbers');
+    if (pagesContainer) {
+      var pagesHtml = '';
+      for (var p = 1; p <= totalPages; p++) {
+        var isActive = (p === _recentReportsCurrentPage);
+        var cls = isActive ? 'btn-primary text-white fw-bold' : 'btn-light border text-dark';
+        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 px-3 py-1 ' + cls + '" onclick="goToRecentReportsPage(' + p + ')">' + p + '</button>';
+      }
+      pagesContainer.innerHTML = pagesHtml;
+    }
   }
 
   function getActiveReportData() {
