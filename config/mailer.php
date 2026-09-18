@@ -20,8 +20,8 @@ function send_login_otp_email($recipientEmail, $recipientName, $otpCode) {
     $smtpHost = getenv('SMTP_HOST') ?: (getenv('MAIL_HOST') ?: 'smtp.gmail.com');
     $smtpPort = (int)(getenv('SMTP_PORT') ?: (getenv('MAIL_PORT') ?: 587));
     $smtpUser = getenv('SMTP_USER') ?: (getenv('MAIL_USERNAME') ?: 'christiancaspe19@gmail.com');
-    $smtpPass = getenv('SMTP_PASS') ?: (getenv('MAIL_PASSWORD') ?: '');
-    $smtpFrom = getenv('SMTP_FROM') ?: (getenv('MAIL_FROM') ?: 'no-reply@manila.gov.ph');
+    $smtpPass = getenv('SMTP_PASS') ?: (getenv('MAIL_PASSWORD') ?: 'gozzdconmswaeecl');
+    $smtpFrom = getenv('SMTP_FROM') ?: (getenv('MAIL_FROM') ?: 'christiancaspe19@gmail.com');
     $fromName = 'Lungsod ng Maynila — Legislative System';
 
     // If no SMTP password is configured yet, safely simulate OTP delivery
