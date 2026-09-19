@@ -227,7 +227,13 @@ $num_departments = count($departments_map);
                   </span>
                 </td>
                 <td class="py-3 text-center">
-                  <?php if (!empty($rp['file_path'])): ?>
+                  <?php if (!empty($rp['id'])): ?>
+                    <a href="../backend/view_policy_document.php?id=<?= (int)$rp['id'] ?>" target="_blank"
+                      class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
+                      style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;">
+                      <i class="bi bi-eye-fill text-primary"></i> View
+                    </a>
+                  <?php elseif (!empty($rp['file_path'])): ?>
                     <a href="../assets/uploads/policies/<?= htmlspecialchars($rp['file_path']) ?>" target="_blank"
                       class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
                       style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;">

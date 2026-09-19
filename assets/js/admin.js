@@ -629,8 +629,16 @@ async function triggerAISummarizer(policyId, title, filePath, existingSummary) {
       }
     }
 
-    if (docLink && filePath) {
-      docLink.href = '../assets/uploads/policies/' + filePath;
+    if (docLink) {
+      if (policyId) {
+        docLink.href = '../backend/view_policy_document.php?id=' + encodeURIComponent(policyId);
+        docLink.style.display = 'inline-flex';
+      } else if (filePath) {
+        docLink.href = '../assets/uploads/policies/' + filePath;
+        docLink.style.display = 'inline-flex';
+      } else {
+        docLink.style.display = 'none';
+      }
     }
 
     if (loadingIcon) loadingIcon.className = 'bi bi-check-lg me-2';
@@ -1649,9 +1657,15 @@ function openEvaluationModal(evaluation) {
   // FULL DOCUMENT ACCESS (Bottom-Left of Report)
   const docLink = document.getElementById('evalModalDocLink');
   if (docLink) {
-    const rawFilePath = details.file_path || details.filePath || '';
-    if (rawFilePath && rawFilePath.trim() !== '') {
-      docLink.href = '../assets/uploads/policies/' + encodeURIComponent(rawFilePath.trim());
+    const policyId = details.policy_id || details.id || 0;
+    const rawFilePath = (details.file_path || details.filePath || '').trim();
+    if (policyId) {
+      // Use backend viewer for consistent experience across all portals (PDF, DOCX, text)
+      docLink.href = '../backend/view_policy_document.php?id=' + encodeURIComponent(policyId);
+      docLink.target = '_blank';
+      docLink.onclick = null;
+    } else if (rawFilePath) {
+      docLink.href = '../assets/uploads/policies/' + encodeURIComponent(rawFilePath);
       docLink.target = '_blank';
       docLink.onclick = null;
     } else {

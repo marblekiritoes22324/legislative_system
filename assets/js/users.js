@@ -334,12 +334,21 @@ window.openPolicyViewModal = function (policy) {
     const fileLink = document.getElementById('modalPolicyFileLink');
     const downloadBtn = document.getElementById('modalDownloadBtn');
 
-    if (policy.file && policy.file.trim() !== '') {
-        const filePath = '../assets/uploads/policies/' + policy.file;
+    const policyId = policy.id || policy.policy_id || '';
+    const hasPhysicalFile = Boolean(policy.file && policy.file.trim() !== '');
+
+    if (policyId || hasPhysicalFile) {
+        const viewUrl = policyId
+            ? ('../backend/view_policy_document.php?id=' + encodeURIComponent(policyId))
+            : ('../assets/uploads/policies/' + encodeURIComponent(policy.file));
         if (fileWrapper) fileWrapper.style.display = '';
-        if (fileLink) fileLink.href = filePath;
+        if (fileLink) fileLink.href = viewUrl;
         if (downloadBtn) {
-            downloadBtn.href = filePath;
+            if (hasPhysicalFile) {
+                downloadBtn.href = '../assets/uploads/policies/' + encodeURIComponent(policy.file);
+            } else {
+                downloadBtn.href = '../backend/view_policy_document.php?id=' + encodeURIComponent(policyId) + '&download=1';
+            }
             downloadBtn.style.display = '';
         }
     } else {
@@ -501,11 +510,14 @@ function openEvaluationModal(evaluation) {
     const docLinkEl = document.getElementById('evalModalDocLink');
     if (docLinkEl) {
         const policyId = details.policy_id || details.id || '';
-        if (details.document_url || details.file_path) {
-            docLinkEl.href = details.document_url || details.file_path;
-            docLinkEl.target = '_blank';
-        } else if (policyId) {
+        const rawFilePath = (details.file_path || '').trim();
+        if (policyId) {
+            // Always use the backend viewer for reliability — it handles both PDF and DOCX,
+            // shows metadata, and works regardless of file_path format.
             docLinkEl.href = `../backend/view_policy_document.php?id=${encodeURIComponent(policyId)}`;
+            docLinkEl.target = '_blank';
+        } else if (rawFilePath) {
+            docLinkEl.href = '../assets/uploads/policies/' + encodeURIComponent(rawFilePath);
             docLinkEl.target = '_blank';
         } else {
             docLinkEl.href = '#';

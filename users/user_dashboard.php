@@ -238,7 +238,7 @@ if (empty($conn)) {
 // Fetch Featured Ordinances from DB (Deduplicated with Fallbacks)
 $featured_policies = [];
 if (!empty($conn)) {
-  $fq = mysqli_query($conn, "SELECT id, title, category, status, author, publication_date, description, ai_summary FROM $policy_tbl WHERE (status IS NULL OR status != 'Archived') ORDER BY id DESC LIMIT 20");
+  $fq = mysqli_query($conn, "SELECT id, title, category, status, author, publication_date, description, file_path, ai_summary FROM $policy_tbl WHERE (status IS NULL OR status != 'Archived') ORDER BY id DESC LIMIT 20");
   if ($fq) {
     $seen_titles = [];
     while ($row = mysqli_fetch_assoc($fq)) {
@@ -1345,7 +1345,16 @@ if (!empty($conn)) {
                         </div>
                       </div>
                       <button type="button" class="btn btn-read-ordinance flex-shrink-0 align-self-sm-center"
-                        onclick="viewPolicyDetails(<?= json_encode($policy['title']) ?>, <?= json_encode($policy['category']) ?>, <?= json_encode($policy['publication_date'] ?? '') ?>, <?= json_encode($policy['description'] ?? '') ?>)">
+                        onclick='openPolicyViewModal(<?= json_encode([
+                          "id" => (int) ($policy["id"] ?? 0),
+                          "title" => $policy["title"],
+                          "category" => $policy["category"],
+                          "author" => $policy["author"] ?? "City Council of Manila",
+                          "status" => $policy["status"] ?? "Published",
+                          "date" => !empty($policy["publication_date"]) ? date("M d, Y", strtotime($policy["publication_date"])) : "N/A",
+                          "desc" => $policy["description"] ?? "Manila City Ordinance official provisions and guidelines.",
+                          "file" => $policy["file_path"] ?? ""
+                        ]) ?>)'>
                         <i class="bi bi-file-earmark-text"></i> Read Details
                       </button>
                     </div>

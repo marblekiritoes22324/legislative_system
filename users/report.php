@@ -804,8 +804,8 @@ foreach ($u_report_policies as $pol) {
         '      <tr>' +
         '        <th width="170" style="padding:10px 14px; border:1px solid #cbd5e1; background-color:#f0fdfa; font-weight:700; color:#0f766e; text-align:left;">Original Document</th>' +
         '        <td style="padding:10px 14px; border:1px solid #cbd5e1; color:#0f172a;" colspan="3">' +
-        (rep.file_path && rep.file_path.trim() !== '' ?
-          ('<a href="../assets/uploads/policies/' + encodeURIComponent(rep.file_path) + '" target="_blank" style="color:#0f766e; font-weight:600; text-decoration:underline; display:inline-flex; align-items:center; gap:5px;"><i class="bi bi-box-arrow-up-right"></i> ' + escapeHtml(rep.file_path) + ' (View Original Document)</a>') :
+        ((rep.id || rep.policy_id || (rep.file_path && rep.file_path.trim() !== '')) ?
+          ('<a href="' + ((rep.id || rep.policy_id) ? ('../backend/view_policy_document.php?id=' + encodeURIComponent(rep.id || rep.policy_id)) : ('../assets/uploads/policies/' + encodeURIComponent(rep.file_path))) + '" target="_blank" style="color:#0f766e; font-weight:600; text-decoration:underline; display:inline-flex; align-items:center; gap:5px;"><i class="bi bi-box-arrow-up-right"></i> ' + escapeHtml(rep.file_path || 'View Full Document') + ' (View Original Document)</a>') :
           ('<span style="color:#64748b; font-style:italic;"><i class="bi bi-archive me-1"></i> Official City Council Legislative Archive (Digital Record)</span>')
         ) +
         '        </td>' +
@@ -915,8 +915,8 @@ foreach ($u_report_policies as $pol) {
       '      <tr>' +
       '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Original Document</th>' +
       '        <td style="padding:12px 16px; border:1px solid #cbd5e1; color:#1e293b;">' +
-      (rep.file_path && rep.file_path.trim() !== '' ?
-        ('<a href="../assets/uploads/policies/' + encodeURIComponent(rep.file_path) + '" target="_blank" style="color:#0d6efd; font-weight:600; text-decoration:underline; display:inline-flex; align-items:center; gap:5px;"><i class="bi bi-box-arrow-up-right"></i> ' + escapeHtml(rep.file_path) + ' (View Original Document)</a>') :
+      ((rep.id || rep.policy_id || (rep.file_path && rep.file_path.trim() !== '')) ?
+        ('<a href="' + ((rep.id || rep.policy_id) ? ('../backend/view_policy_document.php?id=' + encodeURIComponent(rep.id || rep.policy_id)) : ('../assets/uploads/policies/' + encodeURIComponent(rep.file_path))) + '" target="_blank" style="color:#0d6efd; font-weight:600; text-decoration:underline; display:inline-flex; align-items:center; gap:5px;"><i class="bi bi-box-arrow-up-right"></i> ' + escapeHtml(rep.file_path || 'View Full Document') + ' (View Original Document)</a>') :
         ('<span style="color:#64748b; font-style:italic;"><i class="bi bi-archive me-1"></i> Official Manila City Legislative Record (Digital Archive)</span>')
       ) +
       '        </td>' +
@@ -1524,7 +1524,13 @@ foreach ($u_report_policies as $pol) {
 
     var viewOrigBtn = document.getElementById('reportModalViewOriginalBtn');
     if (viewOrigBtn) {
-      if (rep.file_path && rep.file_path.trim() !== '') {
+      const pId = rep.id || rep.policy_id;
+      if (pId) {
+        viewOrigBtn.classList.remove('d-none');
+        viewOrigBtn.onclick = function () {
+          window.open('../backend/view_policy_document.php?id=' + encodeURIComponent(pId), '_blank');
+        };
+      } else if (rep.file_path && rep.file_path.trim() !== '') {
         viewOrigBtn.classList.remove('d-none');
         viewOrigBtn.onclick = function () {
           window.open('../assets/uploads/policies/' + encodeURIComponent(rep.file_path), '_blank');

@@ -6,6 +6,10 @@ if (!empty($conn)) {
     SELECT 
       p.id AS policy_id, 
       p.title AS policy_title,
+      p.category AS policy_category,
+      p.description AS policy_description,
+      p.keywords AS policy_keywords,
+      p.file_path AS policy_file_path,
       e.id AS evaluation_id,
       e.economic_score,
       e.social_score,
@@ -142,6 +146,10 @@ if (!empty($conn)) {
               $evaluation_data = [
                 'policy_id' => (int) $eval['policy_id'],
                 'title' => $title,
+                'category' => $eval['policy_category'] ?? '',
+                'description' => $eval['policy_description'] ?? '',
+                'keywords' => $eval['policy_keywords'] ?? '',
+                'file_path' => $eval['policy_file_path'] ?? '',
                 'has_evaluation' => $has_evaluation,
                 'status' => $status,
                 'approved_by' => $eval['approved_by'] ?? null,

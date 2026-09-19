@@ -209,6 +209,7 @@
                   <div class="action-btn-group d-inline-flex align-items-center justify-content-center gap-1.5 flex-nowrap" style="white-space: nowrap;">
                     <!-- 1. View Document File (Admin Matched Design) -->
                     <button type="button" class="btn btn-policy-action btn-policy-action-view" title="View Policy Details & Document" onclick='openPolicyViewModal(<?= json_encode([
+                      "id" => (int) $policy["id"],
                       "title" => $policy["title"],
                       "category" => $policy["category"],
                       "author" => $policy["author"],

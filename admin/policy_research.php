@@ -235,7 +235,12 @@
                 <td><?= htmlspecialchars($policy['publication_date'] ?? 'N/A') ?></td>
                 <td>
                   <div class="action-btn-group d-flex align-items-center gap-1.5">
-                    <?php if (!empty($policy['file_path'])): ?>
+                    <?php if (!empty($policy['id'])): ?>
+                      <a href="../backend/view_policy_document.php?id=<?= (int) $policy['id'] ?>" target="_blank"
+                        class="btn btn-policy-action btn-policy-action-view" title="View Document File">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                      </a>
+                    <?php elseif (!empty($policy['file_path'])): ?>
                       <a href="../assets/uploads/policies/<?= htmlspecialchars($policy['file_path']) ?>" target="_blank"
                         class="btn btn-policy-action btn-policy-action-view" title="View Document File">
                         <i class="bi bi-file-earmark-text-fill"></i>
