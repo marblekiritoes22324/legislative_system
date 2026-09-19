@@ -130,10 +130,26 @@ try {
         }
     }
 
-    // 6. Ensure external_ordinances table and verified benchmarks exist
-    if (file_exists(__DIR__ . '/../backend/external_ordinances_helper.php')) {
-        require_once __DIR__ . '/../backend/external_ordinances_helper.php';
-        ensure_external_ordinances_table($conn);
+    // 7. Auto-import full local database if tables/users are not yet populated
+    $chk_u_cnt = @mysqli_query($conn, "SELECT COUNT(*) FROM user_directory");
+    $u_cnt = ($chk_u_cnt) ? (int)mysqli_fetch_row($chk_u_cnt)[0] : 0;
+    if ($u_cnt < 8) {
+        $dump_file = __DIR__ . '/../legistlative_database';
+        if (!file_exists($dump_file)) {
+            $dump_file = __DIR__ . '/../legistlative_database.backup.sql';
+        }
+        if (file_exists($dump_file)) {
+            $sql_content = file_get_contents($dump_file);
+            if (!empty($sql_content)) {
+                // Disable foreign keys and strict checks for bulk import
+                @mysqli_query($conn, "SET FOREIGN_KEY_CHECKS = 0;");
+                @mysqli_query($conn, "SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';");
+                @mysqli_multi_query($conn, $sql_content);
+                while (@mysqli_more_results($conn) && @mysqli_next_result($conn)) {
+                    // Flush multi-query results
+                }
+            }
+        }
     }
 
     @mysqli_query($conn, "SET FOREIGN_KEY_CHECKS = 1");
