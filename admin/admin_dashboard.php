@@ -53,7 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $password_raw = $_POST['password'] ?? 'password123';
     $password = password_hash($password_raw, PASSWORD_DEFAULT);
     $role = trim($_POST['role'] ?? 'Staff');
-    $department = trim($_POST['department'] ?? 'Secretariat & Legal Affairs');
+    $department = trim($_POST['department'] ?? 'Staff');
+    if (empty($department)) $department = 'Staff';
     $status = 'Active';
 
     if (empty($full_name) || empty($username) || empty($email)) {
@@ -61,8 +62,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       exit;
     }
 
-    // Check if username or email already exists
-    $check_stmt = mysqli_prepare($conn, "SELECT user_id FROM $u_tbl WHERE username = ? OR email = ?");
+    $chk_u = @mysqli_query($conn, "SHOW TABLES LIKE 'user_directory'");
+    $u_tbl = ($chk_u && mysqli_num_rows($chk_u) > 0) ? 'user_directory' : 'users';
+
+    // Ensure columns exist
+    @mysqli_query($conn, "ALTER TABLE `$u_tbl` ADD COLUMN IF NOT EXISTS role VARCHAR(100) DEFAULT 'Staff'");
+    @mysqli_query($conn, "ALTER TABLE `$u_tbl` ADD COLUMN IF NOT EXISTS department VARCHAR(150) DEFAULT 'Staff'");
+    @mysqli_query($conn, "ALTER TABLE `$u_tbl` ADD COLUMN IF NOT EXISTS username VARCHAR(50) NULL");
+    @mysqli_query($conn, "ALTER TABLE `$u_tbl` ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Active'");
+    @mysqli_query($conn, "ALTER TABLE `$u_tbl` ADD COLUMN IF NOT EXISTS otp_code VARCHAR(10) NULL");
+    @mysqli_query($conn, "ALTER TABLE `$u_tbl` ADD COLUMN IF NOT EXISTS otp_expires_at DATETIME NULL");
+
+    // Check if username or email already exists (using SELECT 1 to avoid missing column issues)
+    $check_stmt = mysqli_prepare($conn, "SELECT 1 FROM `$u_tbl` WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)");
     if ($check_stmt) {
       mysqli_stmt_bind_param($check_stmt, "ss", $username, $email);
       mysqli_stmt_execute($check_stmt);
@@ -75,14 +87,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       mysqli_stmt_close($check_stmt);
     }
 
-    $stmt = mysqli_prepare($conn, "INSERT INTO $u_tbl (full_name, username, email, password, role, department, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    if ($stmt) {
-      mysqli_stmt_bind_param($stmt, "sssssss", $full_name, $username, $email, $password, $role, $department, $status);
-      $ok = mysqli_stmt_execute($stmt);
-      mysqli_stmt_close($stmt);
-      if ($ok) {
-        log_audit_action($conn, 'System Administrator', 'User Directory', 'Provisioned new account for ' . $full_name);
-        echo json_encode(['success' => true, 'message' => 'Account for "' . $full_name . '" (@' . $username . ') was provisioned successfully!']);
+    $role_id_val = 2; // Staff
+    if (strtolower($role) === 'admin' || strtolower($role) === 'administrator') {
+      $role_id_val = 1;
+    } elseif (strtolower($role) === 'councilor' || strtolower($role) === 'user') {
+      $role_id_val = 3;
+    }
+
+    $has_role_id = @mysqli_query($conn, "SHOW COLUMNS FROM `$u_tbl` LIKE 'role_id'");
+    if ($has_role_id && mysqli_num_rows($has_role_id) > 0) {
+      $stmt = mysqli_prepare($conn, "INSERT INTO `$u_tbl` (full_name, username, email, password, role, role_id, department, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+      if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "sssssiss", $full_name, $username, $email, $password, $role, $role_id_val, $department, $status);
+        $ok = mysqli_stmt_execute($stmt);
+        $err = mysqli_stmt_error($stmt);
+        mysqli_stmt_close($stmt);
+        if ($ok) {
+          if (function_exists('log_audit_action')) {
+            log_audit_action($conn, 'System Administrator', 'User Directory', 'Provisioned new account for ' . $full_name);
+          }
+          echo json_encode(['success' => true, 'message' => 'Account for "' . $full_name . '" (@' . $username . ') was provisioned successfully!']);
+          exit;
+        }
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $err]);
+        exit;
+      }
+    } else {
+      $stmt = mysqli_prepare($conn, "INSERT INTO `$u_tbl` (full_name, username, email, password, role, department, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+      if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "sssssss", $full_name, $username, $email, $password, $role, $department, $status);
+        $ok = mysqli_stmt_execute($stmt);
+        $err = mysqli_stmt_error($stmt);
+        mysqli_stmt_close($stmt);
+        if ($ok) {
+          if (function_exists('log_audit_action')) {
+            log_audit_action($conn, 'System Administrator', 'User Directory', 'Provisioned new account for ' . $full_name);
+          }
+          echo json_encode(['success' => true, 'message' => 'Account for "' . $full_name . '" (@' . $username . ') was provisioned successfully!']);
+          exit;
+        }
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $err]);
         exit;
       }
     }

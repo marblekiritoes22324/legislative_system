@@ -701,11 +701,7 @@ foreach ($directory_users as $du) {
                             </select>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold text-dark">Department / Office</label>
-                        <input type="text" id="provDepartment" class="form-control rounded-3"
-                            placeholder="Enter department" required>
-                    </div>
+                    <input type="hidden" id="provDepartment" value="Staff">
                     <div class="mb-3">
                         <label class="form-label small fw-semibold text-dark">Official Email Address</label>
                         <input type="email" id="provEmail" class="form-control rounded-3"
@@ -737,7 +733,7 @@ foreach ($directory_users as $du) {
         var name = document.getElementById('provFullName').value.trim();
         var username = document.getElementById('provUsername').value.trim();
         var role = document.getElementById('provRole').value;
-        var dept = document.getElementById('provDepartment').value.trim();
+        var dept = document.getElementById('provDepartment') ? document.getElementById('provDepartment').value.trim() : 'Staff';
         var email = document.getElementById('provEmail').value.trim();
         var password = document.getElementById('provPassword').value.trim();
 
