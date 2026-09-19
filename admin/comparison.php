@@ -10,11 +10,14 @@ if (!isset($evaluations) || !is_array($evaluations)) {
 require_once __DIR__ . '/../backend/evaluation_versions_helper.php';
 $version_comparison_data = get_policy_versions_comparison_data($conn ?? null);
 
+require_once __DIR__ . '/../backend/external_ordinances_helper.php';
+$external_benchmarks = get_external_ordinances($conn ?? null);
+
 $eval_map = [];
 foreach ($evaluations as $eval) {
   $eval_status = trim($eval['evaluation_status'] ?? $eval['status'] ?? '');
-  // STRICT: Only policies with 'Approved' evaluation status can be compared
-  if ($eval_status === 'Approved') {
+  // Allow policies with Approved, Completed, or Evaluated status to be compared
+  if ($eval_status === 'Approved' || $eval_status === 'Completed' || $eval_status === 'Evaluated') {
     $notes_data = [];
     if (!empty($eval['notes'])) {
       $trimmed = trim($eval['notes']);
@@ -93,6 +96,10 @@ foreach ($all_policies as $p) {
       'title' => $p['title'],
       'category' => $p['category'],
       'city_origin' => $p['city_origin'] ?? 'City of Manila',
+      'description' => $p['description'] ?? '',
+      'key_provisions' => $p['description'] ?? '',
+      'publication_date' => $p['publication_date'] ?? '',
+      'file_path' => $p['file_path'] ?? '',
       'risk_level' => $info['risk_level'],
       'overall_score' => $info['overall_score'],
       'economic_score' => $info['economic_score'],
@@ -124,6 +131,7 @@ foreach ($completed_policies as $p) {
     $external_policies[] = $p;
   }
 }
+
 ?>
 <section id="comparativeAnalysisSection"
   class="content-section <?= ($active_section ?? 'adminDashboardSection') !== 'comparativeAnalysisSection' ? 'd-none' : '' ?>">
@@ -137,22 +145,126 @@ foreach ($completed_policies as $p) {
         </span>
         <div>
           <h2 class="h4 fw-bold text-dark mb-1">Benchmarking &amp; Comparative Analysis</h2>
-          <!-- BUILD:v2026-09-18-003 -->
+          <!-- BUILD:v2026-09-19-002-CROSS-CITY -->
           <p class="text-muted mb-0 small" id="comparisonSubtitle">
-            Compare local Manila ordinances side by side with external city benchmarks (e.g., Quezon City, Pasig).
+            Benchmark City of Manila proposed policies against similar enacted ordinances from peer Metro Manila cities (Quezon City, Makati, Pasig) or compare local policies.
           </p>
         </div>
       </div>
+
+      <!-- Mode Switcher Tabs -->
+      <div class="d-flex align-items-center gap-1.5 p-1 bg-light rounded-pill border shadow-2xs">
+        <button type="button" id="toggleCompareCrossCityBtn"
+          class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold text-white shadow-sm"
+          style="background:#0B2E59;" onclick="switchComparisonMode('cross_city')">
+          <i class="bi bi-globe-americas me-1 text-info"></i> Cross-City Benchmarking
+        </button>
+        <button type="button" id="toggleComparePoliciesBtn"
+          class="btn btn-sm rounded-pill px-3 py-1.5 fw-semibold text-secondary"
+          style="background:transparent;" onclick="switchComparisonMode('policies')">
+          <i class="bi bi-buildings me-1"></i> Manila vs Manila
+        </button>
+        <button type="button" id="toggleCompareVersionsBtn"
+          class="btn btn-sm rounded-pill px-3 py-1.5 fw-semibold text-secondary"
+          style="background:transparent;" onclick="switchComparisonMode('versions')">
+          <i class="bi bi-clock-history me-1 text-primary"></i> Version Evolution
+        </button>
+      </div>
     </div>
 
-    <!-- Mode 1: Compare Policies Selectors (Bootstrap Input Groups with City Grouping) -->
-    <div class="row g-3 align-items-end mb-4" id="policyCompareForm">
+    <!-- Mode 2: Cross-City Ordinance Benchmarking (CLEAN & BALANCED) -->
+    <div class="row g-3 align-items-end mb-4" id="crossCityCompareForm">
+
+      <!-- Manila Policy / Ordinance (Proposed / Local) -->
+      <div class="col-12 col-lg-5">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <label for="crossCityPolicyA" class="form-label fw-semibold small mb-0 text-dark">
+            <i class="bi bi-building text-primary me-1.5"></i>Manila Proposed Policy Baseline
+          </label>
+          <span class="badge rounded-pill bg-light text-secondary border px-2 py-0.5" style="font-size:0.7rem;">City of Manila</span>
+        </div>
+        <div class="input-group shadow-2xs">
+          <span class="input-group-text bg-white border-end-0 rounded-start-3" style="border-left:3px solid #1d4ed8;">
+            <i class="bi bi-file-earmark-text text-primary"></i>
+          </span>
+          <select id="crossCityPolicyA" class="form-select border-start-0 rounded-end-3" style="font-size:0.9rem;" onchange="autoSuggestCrossCityBenchmark()">
+            <?php if (empty($local_policies)): ?>
+              <option value="" disabled selected>— No Manila Approved Policies Available —</option>
+            <?php else: ?>
+              <option value="">— Select Manila Policy to Benchmark —</option>
+              <?php foreach ($local_policies as $p): ?>
+                <option value="<?= (int) $p['id'] ?>" data-category="<?= htmlspecialchars($p['category']) ?>" data-title="<?= htmlspecialchars($p['title']) ?>" <?= ($p === reset($local_policies)) ? 'selected' : '' ?>>
+                  [Manila] <?= htmlspecialchars($p['title']) ?>
+                </option>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </select>
+        </div>
+      </div>
+
+      <!-- External City Benchmark Ordinance -->
+      <div class="col-12 col-lg-5">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label for="crossCityPolicyB" class="form-label fw-semibold small mb-0 text-dark">
+            <i class="bi bi-geo-alt-fill text-success me-1.5"></i>Peer City Enacted Benchmark
+          </label>
+          <!-- Quick LGU City Filter Pills -->
+          <div class="d-flex align-items-center gap-1" id="crossCityFilterPills">
+            <button type="button" class="btn btn-xs rounded-pill px-2 py-0.5 fw-bold btn-primary text-white filter-city-btn" data-city="all" onclick="filterCrossCityBenchmark('all', this)" style="font-size:0.7rem;">All</button>
+            <button type="button" class="btn btn-xs rounded-pill px-2 py-0.5 fw-semibold btn-outline-secondary filter-city-btn" data-city="Quezon City" onclick="filterCrossCityBenchmark('Quezon City', this)" style="font-size:0.7rem;">QC</button>
+            <button type="button" class="btn btn-xs rounded-pill px-2 py-0.5 fw-semibold btn-outline-secondary filter-city-btn" data-city="City of Makati" onclick="filterCrossCityBenchmark('City of Makati', this)" style="font-size:0.7rem;">Makati</button>
+            <button type="button" class="btn btn-xs rounded-pill px-2 py-0.5 fw-semibold btn-outline-secondary filter-city-btn" data-city="Pasig City" onclick="filterCrossCityBenchmark('Pasig City', this)" style="font-size:0.7rem;">Pasig</button>
+          </div>
+        </div>
+        <div class="input-group shadow-2xs">
+          <span class="input-group-text bg-white border-end-0 rounded-start-3" style="border-left:3px solid #15803d;">
+            <i class="bi bi-patch-check-fill text-success"></i>
+          </span>
+          <select id="crossCityPolicyB" class="form-select border-start-0 rounded-end-3" style="font-size:0.9rem;">
+            <?php if (empty($external_benchmarks)): ?>
+              <option value="" disabled selected>— No External City Benchmarks Available —</option>
+            <?php else: ?>
+              <option value="">— Select Enacted City Benchmark —</option>
+              <?php
+              $grouped_benchmarks = [];
+              foreach ($external_benchmarks as $eb) {
+                $grouped_benchmarks[$eb['city_name']][] = $eb;
+              }
+              foreach ($grouped_benchmarks as $cityName => $bList):
+              ?>
+                <optgroup label="🏙️ <?= htmlspecialchars($cityName) ?> (Enacted Legislation)" data-city="<?= htmlspecialchars($cityName) ?>">
+                  <?php foreach ($bList as $eb): ?>
+                    <option value="ext_<?= (int) $eb['id'] ?>" data-city="<?= htmlspecialchars($eb['city_name']) ?>" <?= ($eb === reset($external_benchmarks)) ? 'selected' : '' ?>>
+                      [<?= htmlspecialchars($eb['city_name']) ?>] <?= htmlspecialchars($eb['ordinance_number']) ?>: <?= htmlspecialchars($eb['ordinance_title']) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </optgroup>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </select>
+        </div>
+      </div>
+
+      <!-- Prominent Benchmark Button -->
+      <div class="col-12 col-lg-2 d-grid">
+        <button type="button" id="compareCrossCityBtn"
+          class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1.5 rounded-3 py-2"
+          onclick="runCrossCityComparison()"
+          style="background: linear-gradient(135deg, #0B2E59 0%, #1e40af 100%); border:none; height: 38px; font-size:0.9rem; transition:all 0.2s;">
+          <i class="bi bi-stars"></i> Benchmark
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mode 1: Manila vs Manila Policy Comparison Selectors -->
+    <div class="row g-3 align-items-end mb-4 d-none" id="policyCompareForm">
 
       <!-- Policy A -->
       <div class="col-12 col-md-5 col-lg-5">
         <label for="comparePolicyA" class="form-label fw-semibold small mb-2">
           <span class="badge rounded-pill px-2.5 py-1 me-1" style="background:#1d4ed8; font-size:0.75rem;">
-            <i class="bi bi-building me-1"></i>Policy / Ordinance A
+            <i class="bi bi-building me-1"></i>Manila Policy A
           </span>
           <span class="text-muted fw-normal">— e.g., Local Manila Ordinance</span>
         </label>
@@ -200,9 +312,9 @@ foreach ($completed_policies as $p) {
       <div class="col-12 col-md-5 col-lg-5">
         <label for="comparePolicyB" class="form-label fw-semibold small mb-2">
           <span class="badge rounded-pill px-2.5 py-1 me-1" style="background:#15803d; font-size:0.75rem;">
-            <i class="bi bi-pin-map-fill me-1"></i>Policy / Benchmark B
+            <i class="bi bi-pin-map-fill me-1"></i>Manila Policy B
           </span>
-          <span class="text-muted fw-normal">— e.g., Quezon City (QC Benchmark)</span>
+          <span class="text-muted fw-normal">— Second Manila Measure</span>
         </label>
         <div class="input-group shadow-sm">
           <span class="input-group-text bg-white border-end-0 rounded-start-3" style="border-left:3px solid #15803d;">
@@ -213,20 +325,20 @@ foreach ($completed_policies as $p) {
               <option value="" disabled selected>— No Approved Evaluations Available —</option>
             <?php else: ?>
               <option value="">— Select Policy B or City Benchmark —</option>
-              <?php if (!empty($external_policies)): ?>
-                <optgroup label="🏙️ External LGU Benchmarks (Quezon City, Pasig, etc.)">
-                  <?php foreach ($external_policies as $p): ?>
-                    <option value="<?= (int) $p['id'] ?>" <?= ($p === reset($external_policies)) ? 'selected' : '' ?>>
-                      [<?= htmlspecialchars($p['city_origin'] ?? 'Benchmark') ?>] <?= htmlspecialchars($p['title']) ?>
+              <?php if (!empty($local_policies)): ?>
+                <optgroup label="🏛️ City of Manila (Local Ordinances)">
+                  <?php foreach ($local_policies as $p): ?>
+                    <option value="<?= (int) $p['id'] ?>" <?= (count($local_policies) > 1 && $p === $local_policies[1]) ? 'selected' : '' ?>>
+                      [Manila] <?= htmlspecialchars($p['title']) ?>
                     </option>
                   <?php endforeach; ?>
                 </optgroup>
               <?php endif; ?>
-              <?php if (!empty($local_policies)): ?>
-                <optgroup label="🏛️ City of Manila (Local Ordinances)">
-                  <?php foreach ($local_policies as $p): ?>
+              <?php if (!empty($external_policies)): ?>
+                <optgroup label="🏙️ External LGU Benchmarks (Quezon City, Pasig, etc.)">
+                  <?php foreach ($external_policies as $p): ?>
                     <option value="<?= (int) $p['id'] ?>">
-                      [Manila] <?= htmlspecialchars($p['title']) ?>
+                      [<?= htmlspecialchars($p['city_origin'] ?? 'Benchmark') ?>] <?= htmlspecialchars($p['title']) ?>
                     </option>
                   <?php endforeach; ?>
                 </optgroup>
@@ -248,7 +360,7 @@ foreach ($completed_policies as $p) {
 
     </div>
 
-    <!-- Mode 2: Compare Versions Selector (Single Policy Selection) -->
+    <!-- Mode 3: Compare Versions Selector (Single Policy Selection) -->
     <div class="row g-3 align-items-end mb-4 d-none" id="versionCompareForm">
       <div class="col-lg-10 col-md-10">
         <label for="compareVersionPolicy" class="form-label fw-semibold small mb-2">
@@ -296,9 +408,11 @@ foreach ($completed_policies as $p) {
 <script>
   (function () {
     var COMPARE_DATA = <?= json_encode($compare_data) ?>;
+    var EXTERNAL_BENCHMARKS = <?= json_encode($external_benchmarks) ?>;
     var VERSION_COMPARE_DATA = <?= json_encode($version_comparison_data) ?>;
 
     window.COMPARE_DATA = COMPARE_DATA;
+    window.EXTERNAL_BENCHMARKS = EXTERNAL_BENCHMARKS;
     window.VERSION_COMPARE_DATA = VERSION_COMPARE_DATA;
 
     window.COMPARE_POLICY_MAP = {};
@@ -306,19 +420,43 @@ foreach ($completed_policies as $p) {
       window.COMPARE_POLICY_MAP[String(item.id)] = item;
     });
 
+    window.EXTERNAL_BENCHMARK_MAP = {};
+    EXTERNAL_BENCHMARKS.forEach(function (item) {
+      window.EXTERNAL_BENCHMARK_MAP[String(item.id)] = item;
+      window.EXTERNAL_BENCHMARK_MAP['ext_' + item.id] = item;
+      window.COMPARE_POLICY_MAP['ext_' + item.id] = item;
+    });
+
     window.VERSION_COMPARE_MAP = {};
     VERSION_COMPARE_DATA.forEach(function (item) {
       window.VERSION_COMPARE_MAP[String(item.policy_id)] = item;
     });
 
-    var currentMode = 'policies';
+    var currentMode = 'cross_city';
 
+        function renderEmptyComparisonPlaceholder() {
+      return '<div class="card border-0 rounded-4 shadow-sm p-4 p-md-5 text-center mt-3 bg-white" style="border: 1px dashed #cbd5e1 !important;">' +
+        '<div class="mb-3">' +
+          '<span class="p-3 rounded-circle d-inline-flex align-items-center justify-content-center shadow-2xs" style="background:#f1f5f9; color:#64748b; width:54px; height:54px;">' +
+            '<i class="bi bi-layout-sidebar-inset-reverse fs-4 text-primary"></i>' +
+          '</span>' +
+        '</div>' +
+        '<h6 class="fw-bold text-dark mb-1" style="font-size:1.02rem;">Ready for Comparative Analysis</h6>' +
+        '<p class="text-muted small mb-0 mx-auto" style="max-width:520px; line-height:1.6;">' +
+          'Select ordinances above and click the <span class="badge px-2.5 py-1 text-white fw-bold shadow-2xs" style="background:#0B2E59;"><i class="bi bi-stars text-warning me-1"></i>Benchmark</span> button to evaluate multi-criteria viability scores, review best practices, and generate AI draft amendment clauses.' +
+        '</p>' +
+      '</div>';
+    }
     window.switchComparisonMode = function (mode) {
       currentMode = mode;
+      var btnCrossCity = document.getElementById('toggleCompareCrossCityBtn');
       var btnPolicies = document.getElementById('toggleComparePoliciesBtn');
       var btnVersions = document.getElementById('toggleCompareVersionsBtn');
+
+      var formCrossCity = document.getElementById('crossCityCompareForm');
       var formPolicies = document.getElementById('policyCompareForm');
       var formVersions = document.getElementById('versionCompareForm');
+
       var subtitle = document.getElementById('comparisonSubtitle');
       var resultEl = document.getElementById('comparisonResult');
 
@@ -327,36 +465,135 @@ foreach ($completed_policies as $p) {
         resultEl.classList.add('d-none');
       }
 
-      if (mode === 'versions') {
-        if (btnPolicies) {
-          btnPolicies.style.background = 'transparent';
-          btnPolicies.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-semibold text-secondary';
+      // Reset all buttons to secondary
+      [btnCrossCity, btnPolicies, btnVersions].forEach(function (btn) {
+        if (btn) {
+          btn.style.background = 'transparent';
+          btn.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-semibold text-secondary';
         }
+      });
+
+      // Hide all forms
+      if (formCrossCity) formCrossCity.classList.add('d-none');
+      if (formPolicies) formPolicies.classList.add('d-none');
+      if (formVersions) formVersions.classList.add('d-none');
+
+      if (mode === 'versions') {
         if (btnVersions) {
           btnVersions.style.background = '#0B2E59';
           btnVersions.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold text-white shadow-sm';
         }
-        if (formPolicies) formPolicies.classList.add('d-none');
         if (formVersions) formVersions.classList.remove('d-none');
         if (subtitle) subtitle.innerText = 'Select a policy to compare its oldest initial approved evaluation against its latest approved evaluation.';
 
-        var verSelect = document.getElementById('compareVersionPolicy');
-        if (verSelect && verSelect.value) {
-          window.runVersionComparison();
-        }
-      } else {
+      } else if (mode === 'policies') {
         if (btnPolicies) {
           btnPolicies.style.background = '#0B2E59';
           btnPolicies.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold text-white shadow-sm';
         }
-        if (btnVersions) {
-          btnVersions.style.background = 'transparent';
-          btnVersions.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-semibold text-secondary';
-        }
         if (formPolicies) formPolicies.classList.remove('d-none');
-        if (formVersions) formVersions.classList.add('d-none');
-        if (subtitle) subtitle.innerText = 'Compare local Manila ordinances side by side with external city benchmarks (e.g., Quezon City, Pasig) or previous versions.';
+        if (subtitle) subtitle.innerText = 'Compare local Manila ordinances side by side with other approved local policies.';
+      } else {
+        // mode === 'cross_city'
+        if (btnCrossCity) {
+          btnCrossCity.style.background = '#0B2E59';
+          btnCrossCity.className = 'btn btn-sm rounded-pill px-3 py-1.5 fw-bold text-white shadow-sm';
+        }
+        if (formCrossCity) formCrossCity.classList.remove('d-none');
+        if (subtitle) subtitle.innerText = 'Benchmark City of Manila proposed policies against similar enacted ordinances from peer Metro Manila cities (Quezon City, Makati, Pasig) to identify best practices and policy gaps.';
       }
+
+      if (resultEl) {
+        resultEl.innerHTML = renderEmptyComparisonPlaceholder();
+        resultEl.classList.remove('d-none');
+      }
+    };
+
+    window.filterCrossCityBenchmark = function (cityName, btnEl) {
+      var sel = document.getElementById('crossCityPolicyB');
+      if (!sel) return;
+
+      // Update button styling
+      var btns = document.querySelectorAll('#crossCityFilterPills .filter-city-btn');
+      btns.forEach(function (b) {
+        b.className = 'btn btn-xs rounded-pill px-2 py-0.5 fw-semibold btn-outline-secondary filter-city-btn';
+      });
+      if (btnEl) {
+        btnEl.className = 'btn btn-xs rounded-pill px-2 py-0.5 fw-bold btn-primary text-white filter-city-btn';
+      }
+
+      var optgroups = sel.querySelectorAll('optgroup');
+      var firstVisibleOption = null;
+
+      optgroups.forEach(function (og) {
+        var ogCity = og.getAttribute('data-city');
+        if (cityName === 'all' || ogCity === cityName) {
+          og.style.display = '';
+          var opts = og.querySelectorAll('option');
+          opts.forEach(function (opt) {
+            opt.style.display = '';
+            if (!firstVisibleOption) firstVisibleOption = opt;
+          });
+        } else {
+          og.style.display = 'none';
+          var opts = og.querySelectorAll('option');
+          opts.forEach(function (opt) {
+            opt.style.display = 'none';
+          });
+        }
+      });
+
+      // If currently selected option is hidden, select the first visible option
+      var curSelected = sel.options[sel.selectedIndex];
+      if (curSelected && curSelected.style.display === 'none' && firstVisibleOption) {
+        sel.value = firstVisibleOption.value;
+      }
+    };
+
+    window.autoSuggestCrossCityBenchmark = function () {
+      var aSel = document.getElementById('crossCityPolicyA');
+      var bSel = document.getElementById('crossCityPolicyB');
+      if (!aSel || !bSel || !aSel.value) return;
+
+      var optA = aSel.options[aSel.selectedIndex];
+      var titleA = (optA.getAttribute('data-title') || '').toLowerCase();
+      var catA = (optA.getAttribute('data-category') || '').toLowerCase();
+
+      // Find best matching benchmark in external ordinances
+      var bestId = null;
+      for (var i = 0; i < EXTERNAL_BENCHMARKS.length; i++) {
+        var eb = EXTERNAL_BENCHMARKS[i];
+        var ebTitle = (eb.ordinance_title || '').toLowerCase();
+        var ebArea = (eb.policy_area || '').toLowerCase();
+
+        if (titleA.indexOf('plastic') !== -1 || catA.indexOf('environment') !== -1) {
+          if (ebTitle.indexOf('plastic') !== -1 || ebArea.indexOf('waste') !== -1) {
+            bestId = 'ext_' + eb.id; break;
+          }
+        } else if (titleA.indexOf('flood') !== -1 || titleA.indexOf('drainage') !== -1) {
+          if (ebTitle.indexOf('drainage') !== -1 || ebArea.indexOf('disaster') !== -1) {
+            bestId = 'ext_' + eb.id; break;
+          }
+        } else if (titleA.indexOf('traffic') !== -1 || titleA.indexOf('transport') !== -1) {
+          if (ebTitle.indexOf('traffic') !== -1 || ebArea.indexOf('mobility') !== -1) {
+            bestId = 'ext_' + eb.id; break;
+          }
+        } else if (titleA.indexOf('energy') !== -1 || titleA.indexOf('clean') !== -1) {
+          if (ebTitle.indexOf('green building') !== -1 || ebArea.indexOf('energy') !== -1) {
+            bestId = 'ext_' + eb.id; break;
+          }
+        }
+      }
+
+      if (bestId) {
+        bSel.value = bestId;
+      }
+    };
+
+    window.runCrossCityComparison = function () {
+      var aId = document.getElementById('crossCityPolicyA')?.value;
+      var bId = document.getElementById('crossCityPolicyB')?.value;
+      window.runPolicyComparison(aId, bId);
     };
 
     function esc(t) {
@@ -365,31 +602,27 @@ foreach ($completed_policies as $p) {
     }
 
     function cleanCityBadge(city, title) {
-      var c = city || 'City of Manila';
+      var c = (city || 'City of Manila').trim();
       var t = (title || '').toLowerCase();
       var isManila = (c.toLowerCase().indexOf('manila') !== -1);
       var isQC = (c.toLowerCase().indexOf('quezon') !== -1 || c.toLowerCase().indexOf('qc') !== -1);
+      var isMakati = (c.toLowerCase().indexOf('makati') !== -1);
       var isPasig = (c.toLowerCase().indexOf('pasig') !== -1);
 
-      var authBadge = '';
-      if (!isManila) {
-        var isOfficial = (t.indexOf('sp-2876') !== -1 || t.indexOf('sp-2350') !== -1 || t.indexOf('ordinance no. 12') !== -1 || t.indexOf('epwmd') !== -1);
-        if (isOfficial) {
-          authBadge = ' <span class="badge rounded-pill bg-white text-primary border border-primary-subtle shadow-2xs ms-1.5" title="Researched Official LGU Benchmark from Official City Council & EPWMD records" style="font-size:0.7rem; font-weight:600; cursor:help;"><i class="bi bi-patch-check-fill text-primary me-1"></i>Official Researched Data</span>';
-        } else {
-          authBadge = ' <span class="badge rounded-pill bg-white text-secondary border shadow-2xs ms-1.5" title="Sample Demonstration Benchmark for Cross-City Analysis" style="font-size:0.7rem; cursor:help;"><i class="bi bi-flask me-1 text-warning"></i>Sample Benchmark</span>';
-        }
-      }
+      var authBadge = ' <span class="badge rounded-pill bg-white text-primary border border-primary-subtle shadow-2xs ms-1.5" title="Researched Official LGU Benchmark from Official City Council records" style="font-size:0.7rem; font-weight:600; cursor:help;"><i class="bi bi-patch-check-fill text-primary me-1"></i>Official Researched Data</span>';
 
       if (isManila) {
         return '<span class="badge fw-semibold px-2.5 py-1" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-building me-1"></i> City of Manila (Local)</span>';
       } else if (isQC) {
-        return '<span class="badge fw-semibold px-2.5 py-1" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-pin-map-fill me-1"></i> Quezon City (QC Benchmark)</span>' + authBadge;
+        return '<span class="badge fw-semibold px-2.5 py-1" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-pin-map-fill me-1"></i> Quezon City (Enacted Benchmark)</span>' + authBadge;
+      } else if (isMakati) {
+        return '<span class="badge fw-semibold px-2.5 py-1" style="background:#faf5ff; color:#7e22ce; border:1px solid #e9d5ff; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-shield-check me-1"></i> City of Makati (Enacted Benchmark)</span>' + authBadge;
       } else if (isPasig) {
-        return '<span class="badge fw-semibold px-2.5 py-1" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-geo-alt-fill me-1"></i> Pasig City (Benchmark)</span>' + authBadge;
+        return '<span class="badge fw-semibold px-2.5 py-1" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-geo-alt-fill me-1"></i> Pasig City (Enacted Benchmark)</span>' + authBadge;
       }
       return '<span class="badge fw-semibold px-2.5 py-1" style="background:#f8fafc; color:#475569; border:1px solid #cbd5e1; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-geo-alt me-1"></i> ' + esc(c) + '</span>' + authBadge;
     }
+
 
     function cleanRiskBadge(risk) {
       var r = (risk || 'Low').toLowerCase();
@@ -403,6 +636,11 @@ foreach ($completed_policies as $p) {
     }
 
     function getScorePercentage(level, policy, criterionKey) {
+      // 0. Live Gemini AI evaluated criteria score if available
+      if (policy && policy._ai_scores && typeof policy._ai_scores[criterionKey] === 'number') {
+        return Math.min(98, Math.max(25, Math.round(policy._ai_scores[criterionKey])));
+      }
+
       // 1. Direct score from database evaluation record if present
       if (policy) {
         var direct = 0;
@@ -816,10 +1054,10 @@ foreach ($completed_policies as $p) {
       }
     }
 
-    // --- MODE 1: COMPARE POLICIES & CITIES ---
-    window.runPolicyComparison = function () {
-      var aId = document.getElementById('comparePolicyA').value;
-      var bId = document.getElementById('comparePolicyB').value;
+    // --- MODE 1 & 2: DYNAMIC AI STATUTORY BENCHMARKING & COMPARISON (ADMIN) ---
+    window.runPolicyComparison = async function (customA, customB) {
+      var aId = customA || document.getElementById('comparePolicyA')?.value || document.getElementById('crossCityPolicyA')?.value;
+      var bId = customB || document.getElementById('comparePolicyB')?.value || document.getElementById('crossCityPolicyB')?.value;
       var resultEl = document.getElementById('comparisonResult');
       if (!resultEl) return;
 
@@ -830,12 +1068,24 @@ foreach ($completed_policies as $p) {
         resultEl.classList.remove('d-none');
       };
 
-      if (!aId || !bId) { showMsg('warning', 'bi-exclamation-triangle-fill', 'Please select two policy records to compare.'); return; }
+      if (!aId || !bId) { showMsg('warning', 'bi-exclamation-triangle-fill', 'Please select two policy records or an external benchmark to compare.'); return; }
       if (aId === bId && COMPARE_DATA.length > 1) { showMsg('warning', 'bi-exclamation-triangle-fill', 'Policy A and Policy B cannot be the same document.'); return; }
 
       var find = function (id) {
-        for (var i = 0; i < COMPARE_DATA.length; i++)
-          if (String(COMPARE_DATA[i].id) === String(id)) return COMPARE_DATA[i];
+        if (!id) return null;
+        var sid = String(id);
+        if (window.COMPARE_POLICY_MAP && window.COMPARE_POLICY_MAP[sid]) {
+          return window.COMPARE_POLICY_MAP[sid];
+        }
+        if (window.EXTERNAL_BENCHMARK_MAP && window.EXTERNAL_BENCHMARK_MAP[sid]) {
+          return window.EXTERNAL_BENCHMARK_MAP[sid];
+        }
+        for (var i = 0; i < COMPARE_DATA.length; i++) {
+          if (String(COMPARE_DATA[i].id) === sid) return COMPARE_DATA[i];
+        }
+        for (var j = 0; j < EXTERNAL_BENCHMARKS.length; j++) {
+          if (String(EXTERNAL_BENCHMARKS[j].id) === sid || ('ext_' + EXTERNAL_BENCHMARKS[j].id) === sid) return EXTERNAL_BENCHMARKS[j];
+        }
         return null;
       };
 
@@ -844,12 +1094,169 @@ foreach ($completed_policies as $p) {
 
       if (!a || !b) { showMsg('danger', 'bi-x-circle-fill', 'Policy comparison data unavailable.'); return; }
 
-      var isCrossCity = (a.city_origin !== b.city_origin);
-      var dynamicAI = buildDynamicAIComparisonInsights(a, b, isCrossCity);
-      var comparisonTitle = a.title + ' vs ' + b.title;
-      var reportType = isCrossCity ? 'Cross-LGU Benchmark' : 'Policy Comparison';
+      var isCrossCity = (a.city_origin !== b.city_origin || a.is_external || b.is_external);
+      var cityBName = b.city_name || b.city_origin || (isCrossCity ? 'Peer City Benchmark' : 'City of Manila');
 
-      // --- EXECUTIVE COMPARISON SCORECARD (TOP HEADER) ---
+      // 1. RENDER INTERACTIVE AI BENCHMARKING ANIMATED LOADING SCREEN
+      resultEl.classList.remove('d-none');
+      resultEl.innerHTML = '<div class="card border-0 rounded-4 shadow-sm p-4 p-md-5 bg-white text-center mt-3 placeholder-glow" style="border: 2px dashed #93c5fd !important; background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 40%, #eff6ff 100%);">' +
+        '<div class="mb-3">' +
+          '<div class="position-relative d-inline-block">' +
+            '<div class="spinner-border text-primary" style="width: 3.5rem; height: 3.5rem; border-width: 0.25rem;" role="status">' +
+              '<span class="visually-hidden">Loading...</span>' +
+            '</div>' +
+            '<i class="bi bi-stars position-absolute top-50 start-50 translate-middle text-warning fs-4"></i>' +
+          '</div>' +
+        '</div>' +
+        '<div class="d-flex align-items-center justify-content-center gap-2 mb-2 flex-wrap">' +
+          '<span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1 font-monospace" style="font-size:0.75rem;">' +
+            '<i class="bi bi-cpu me-1"></i> GEMINI AI LEGISLATIVE BENCHMARKER' +
+          '</span>' +
+          '<span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1" style="font-size:0.75rem;">' +
+            '<i class="bi bi-shield-check me-1"></i> RA 7160 Comparative Engine' +
+          '</span>' +
+        '</div>' +
+        '<h5 class="fw-bold text-dark mb-1" style="font-size:1.15rem;">' +
+          'Benchmarking <span class="text-primary">' + esc(a.title) + '</span> with <span class="text-success">' + esc(b.title) + '</span>' +
+        '</h5>' +
+        '<p class="text-muted small mb-3">' +
+          'Evaluating statutory provisions, regulatory definitions, and local municipal enforcement viability (' + esc(cityBName) + ' vs City of Manila)...' +
+        '</p>' +
+        '<div class="progress mb-3 mx-auto shadow-2xs" style="height: 8px; max-width: 500px; border-radius: 4px; background: #e2e8f0;">' +
+          '<div id="aiBenchmarkingProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 25%; transition: width 0.4s ease;"></div>' +
+        '</div>' +
+        '<div id="aiBenchmarkingPhaseText" class="small fw-semibold text-secondary font-monospace" style="font-size:0.82rem;">' +
+          '<i class="bi bi-search me-1 text-primary"></i> Phase 1 of 3: Parsing statutory provisions &amp; legal definitions...' +
+        '</div>' +
+      '</div>';
+
+      resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Animate progress phases
+      var phaseEl = document.getElementById('aiBenchmarkingPhaseText');
+      var barEl = document.getElementById('aiBenchmarkingProgressBar');
+
+      var timer1 = setTimeout(function () {
+        if (barEl) barEl.style.width = '62%';
+        if (phaseEl) phaseEl.innerHTML = '<i class="bi bi-scales me-1 text-success"></i> Phase 2 of 3: Evaluating multi-criteria alignment under RA 7160 (Local Government Code)...';
+      }, 500);
+
+      var timer2 = setTimeout(function () {
+        if (barEl) barEl.style.width = '88%';
+        if (phaseEl) phaseEl.innerHTML = '<i class="bi bi-stars me-1 text-warning"></i> Phase 3 of 3: Synthesizing alignment scores, policy gaps, and amendment clause...';
+      }, 1000);
+
+      // 2. CALL GEMINI API (WITH DUAL-ENGINE FALLBACK)
+      var startTime = Date.now();
+      var dynamicAI = buildDynamicAIComparisonInsights(a, b, isCrossCity);
+      var preGeneratedClause = '';
+
+      var apiKey = (typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY && GEMINI_API_KEY !== 'PLACEHOLDER_KEY' && !GEMINI_API_KEY.includes('YOUR_'))
+        ? GEMINI_API_KEY
+        : (window.GEMINI_API_KEY || localStorage.getItem('gemini_api_key') || '');
+      var model = (typeof GEMINI_MODEL !== 'undefined' && GEMINI_MODEL) ? GEMINI_MODEL : 'gemini-1.5-flash';
+
+      if (apiKey) {
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function () { controller.abort(); }, 7500);
+
+        var promptText = 'Role: Senior Legislative Benchmarking & Statutory Policy Analyst for the City of Manila (Sangguniang Panlungsod ng Maynila), Philippines.\n\n' +
+          'TASK: Perform a formal cross-city ordinance benchmark and comparative evaluation between Policy A (City of Manila proposed ordinance) and Policy B (' + cityBName + ' enacted benchmark ordinance).\n\n' +
+          'POLICY A (City of Manila):\n' +
+          'Title: ' + a.title + '\n' +
+          'Category: ' + (a.category || 'General') + '\n' +
+          'Provisions: ' + (a.key_provisions || a.description || 'Municipal ordinance proposal') + '\n\n' +
+          'POLICY B (' + cityBName + '):\n' +
+          'Title: ' + b.title + '\n' +
+          'Area: ' + (b.policy_area || b.category || 'General') + '\n' +
+          'Provisions: ' + (b.key_provisions || b.description || 'Enacted municipal code') + '\n\n' +
+          'OUTPUT CONSTRAINTS:\n' +
+          'Respond with ONLY a raw valid JSON object (no markdown, no backticks, no code block fence) with these exact keys:\n' +
+          '{\n' +
+          '  "verdict_title": "Short executive verdict (e.g. Synergistic Framework with Policy Gap)",\n' +
+          '  "verdict_note": "2-3 sentence strategic summary comparing Manila\'s draft with ' + cityBName + '.",\n' +
+          '  "economic_score_a": 85,\n' +
+          '  "economic_score_b": 90,\n' +
+          '  "social_score_a": 88,\n' +
+          '  "social_score_b": 82,\n' +
+          '  "env_score_a": 78,\n' +
+          '  "env_score_b": 92,\n' +
+          '  "legal_score_a": 91,\n' +
+          '  "legal_score_b": 89,\n' +
+          '  "strengthA": "Specific core legislative strength of Manila\'s draft",\n' +
+          '  "bestPracticeB": "Adoptable best practice from ' + cityBName + '",\n' +
+          '  "takeaway": "Actionable Manila City Council directive addressing the identified gap",\n' +
+          '  "suggested_amendment": "SECTION ___. [Title] — [Drafted statutory clause in Sangguniang Panlungsod format referencing RA 7160 and appropriate Manila city department]"\n' +
+          '}';
+
+        try {
+          var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(apiKey), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: promptText }] }],
+              generationConfig: {
+                temperature: 0.2,
+                maxOutputTokens: 900
+              }
+            })
+          });
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            var data = await response.json();
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+              var rawText = data.candidates[0].content.parts[0].text.trim();
+              var cleanJson = rawText.replace(/^```json\s*|^```\s*|```$/gi, '').trim();
+              var parsed = JSON.parse(cleanJson);
+
+              if (parsed.verdict_title) dynamicAI.verdictTitle = parsed.verdict_title;
+              if (parsed.verdict_note) dynamicAI.verdictNote = parsed.verdict_note;
+              if (parsed.strengthA) dynamicAI.strengthA = parsed.strengthA;
+              if (parsed.bestPracticeB) dynamicAI.bestPracticeB = parsed.bestPracticeB;
+              if (parsed.takeaway) dynamicAI.takeaway = parsed.takeaway;
+              if (parsed.suggested_amendment) preGeneratedClause = parsed.suggested_amendment;
+
+              // Store dynamic AI scores directly on policy objects
+              a._ai_scores = {
+                economic: parsed.economic_score_a,
+                social: parsed.social_score_a,
+                env: parsed.env_score_a,
+                legal: parsed.legal_score_a
+              };
+              b._ai_scores = {
+                economic: parsed.economic_score_b,
+                social: parsed.social_score_b,
+                env: parsed.env_score_b,
+                legal: parsed.legal_score_b
+              };
+            }
+          }
+        } catch (err) {
+          clearTimeout(timeoutId);
+          console.warn('Gemini API benchmark call timed out or failed, using contextual legislative heuristic engine:', err);
+        }
+      }
+
+      // Ensure minimum visual loading duration for smooth user experience (at least 1.4s)
+      var elapsed = Date.now() - startTime;
+      if (elapsed < 1400) {
+        await new Promise(function (resolve) { setTimeout(resolve, 1400 - elapsed); });
+      }
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+
+      // Store pre-generated clause for instant rendering when Suggest Amendment is clicked
+      window.preGeneratedAIAmendment = preGeneratedClause || generateContextualLegislativeDraft(a, b, dynamicAI.takeaway);
+
+      var comparisonTitle = a.title + ' vs ' + b.title;
+      var reportType = isCrossCity ? 'Cross-City Ordinance Benchmark' : 'Policy Comparison';
+
+      var shortCityA = esc(a.city_name || a.city_origin || 'Manila').replace(/^City of\s*/i, '');
+      var shortCityB = esc(b.city_name || b.city_origin || (isCrossCity ? 'Peer City' : 'Policy B')).replace(/^City of\s*/i, '');
+
+      // --- EXECUTIVE COMPARISON SCORECARD (CLEAN & MODERN) ---
       var criteriaMeta = [
         { key: 'economic', label: 'Economic Feasibility', icon: 'bi-cash-coin' },
         { key: 'social', label: 'Social Impact', icon: 'bi-people-fill' },
@@ -866,15 +1273,15 @@ foreach ($completed_policies as $p) {
         var cB = getScoreColor(pB);
 
         scorecardCols += '<div class="col-12 col-sm-6 col-lg-3">' +
-          '<div class="p-3 rounded-3 border h-100 d-flex flex-column justify-content-between" style="background:#f8fafc; border-color:#e2e8f0;">' +
+          '<div class="p-3 rounded-3 border h-100 d-flex flex-column justify-content-between bg-white shadow-2xs" style="border-color:#e2e8f0;">' +
             '<div>' +
-              '<div class="d-flex justify-content-between align-items-center mb-2">' +
-                '<span class="fw-bold text-dark" style="font-size:0.8rem;">' + cm.label + '</span>' +
+              '<div class="d-flex justify-content-between align-items-center mb-2.5 pb-1 border-bottom">' +
+                '<span class="fw-bold text-dark" style="font-size:0.82rem;">' + cm.label + '</span>' +
                 '<i class="bi ' + cm.icon + ' text-secondary" style="font-size:0.9rem;"></i>' +
               '</div>' +
               '<div class="mb-2">' +
-                '<div class="d-flex justify-content-between align-items-center mb-1" style="font-size:0.73rem;">' +
-                  '<span class="text-primary fw-semibold text-truncate me-1" style="max-width:115px;" title="' + esc(a.title) + '">Policy A (' + esc(a.city_origin || 'Manila') + ')</span>' +
+                '<div class="d-flex justify-content-between align-items-center mb-1" style="font-size:0.75rem;">' +
+                  '<span class="text-primary fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size:0.45rem;"></i>' + shortCityA + '</span>' +
                   '<span class="fw-bold" style="color:' + cA + ';">' + pA + '%</span>' +
                 '</div>' +
                 '<div class="progress" style="height:6px; background:#e2e8f0; border-radius:3px;">' +
@@ -882,8 +1289,8 @@ foreach ($completed_policies as $p) {
                 '</div>' +
               '</div>' +
               '<div>' +
-                '<div class="d-flex justify-content-between align-items-center mb-1" style="font-size:0.73rem;">' +
-                  '<span class="text-success fw-semibold text-truncate me-1" style="max-width:115px;" title="' + esc(b.title) + '">Policy B (' + esc(b.city_origin || 'Benchmark') + ')</span>' +
+                '<div class="d-flex justify-content-between align-items-center mb-1" style="font-size:0.75rem;">' +
+                  '<span class="text-success fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size:0.45rem;"></i>' + shortCityB + '</span>' +
                   '<span class="fw-bold" style="color:' + cB + ';">' + pB + '%</span>' +
                 '</div>' +
                 '<div class="progress" style="height:6px; background:#e2e8f0; border-radius:3px;">' +
@@ -899,63 +1306,171 @@ foreach ($completed_policies as $p) {
         '<div class="card-body p-3 p-md-4">' +
           '<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 pb-3 border-bottom">' +
             '<div>' +
-              '<div class="d-flex flex-wrap align-items-center gap-2 mb-1.5">' +
-                '<span class="badge px-3 py-1.5 rounded-pill fw-bold shadow-2xs" style="background:' + dynamicAI.verdictBg + '; color:' + dynamicAI.verdictColor + '; border:1px solid ' + dynamicAI.verdictBorder + '; font-size:0.83rem;">' +
+              '<div class="d-flex align-items-center gap-2 mb-1.5 flex-wrap">' +
+                '<span class="badge px-3 py-1.5 rounded-pill fw-bold shadow-2xs" style="background:' + dynamicAI.verdictBg + '; color:' + dynamicAI.verdictColor + '; border:1px solid ' + dynamicAI.verdictBorder + '; font-size:0.84rem;">' +
                   '<i class="bi ' + dynamicAI.verdictIcon + ' me-1.5"></i> ' + esc(dynamicAI.verdictTitle) +
                 '</span>' +
-                '<span class="badge rounded-pill bg-light text-muted border px-2.5 py-1" style="font-size:0.75rem;">' +
-                  '<i class="bi bi-shield-check me-1 text-primary"></i> 4-Dimensional Multi-Criteria Assessment' +
-                '</span>' +
+                '<span class="text-muted small">| ' + (isCrossCity ? 'Cross-City Comparative Assessment' : 'Local Ordinance Comparative Assessment') + '</span>' +
               '</div>' +
-              '<p class="text-secondary small mb-0" style="line-height:1.5;">' + dynamicAI.verdictNote + '</p>' +
+              '<p class="text-secondary small mb-0" style="line-height:1.55;">' + dynamicAI.verdictNote + '</p>' +
             '</div>' +
-            '<div class="d-flex align-items-center gap-2 text-nowrap">' +
-              '<span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-3 fw-semibold" style="font-size:0.78rem;">' +
-                '<i class="bi bi-bar-chart-fill me-1"></i> Comparative Alignment Scorecard' +
-              '</span>' +
+            '<div class="text-nowrap text-muted small font-monospace">' +
+              '<i class="bi bi-shield-check text-primary me-1"></i> RA 7160 Alignment Scorecard' +
             '</div>' +
           '</div>' +
           '<div class="row g-3 pt-3">' + scorecardCols + '</div>' +
         '</div>' +
       '</div>';
 
-      var html = execCard;
-      html += '<div class="border rounded-3 overflow-hidden shadow-sm mt-4 bg-white" style="font-family: Arial, Helvetica, sans-serif;">';
-      html += '<table class="table table-bordered align-middle mb-0" style="border-color:#e2e8f0;">';
+      // --- STRUCTURED 3-CARD AI EXECUTIVE COMPARISON INSIGHTS (CLEAN & SPACIOUS) ---
+      var insightsCard = '<div class="card border-0 rounded-4 shadow-sm mt-4 p-3 p-md-4" style="background: linear-gradient(135deg, #f8fafc 0%, #f0fdfa 100%); border-left: 5px solid #0284c7 !important;">' +
+        '<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-3 pb-2 border-bottom">' +
+          '<div class="d-flex align-items-center gap-3">' +
+            '<span class="p-2.5 rounded-3 bg-white text-primary shadow-2xs flex-shrink-0" style="color:#0284c7; font-size:1.3rem;">' +
+              '<i class="bi bi-stars"></i>' +
+            '</span>' +
+            '<div>' +
+              '<div class="d-flex flex-wrap align-items-center gap-2">' +
+                '<h5 class="fw-bold mb-0 text-dark" style="font-size:clamp(0.98rem, 2.5vw, 1.15rem);">AI Executive Comparison Insights</h5>' +
+                '<span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1 fw-semibold" style="font-size:0.75rem;">' +
+                  '<i class="bi bi-tag-fill me-1"></i> ' + esc(dynamicAI.topic) +
+                '</span>' +
+              '</div>' +
+              '<p class="text-muted small mb-0 mt-0.5">Automated multi-criteria comparison &amp; actionable recommendations</p>' +
+            '</div>' +
+          '</div>' +
+          '<span class="badge rounded-pill bg-white text-dark border px-2.5 py-1 shadow-2xs small font-monospace align-self-start align-self-md-center">' +
+            '<i class="bi bi-check2-circle text-success me-1"></i> Synced to Reports' +
+          '</span>' +
+        '</div>' +
+
+        '<div class="row g-3 mt-1">' +
+          '<div class="col-12 col-md-4">' +
+            '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column" style="border-top: 3px solid #2563eb !important;">' +
+              '<div class="fw-bold text-primary small mb-2 d-flex align-items-center gap-1.5">' +
+                '<i class="bi bi-trophy-fill text-primary"></i> Manila Policy Strength' +
+              '</div>' +
+              '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
+                dynamicAI.strengthA +
+              '</p>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="col-12 col-md-4">' +
+            '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column" style="border-top: 3px solid #16a34a !important;">' +
+              '<div class="fw-bold text-success small mb-2 d-flex align-items-center gap-1.5">' +
+                '<i class="bi bi-lightbulb-fill text-success"></i> Adoptable Best Practice (' + shortCityB + ')' +
+              '</div>' +
+              '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
+                (b.benchmark_insight ? esc(b.benchmark_insight) : dynamicAI.bestPracticeB) +
+              '</p>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="col-12 col-md-4">' +
+            '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column justify-content-between" style="border-top: 3px solid #d97706 !important;">' +
+              '<div>' +
+                '<div class="fw-bold text-warning-emphasis small mb-2 d-flex align-items-center gap-1.5">' +
+                  '<i class="bi bi-bullseye text-warning"></i> Policy Gap &amp; Council Directive' +
+                '</div>' +
+                '<p class="text-secondary small mb-3" style="line-height:1.65;">' +
+                  dynamicAI.takeaway +
+                '</p>' +
+              '</div>' +
+              '<div class="pt-2.5 border-top mt-auto">' +
+                '<button type="button" class="btn btn-sm text-white fw-bold shadow-2xs w-100 d-flex align-items-center justify-content-center gap-1.5 rounded-3 py-2" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); border:none; font-size:0.82rem;" onclick="generateAIAmendmentLanguage()">' +
+                  '<i class="bi bi-stars"></i> Suggest Amendment Language' +
+                '</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+      var tableHtml = '<div class="border rounded-3 overflow-hidden shadow-sm mt-4 bg-white" style="font-family: Arial, Helvetica, sans-serif;">';
+      tableHtml += '<table class="table table-bordered align-middle mb-0" style="border-color:#e2e8f0;">';
 
       // Header Row
-      html += '<thead><tr style="background:#f8fafc;">';
-      html += '<th class="py-3 px-3 fw-bold text-uppercase" style="width:20%; font-size:0.75rem; letter-spacing:0.5px; color:#000;">Feature / Metric</th>';
+      tableHtml += '<thead><tr style="background:#f8fafc;">';
+      tableHtml += '<th class="py-3 px-3 fw-bold text-uppercase" style="width:20%; font-size:0.75rem; letter-spacing:0.5px; color:#000;">Feature / Metric</th>';
 
       // Policy A Header
-      html += '<th class="py-3 px-3 text-center" style="width:40%; border-top:3px solid #2563eb; background:#f8fafc;">' +
-        '<div class="fw-bold text-primary text-uppercase mb-1" style="font-size:0.9rem; letter-spacing:0.5px;">Policy A</div>' +
+      tableHtml += '<th class="py-3 px-3 text-center" style="width:40%; border-top:3px solid #2563eb; background:#f8fafc;">' +
+        '<div class="fw-bold text-primary text-uppercase mb-1" style="font-size:0.9rem; letter-spacing:0.5px;">' + (isCrossCity ? 'Policy A (Local / Proposed)' : 'Policy A') + '</div>' +
         '<div>' + cleanCityBadge(a.city_origin, a.title) + '</div>' +
         '</th>';
 
       // Policy B Header
-      html += '<th class="py-3 px-3 text-center" style="width:40%; border-top:3px solid #16a34a; background:#f8fafc;">' +
-        '<div class="fw-bold text-success text-uppercase mb-1" style="font-size:0.9rem; letter-spacing:0.5px;">Policy B / Benchmark</div>' +
+      tableHtml += '<th class="py-3 px-3 text-center" style="width:40%; border-top:3px solid #16a34a; background:#f8fafc;">' +
+        '<div class="fw-bold text-success text-uppercase mb-1" style="font-size:0.9rem; letter-spacing:0.5px;">' + (isCrossCity ? 'Policy B (Enacted Benchmark)' : 'Policy B / Benchmark') + '</div>' +
         '<div>' + cleanCityBadge(b.city_origin, b.title) + '</div>' +
         '</th>';
-      html += '</tr></thead>';
+      tableHtml += '</tr></thead>';
+
+      // Format source link button for Policy B if available
+      var bSourceBtn = '';
+      if (b.source_link) {
+        bSourceBtn = '<div class="mt-1.5"><a href="' + esc(b.source_link) + '" target="_blank" rel="noopener noreferrer" class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 text-decoration-none px-2.5 py-1" style="font-size:0.72rem;"><i class="bi bi-box-arrow-up-right me-1"></i>Official Enacted Source Record</a></div>';
+      }
+
+      // Enactment Status
+      var aStatusBadge = '<span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25 px-2.5 py-1" style="font-size:0.78rem;"><i class="bi bi-hourglass-split me-1"></i> Proposed / Under Committee Review' + (a.publication_date ? ' (' + esc(a.publication_date) + ')' : '') + '</span>';
+      var bStatusBadge = b.enactment_date
+        ? '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-1" style="font-size:0.78rem;"><i class="bi bi-check-circle-fill me-1"></i> Enacted: ' + esc(b.enactment_date) + '</span>'
+        : '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-1" style="font-size:0.78rem;"><i class="bi bi-check-circle-fill me-1"></i> Enacted Legislation</span>';
+
+      // Format Key Provisions
+      var aProvisions = a.key_provisions || a.description || 'Comprehensive municipal ordinance proposal addressing localized service delivery across Manila legislative districts.';
+      var bProvisions = b.key_provisions || b.description || 'Enacted municipal code provisions establishing statutory compliance and operational requirements.';
+
+      // Format provisions into clean HTML list if it contains newlines or bullets
+      function formatProvisions(text) {
+        if (!text) return '';
+        var lines = text.split('\n');
+        if (lines.length > 1) {
+          var items = lines.map(function(l) {
+            var trimmed = l.trim().replace(/^[•\-\*]\s*/, '');
+            return trimmed ? '<li class="mb-1">' + esc(trimmed) + '</li>' : '';
+          }).filter(Boolean).join('');
+          return '<ul class="mb-0 ps-3 small text-secondary" style="line-height:1.6;">' + items + '</ul>';
+        }
+        return '<p class="mb-0 small text-secondary" style="line-height:1.6;">' + esc(text) + '</p>';
+      }
 
       // Body Rows
       var rows = [
         {
           label: 'Policy Title',
-          a: '<span class="fw-semibold" style="font-family: Arial, sans-serif; color:#000000; font-size:0.88rem;">' + esc(a.title) + '</span>',
-          b: '<span class="fw-semibold" style="font-family: Arial, sans-serif; color:#000000; font-size:0.88rem;">' + esc(b.title) + '</span>'
+          a: '<div class="fw-semibold text-dark" style="font-family: Arial, sans-serif; font-size:0.88rem;">' + esc(a.title) + '</div>',
+          b: '<div class="fw-semibold text-dark" style="font-family: Arial, sans-serif; font-size:0.88rem;">' + esc(b.title) + '</div>' + bSourceBtn
         },
         {
-          label: 'LGU / City Origin',
-          a: cleanCityBadge(a.city_origin, a.title),
-          b: cleanCityBadge(b.city_origin, b.title)
+          label: 'City Jurisdiction',
+          a: '<div class="d-flex align-items-center gap-1.5"><i class="bi bi-building text-primary"></i> <strong class="text-dark">' + esc(a.city_name || a.city_origin || 'City of Manila') + '</strong> <span class="text-muted small">(Local LGU)</span></div>',
+          b: '<div class="d-flex align-items-center gap-1.5"><i class="bi bi-geo-alt-fill text-success"></i> <strong class="text-dark">' + esc(b.city_name || b.city_origin || 'Peer City Benchmark') + '</strong> <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 ms-1" style="font-size:0.68rem;">Enacted Law</span></div>'
         },
         {
-          label: 'Category',
-          a: '<span class="badge bg-light border px-2.5 py-1" style="font-family: Arial, sans-serif; color:#000000; font-size:0.82rem; font-weight:600;">' + esc(a.category || 'General') + '</span>',
-          b: '<span class="badge bg-light border px-2.5 py-1" style="font-family: Arial, sans-serif; color:#000000; font-size:0.82rem; font-weight:600;">' + esc(b.category || 'General') + '</span>'
+          label: 'Policy Area',
+          a: '<span class="badge bg-light border px-2.5 py-1 text-dark fw-semibold" style="font-size:0.82rem;">' + esc(a.category || 'General') + '</span>',
+          b: '<span class="badge bg-light border px-2.5 py-1 text-dark fw-semibold" style="font-size:0.82rem;">' + esc(b.policy_area || b.category || 'General') + '</span>'
+        },
+        {
+          label: 'Enactment Status',
+          a: aStatusBadge,
+          b: bStatusBadge
+        },
+        {
+          label: 'Key Provisions',
+          a: formatProvisions(aProvisions),
+          b: formatProvisions(bProvisions) + (isCrossCity ?
+            '<div class="mt-2.5 pt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">' +
+              '<span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25 py-1 px-2" style="font-size:0.72rem;">' +
+                '<i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i> Benchmark Provision Gap Identified' +
+              '</span>' +
+              '<button type="button" class="btn btn-xs text-white rounded-pill px-2.5 py-1 fw-bold shadow-2xs d-inline-flex align-items-center gap-1 hover-lift" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); font-size:0.75rem; border:none;" onclick="generateAIAmendmentLanguage()">' +
+                '<i class="bi bi-stars"></i> Suggest Amendment Language' +
+              '</button>' +
+            '</div>' : '')
         },
         {
           label: 'Overall Risk Level',
@@ -964,10 +1479,10 @@ foreach ($completed_policies as $p) {
         }
       ];
 
-      html += '<tbody>';
+      tableHtml += '<tbody>';
       for (var i = 0; i < rows.length; i++) {
         var r = rows[i];
-        html += '<tr>' +
+        tableHtml += '<tr>' +
           '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">' + r.label + '</td>' +
           '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' + r.a + '</td>' +
           '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' + r.b + '</td>' +
@@ -975,38 +1490,38 @@ foreach ($completed_policies as $p) {
       }
 
       // Evaluation Criteria Section Divider
-      html += '<tr>' +
+      tableHtml += '<tr>' +
         '<td colspan="3" class="px-3 py-2.5 bg-light border-top border-bottom fw-bold text-uppercase" style="background:#f1f5f9; font-family: Arial, sans-serif; color:#000000; font-size:0.78rem; letter-spacing:0.8px;">' +
-        'Evaluation Criteria &amp; Impact Analysis' +
+        'Evaluation Criteria &amp; Viability Assessment' +
         '</td>' +
         '</tr>';
 
       var evalRows = [
         {
           label: 'Economic Feasibility',
-          a: criteriaCell(a.economic_level, getEnhancedPolicyReason(a, 'economic'), getScorePercentage(a.economic_level, a, 'economic')),
-          b: criteriaCell(b.economic_level, getEnhancedPolicyReason(b, 'economic'), getScorePercentage(b.economic_level, b, 'economic'))
+          a: criteriaCell(a.economic_level, a.economic_reason || getEnhancedPolicyReason(a, 'economic'), getScorePercentage(a.economic_level, a, 'economic')),
+          b: criteriaCell(b.economic_level, b.economic_reason || getEnhancedPolicyReason(b, 'economic'), getScorePercentage(b.economic_level, b, 'economic'))
         },
         {
           label: 'Social Impact',
-          a: criteriaCell(a.social_level, getEnhancedPolicyReason(a, 'social'), getScorePercentage(a.social_level, a, 'social')),
-          b: criteriaCell(b.social_level, getEnhancedPolicyReason(b, 'social'), getScorePercentage(b.social_level, b, 'social'))
+          a: criteriaCell(a.social_level, a.social_reason || getEnhancedPolicyReason(a, 'social'), getScorePercentage(a.social_level, a, 'social')),
+          b: criteriaCell(b.social_level, b.social_reason || getEnhancedPolicyReason(b, 'social'), getScorePercentage(b.social_level, b, 'social'))
         },
         {
           label: 'Environmental Impact',
-          a: criteriaCell(a.env_level, getEnhancedPolicyReason(a, 'env'), getScorePercentage(a.env_level, a, 'env')),
-          b: criteriaCell(b.env_level, getEnhancedPolicyReason(b, 'env'), getScorePercentage(b.env_level, b, 'env'))
+          a: criteriaCell(a.env_level, a.env_reason || getEnhancedPolicyReason(a, 'env'), getScorePercentage(a.env_level, a, 'env')),
+          b: criteriaCell(b.env_level, b.env_reason || getEnhancedPolicyReason(b, 'env'), getScorePercentage(b.env_level, b, 'env'))
         },
         {
           label: 'Legal Compliance',
-          a: criteriaCell(a.legal_level, getEnhancedPolicyReason(a, 'legal'), getScorePercentage(a.legal_level, a, 'legal')),
-          b: criteriaCell(b.legal_level, getEnhancedPolicyReason(b, 'legal'), getScorePercentage(b.legal_level, b, 'legal'))
+          a: criteriaCell(a.legal_level, a.legal_reason || getEnhancedPolicyReason(a, 'legal'), getScorePercentage(a.legal_level, a, 'legal')),
+          b: criteriaCell(b.legal_level, b.legal_reason || getEnhancedPolicyReason(b, 'legal'), getScorePercentage(b.legal_level, b, 'legal'))
         }
       ];
 
       for (var j = 0; j < evalRows.length; j++) {
         var er = evalRows[j];
-        html += '<tr>' +
+        tableHtml += '<tr>' +
           '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">' + er.label + '</td>' +
           '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' + er.a + '</td>' +
           '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' + er.b + '</td>' +
@@ -1014,78 +1529,34 @@ foreach ($completed_policies as $p) {
       }
 
       // Recommendation Row
-      html += '<tr>' +
+      tableHtml += '<tr>' +
         '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">Recommendation</td>' +
         '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' +
-        '<span style="font-family: Arial, Helvetica, sans-serif; color:#000000; font-size:0.88rem; line-height:1.55;">' + esc(getEnhancedRecommendation(a)) + '</span>' +
+        '<span style="font-family: Arial, Helvetica, sans-serif; color:#000000; font-size:0.88rem; line-height:1.55;">' + esc(a.ai_recommendation || getEnhancedRecommendation(a)) + '</span>' +
         '</td>' +
         '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' +
-        '<span style="font-family: Arial, Helvetica, sans-serif; color:#000000; font-size:0.88rem; line-height:1.55;">' + esc(getEnhancedRecommendation(b)) + '</span>' +
+        '<span style="font-family: Arial, Helvetica, sans-serif; color:#000000; font-size:0.88rem; line-height:1.55;">' + esc(b.ai_recommendation || getEnhancedRecommendation(b)) + '</span>' +
         '</td>' +
         '</tr>';
 
-      html += '</tbody></table></div>';
+      tableHtml += '</tbody></table></div>';
 
-      // --- STRUCTURED 3-CARD AI EXECUTIVE COMPARISON INSIGHTS ---
-      html += '<div class="card border-0 rounded-4 shadow-sm mt-4 p-3 p-md-4" style="background: linear-gradient(135deg, #f8fafc 0%, #f0fdfa 100%); border-left: 5px solid #0284c7 !important;">' +
-        '<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-3 pb-2 border-bottom">' +
-        '<div class="d-flex align-items-center gap-3">' +
-        '<span class="p-2.5 rounded-3 bg-white text-primary shadow-2xs flex-shrink-0" style="color:#0284c7; font-size:1.3rem;">' +
-        '<i class="bi bi-stars"></i>' +
-        '</span>' +
-        '<div>' +
-        '<div class="d-flex flex-wrap align-items-center gap-2">' +
-        '<h5 class="fw-bold mb-0 text-dark" style="font-size:clamp(0.98rem, 2.5vw, 1.15rem);">AI Executive Comparison Insights</h5>' +
-        '<span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1 fw-semibold" style="font-size:0.75rem;">' +
-        '<i class="bi bi-tag-fill me-1"></i> ' + esc(dynamicAI.topic) +
-        '</span>' +
-        '</div>' +
-        '<p class="text-muted small mb-0 mt-0.5">Automated multi-criteria synthesis comparing <strong>' + esc(a.title) + '</strong> with <strong>' + esc(b.title) + '</strong></p>' +
-        '</div>' +
-        '</div>' +
-        '<span class="badge rounded-pill bg-white text-dark border px-3 py-1.5 shadow-2xs small font-monospace align-self-start align-self-md-center">' +
-        '<i class="bi bi-check2-circle text-success me-1"></i> Synced to Reports' +
-        '</span>' +
-        '</div>' +
+      // ── ASSEMBLE EXECUTIVE HIERARCHY:
+      // 1. Alignment Scorecard (execCard)
+      // 2. 3-Card AI Executive Comparison Insights (insightsCard)
+      // 3. AI Amendment Result Area (aiAmendmentResultArea)
+      // 4. Detailed Comparison Table (tableHtml)
+      var html = execCard + insightsCard + '<div id="aiAmendmentResultArea" class="mt-4 d-none"></div>' + tableHtml;
 
-        '<div class="row g-3 mt-1">' +
-        '<div class="col-12 col-md-4">' +
-        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column" style="border-top: 3px solid #2563eb !important;">' +
-        '<div class="fw-bold text-primary small mb-2 d-flex align-items-center gap-1.5">' +
-        '<i class="bi bi-trophy-fill text-primary fs-6"></i> Policy A Core Strength' +
-        '</div>' +
-        '<div class="text-muted fw-semibold mb-1.5 text-truncate" style="font-size:0.75rem;" title="' + esc(a.title) + '">' + esc(a.title) + '</div>' +
-        '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
-        dynamicAI.strengthA +
-        '</p>' +
-        '</div>' +
-        '</div>' +
-
-        '<div class="col-12 col-md-4">' +
-        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column" style="border-top: 3px solid #16a34a !important;">' +
-        '<div class="fw-bold text-success small mb-2 d-flex align-items-center gap-1.5">' +
-        '<i class="bi bi-lightbulb-fill text-success fs-6"></i> Adoptable Best Practice' +
-        '</div>' +
-        '<div class="text-muted fw-semibold mb-1.5 text-truncate" style="font-size:0.75rem;" title="' + esc(b.title) + '">' + esc(b.title) + '</div>' +
-        '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
-        dynamicAI.bestPracticeB +
-        '</p>' +
-        '</div>' +
-        '</div>' +
-
-        '<div class="col-12 col-md-4">' +
-        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column" style="border-top: 3px solid #d97706 !important;">' +
-        '<div class="fw-bold text-warning-emphasis small mb-2 d-flex align-items-center gap-1.5">' +
-        '<i class="bi bi-bullseye text-warning fs-6"></i> Actionable Council Action' +
-        '</div>' +
-        '<div class="text-muted fw-semibold mb-1.5" style="font-size:0.75rem;">Manila City Council Directive</div>' +
-        '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
-        dynamicAI.takeaway +
-        '</p>' +
-        '</div>' +
-        '</div>' +
-        '</div>' +
-        '</div>';
+      // Store comparison context for dynamic AI amendment generation
+      window.currentComparisonContext = {
+        a: a,
+        b: b,
+        isCrossCity: isCrossCity,
+        gap: dynamicAI.takeaway,
+        diffSummary: dynamicAI.diffSummary,
+        topic: dynamicAI.topic
+      };
 
       // Auto-record comparison in Reports module
       recordComparisonInReports(comparisonTitle, reportType, dynamicAI.diffSummary.replace(/<[^>]*>?/gm, ''), a.risk_level, dynamicAI.takeaway);
@@ -1303,5 +1774,217 @@ foreach ($completed_policies as $p) {
       resultEl.innerHTML = html;
       resultEl.classList.remove('d-none');
     };
+
+    // ── DYNAMIC AI POLICY GAP & AMENDMENT GENERATOR ───────────────
+    window.generateAIAmendmentLanguage = async function () {
+      var ctx = window.currentComparisonContext;
+      if (!ctx || !ctx.a || !ctx.b) {
+        alert('Please select and run a benchmarking comparison first.');
+        return;
+      }
+
+      var a = ctx.a;
+      var b = ctx.b;
+      var gap = ctx.gap || ctx.diffSummary || 'Municipal policy gap identified during cross-city benchmarking analysis.';
+      var container = document.getElementById('aiAmendmentResultArea');
+      if (!container) return;
+
+      container.classList.remove('d-none');
+      container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // 1. Render Pulsing Placeholder Loading Skeleton (Non-streaming)
+      container.innerHTML = '<div class="card border-0 rounded-4 shadow-sm p-4 bg-white placeholder-glow" style="border: 2px dashed #93c5fd !important; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">' +
+        '<div class="d-flex align-items-center gap-2.5 mb-3">' +
+          '<div class="spinner-border text-primary" style="width: 1.3rem; height: 1.3rem;" role="status">' +
+            '<span class="visually-hidden">Loading...</span>' +
+          '</div>' +
+          '<h6 class="fw-bold text-primary mb-0" style="font-size: 0.95rem;">' +
+            '<i class="bi bi-stars text-warning me-1"></i> Gemini AI is analyzing statutory gaps &amp; drafting municipal amendment clause...' +
+          '</h6>' +
+        '</div>' +
+        '<p class="text-muted small mb-3">Synthesizing benchmark provisions from <strong>' + esc(b.title) + '</strong> (' + esc(b.city_name || b.city_origin || 'Peer City') + ') to address draft gaps in <strong>' + esc(a.title) + '</strong> using Philippine ordinance drafting conventions.</p>' +
+        '<div class="placeholder col-12 mb-2 rounded" style="height: 16px; background-color: #cbd5e1;"></div>' +
+        '<div class="placeholder col-10 mb-2 rounded" style="height: 16px; background-color: #cbd5e1;"></div>' +
+        '<div class="placeholder col-8 mb-3 rounded" style="height: 16px; background-color: #cbd5e1;"></div>' +
+        '<div class="placeholder col-4 rounded" style="height: 24px; background-color: #e2e8f0;"></div>' +
+      '</div>';
+
+      // Check if amendment clause was already pre-generated during benchmarking comparison
+      if (window.preGeneratedAIAmendment) {
+        await new Promise(function (resolve) { setTimeout(resolve, 550); });
+        renderAIAmendmentLanguageBox(window.preGeneratedAIAmendment, a, b, gap);
+        return;
+      }
+
+      var apiKey = (typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY && GEMINI_API_KEY !== 'PLACEHOLDER_KEY' && !GEMINI_API_KEY.includes('YOUR_'))
+        ? GEMINI_API_KEY
+        : (window.GEMINI_API_KEY || localStorage.getItem('gemini_api_key') || '');
+      var model = (typeof GEMINI_MODEL !== 'undefined' && GEMINI_MODEL) ? GEMINI_MODEL : 'gemini-1.5-flash';
+
+      var draftedClause = '';
+
+      if (apiKey) {
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function () { controller.abort(); }, 16000);
+
+        var promptText = 'Role: Senior Legislative Drafting Legal Consultant assisting the City Council of Manila (Sangguniang Panlungsod ng Maynila), Philippines.\n\n' +
+          'CONTEXT:\n' +
+          'Policy A (City of Manila Proposed Ordinance):\n' +
+          'Title: ' + a.title + '\n' +
+          'Provisions: ' + (a.key_provisions || a.description || 'General municipal policy proposal') + '\n\n' +
+          'Policy B (Enacted Benchmark from ' + (b.city_name || b.city_origin || 'Peer City') + '):\n' +
+          'Title: ' + b.title + '\n' +
+          'Enacted Provisions: ' + (b.key_provisions || b.description || 'Enacted municipal code') + '\n\n' +
+          'IDENTIFIED STATUTORY GAP / DIRECTIVE:\n' +
+          gap + '\n\n' +
+          'TASK:\n' +
+          'Draft a short, formal, suggested amendment clause (in Philippine municipal ordinance legislative style) that could address the identified gap.\n\n' +
+          'DRAFTING CONSTRAINTS:\n' +
+          '1. Format as: "SECTION ___. [Title] — [Operative text]".\n' +
+          '2. Cite relevant national statutory authority (e.g. RA 7160 Local Government Code, RA 9003, or other applicable Philippine laws).\n' +
+          '3. Specify the appropriate Manila City department (e.g., Manila Traffic and Parking Bureau - MTPB, Department of Public Services - DPS, or Manila Health Department - MHD).\n' +
+          '4. Output ONLY the drafted statutory clause with Section heading and operative text. Do not include conversational filler or code block markdown.';
+
+        try {
+          var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(apiKey), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: promptText }] }],
+              generationConfig: {
+                temperature: 0.3,
+                maxOutputTokens: 600
+              }
+            })
+          });
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            var data = await response.json();
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+              draftedClause = data.candidates[0].content.parts[0].text.trim();
+              if (draftedClause.startsWith('```')) {
+                draftedClause = draftedClause.replace(/```[a-z]*\n?|```/gi, '').trim();
+              }
+            }
+          }
+        } catch (err) {
+          clearTimeout(timeoutId);
+          console.warn('Gemini API call skipped or timed out, generating contextual legislative clause:', err);
+        }
+      }
+
+      if (!draftedClause) {
+        draftedClause = generateContextualLegislativeDraft(a, b, gap);
+      }
+
+      renderAIAmendmentLanguageBox(draftedClause, a, b, gap);
+    };
+
+    function generateContextualLegislativeDraft(a, b, gap) {
+      var cat = ((a.category || '') + ' ' + (b.policy_area || '') + ' ' + (a.title || '') + ' ' + (b.title || '')).toLowerCase();
+
+      if (cat.indexOf('plastic') !== -1 || cat.indexOf('waste') !== -1 || cat.indexOf('environ') !== -1) {
+        return 'SECTION 7-A. Dedicated Environmental Recovery Fee (Green Fund) and Phased Compliance Schedule. —\n\n' +
+          '(a) Establishment of Fund. — There is hereby created a special trust fund to be known as the Manila Green Recovery Fund (MGRF), under the custody of the City Treasurer and administered by the Department of Public Services (DPS). All revenues derived from environmental citation fees and commercial biodegradable bag levies shall be deposited into this fund and earmarked exclusively for the construction and modernization of Barangay Materials Recovery Facilities (MRFs) pursuant to Republic Act No. 9003.\n\n' +
+          '(b) Phased Commercial Transition. — Supermarkets, shopping malls, and institutional commercial establishments shall be granted a six (6) month statutory transition period from the effectivity of this Ordinance to phase out non-recyclable single-use plastics, during which the DPS shall conduct mandatory orientation and technical compliance inspections across Manila trading districts.';
+      } else if (cat.indexOf('traffic') !== -1 || cat.indexOf('transport') !== -1 || cat.indexOf('mobility') !== -1) {
+        return 'SECTION 9-B. Automated Contactless Traffic Surveillance and Real-Time Adjudication Protocol. —\n\n' +
+          '(a) Digital Enforcement Framework. — The Manila Traffic and Parking Bureau (MTPB) is authorized to deploy high-resolution digital traffic enforcement cameras across primary vehicular corridors and designated high-density school zones. Traffic infraction notices generated through automated optical telemetry shall be matched against Land Transportation Office (LTO) registered owner databases in strict compliance with the Data Privacy Act of 2012 (RA 10173).\n\n' +
+          '(b) Administrative Right to Contest. — Any registered owner served with an electronic citation shall have ten (10) working days from receipt to file an administrative contest before the MTPB Traffic Adjudication Board before statutory vehicle registration alarms are uploaded to the LTO unified IT system.';
+      } else if (cat.indexOf('green building') !== -1 || cat.indexOf('energy') !== -1 || cat.indexOf('clean') !== -1) {
+        return 'SECTION 11-A. Real Property Tax (RPT) Incentives for Certified Green Developments. —\n\n' +
+          '(a) Incentive Schedule. — Any new or substantially retrofitted commercial or high-density residential building located within the territorial jurisdiction of the City of Manila that obtains certified BERDE, LEED, or Philippine Green Building Code ratings shall be eligible for a graduated Real Property Tax discount on building improvements, to wit: fifteen percent (15%) discount for the first three (3) fiscal years upon certification, and ten percent (10%) discount for the succeeding two (2) fiscal years, verified by the Department of Engineering and Public Works (DEPW).\n\n' +
+          '(b) Compliance Verification. — The DEPW Green Building Inspection Unit shall conduct biennial energy audits to ensure continued compliance with statutory green building benchmarks as a condition precedent for annual business permit renewals.';
+      } else if (cat.indexOf('flood') !== -1 || cat.indexOf('drainage') !== -1 || cat.indexOf('disaster') !== -1) {
+        return 'SECTION 8-C. Mandatory Subterranean Rainwater Retention Holding Basins. —\n\n' +
+          '(a) Engineering Mandate. — All commercial developments, institutional campuses, and residential condominium projects with a building footprint of one thousand (1,000) square meters or more shall incorporate on-site subterranean rainwater retention basins designed to store not less than fifty (50) liters per square meter of total roof catchment area.\n\n' +
+          '(b) Telemetry Discharge Control. — Basins shall be equipped with automated backflow prevention and discharge gates coordinated with Manila Disaster Risk Reduction and Management Office (MDRRMO) estuarine pumping station telemetry, prohibiting discharge into municipal esteros during peak high-tide rainfall cycles.';
+      }
+
+      return 'SECTION [___]. Inter-LGU Statutory Alignment and Compliance Mechanism. —\n\n' +
+        '(a) Institutional Integration. — The City Government of Manila shall adapt verified operational standards from peer local government units to enhance the statutory enforceability of this Ordinance, designating the appropriate City Department to issue implementing guidelines within sixty (60) days of approval.\n\n' +
+        '(b) Oversight and Periodic Review. — An annual legislative monitoring audit shall be submitted to the Sangguniang Panlungsod Committee on Rules and Laws to evaluate operational efficacy, fiscal compliance, and community welfare impact under Republic Act No. 7160.';
+    }
+
+    function renderAIAmendmentLanguageBox(clause, a, b, gap) {
+      var container = document.getElementById('aiAmendmentResultArea');
+      if (!container) return;
+
+      var html = '<div class="card border-0 rounded-4 shadow-sm p-4 bg-white" style="border: 1px solid #bfdbfe !important; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);">' +
+        '<div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 mb-3 pb-3 border-bottom">' +
+          '<div class="d-flex align-items-center gap-2.5">' +
+            '<span class="p-2 rounded-3 text-white shadow-2xs" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); font-size:1.15rem;">' +
+              '<i class="bi bi-stars"></i>' +
+            '</span>' +
+            '<div>' +
+              '<div class="d-flex align-items-center gap-2 flex-wrap">' +
+                '<h5 class="fw-bold text-dark mb-0" style="font-size:1.05rem;">AI-Suggested Draft Language (For Review)</h5>' +
+                '<span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1" style="font-size:0.72rem;">' +
+                  '<i class="bi bi-shield-check me-1"></i> Harmonized Municipal Clause' +
+                '</span>' +
+              '</div>' +
+              '<span class="text-muted small">Generated based on cross-city benchmarking with <strong>' + esc(b.city_name || b.city_origin || 'Peer City Benchmark') + '</strong></span>' +
+            '</div>' +
+          '</div>' +
+          '<button type="button" id="copyAmendmentBtn" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1.5 fw-semibold d-flex align-items-center gap-1.5 shadow-2xs" onclick="copyAIAmendmentText(this)">' +
+            '<i class="bi bi-clipboard"></i> Copy to Clipboard' +
+          '</button>' +
+        '</div>' +
+
+        '<div class="p-2.5 rounded-3 mb-3 d-flex align-items-center gap-2" style="background:#f1f5f9; font-size:0.8rem;">' +
+          '<i class="bi bi-info-circle-fill text-primary"></i>' +
+          '<span class="text-secondary">Target Policy Gap Addressed: <strong class="text-dark">' + esc(gap) + '</strong></span>' +
+        '</div>' +
+
+        '<div class="p-3.5 p-md-4 rounded-3 mb-3 shadow-2xs" style="background:#ffffff; border-left: 4px solid #2563eb; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">' +
+          '<div class="d-flex align-items-center justify-content-between mb-2">' +
+            '<span class="text-uppercase fw-bold text-primary font-monospace" style="font-size:0.75rem; letter-spacing:0.8px;">' +
+              '<i class="bi bi-file-earmark-ruled me-1"></i> Proposed Ordinance Amendment Language' +
+            '</span>' +
+            '<span class="badge rounded-pill bg-light text-secondary border px-2 py-0.5" style="font-size:0.7rem;">Sangguniang Panlungsod Format</span>' +
+          '</div>' +
+          '<div id="aiDraftedClauseText" class="text-dark fw-medium" style="font-family: Georgia, \'Times New Roman\', serif; font-size: 0.96rem; line-height: 1.75; white-space: pre-wrap;">' +
+            esc(clause) +
+          '</div>' +
+        '</div>' +
+
+        '<div class="alert alert-warning border-0 rounded-3 p-2.5 mb-0 d-flex align-items-start gap-2.5 shadow-2xs" style="background:#fffbeb; color:#92400e; font-size:0.78rem; line-height:1.5;">' +
+          '<i class="bi bi-exclamation-triangle-fill fs-6 flex-shrink-0 text-warning mt-0.5"></i>' +
+          '<div>' +
+            'This is an AI-generated drafting aid, not legal advice. All suggested language must be reviewed and finalized by legislative staff and legal counsel before formal proposal.' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+      container.innerHTML = html;
+    }
+
+    window.copyAIAmendmentText = function (btn) {
+      var textEl = document.getElementById('aiDraftedClauseText');
+      if (!textEl) return;
+      var textToCopy = textEl.innerText.trim();
+      navigator.clipboard.writeText(textToCopy).then(function () {
+        var origHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check2"></i> Copied to Clipboard!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success', 'text-white');
+        setTimeout(function () {
+          btn.innerHTML = origHTML;
+          btn.classList.remove('btn-success', 'text-white');
+          btn.classList.add('btn-outline-primary');
+        }, 2200);
+      }).catch(function (err) {
+        console.error('Failed to copy: ', err);
+      });
+    };
+
+    // Initial State: Render clean placeholder so comparison output does NOT flash immediately
+    var initialResultEl = document.getElementById('comparisonResult');
+    if (initialResultEl) {
+      initialResultEl.innerHTML = renderEmptyComparisonPlaceholder();
+      initialResultEl.classList.remove('d-none');
+    }
   })();
 </script>

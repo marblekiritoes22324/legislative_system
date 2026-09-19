@@ -97,6 +97,12 @@ if ($action === 'request_revision') {
         mysqli_stmt_close($upd);
     }
 
+    // Determine policy table name (supports both policy_records and policy_research)
+    $ptbl_res = @mysqli_query($conn, "SHOW TABLES LIKE 'policy_records'");
+    $ptbl = ($ptbl_res && mysqli_num_rows($ptbl_res) > 0) ? 'policy_records' : 'policy_research';
+    // Sync policy record status so Policy Research module reflects the revision request
+    @mysqli_query($conn, "UPDATE `$ptbl` SET status = 'Needs Revision' WHERE id = $policy_id");
+
     $crit_summary = is_array($failed_criteria) ? implode('; ', array_map(function($c) {
         return is_array($c) ? ($c['criterion'] . ': ' . ($c['reason'] ?? '')) : (string)$c;
     }, $failed_criteria)) : (string)$failed_criteria;

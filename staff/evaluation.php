@@ -120,6 +120,10 @@ if (!isset($evaluations) || !is_array($evaluations)) {
               $evaluation_data = [
                 'policy_id' => (int) $eval['policy_id'],
                 'title' => $title,
+                'category' => $eval['policy_category'] ?? '',
+                'description' => $eval['policy_description'] ?? '',
+                'keywords' => $eval['policy_keywords'] ?? '',
+                'file_path' => $eval['policy_file_path'] ?? '',
                 'has_evaluation' => $has_evaluation,
                 'status' => $status,
                 'approved_by' => $eval['approved_by'] ?? null,

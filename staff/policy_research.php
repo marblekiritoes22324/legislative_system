@@ -214,15 +214,24 @@
                 <td><?= htmlspecialchars($policy['author']) ?></td>
                 <td>
                   <?php
-                  $statusClass = 'bg-secondary';
-                  if ($policy['status'] == 'Published')
-                    $statusClass = 'bg-success';
-                  if ($policy['status'] == 'Draft')
+                  $statusVal = trim($policy['status'] ?? 'Draft');
+                  $statusLower = strtolower($statusVal);
+                  $statusClass = 'bg-secondary text-white';
+                  if ($statusLower === 'approved' || $statusLower === 'published') {
+                    $statusClass = 'bg-success text-white';
+                  } elseif ($statusLower === 'draft') {
                     $statusClass = 'bg-warning text-dark';
-                  if ($policy['status'] == 'Archived')
-                    $statusClass = 'bg-danger';
+                  } elseif ($statusLower === 'archived' || $statusLower === 'rejected') {
+                    $statusClass = 'bg-danger text-white';
+                  } elseif ($statusLower === 'needs revision') {
+                    $statusClass = 'bg-danger text-white';
+                  } elseif ($statusLower === 'under review' || $statusLower === 'in progress') {
+                    $statusClass = 'bg-info text-dark';
+                  } elseif ($statusLower === 'pending' || $statusLower === 'pending approval') {
+                    $statusClass = 'bg-warning text-dark';
+                  }
                   ?>
-                  <span class="badge <?= $statusClass ?>"><?= htmlspecialchars($policy['status']) ?></span>
+                  <span class="badge <?= $statusClass ?>"><?= htmlspecialchars($statusVal) ?></span>
                 </td>
                 <td><?= htmlspecialchars($policy['publication_date'] ?? 'N/A') ?></td>
                 <td>

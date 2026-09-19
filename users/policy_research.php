@@ -180,15 +180,19 @@
           <?php if (!empty($pl_policies)): ?>
             <?php foreach ($pl_policies as $policy): ?>
               <?php
+              $statusVal = trim($policy['status'] ?? 'Draft');
+              $statusLower = strtolower($statusVal);
               $statusClass = 'bg-secondary';
-              if ($policy['status'] === 'Published' || $policy['status'] === 'Enacted')
+              if ($statusLower === 'approved' || $statusLower === 'published' || $statusLower === 'enacted')
                 $statusClass = 'bg-success';
-              elseif ($policy['status'] === 'Draft')
+              elseif ($statusLower === 'draft')
                 $statusClass = 'bg-warning text-dark';
-              elseif ($policy['status'] === 'Archived')
+              elseif ($statusLower === 'archived' || $statusLower === 'rejected' || $statusLower === 'needs revision')
                 $statusClass = 'bg-danger';
-              elseif ($policy['status'] === 'Under Review')
+              elseif ($statusLower === 'under review')
                 $statusClass = 'bg-info text-dark';
+              elseif ($statusLower === 'pending' || $statusLower === 'pending approval')
+                $statusClass = 'bg-warning text-dark';
               $hasAI = !empty($policy['ai_summary']);
               $hasFile = !empty($policy['file_path']);
               ?>

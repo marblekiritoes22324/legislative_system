@@ -164,8 +164,26 @@ $num_departments = count($departments_map);
               $category = htmlspecialchars($rp['category'] ?? 'Environment');
               $dept = htmlspecialchars($rp['department'] ?? 'Environmental Management Office');
               $dateUploaded = !empty($rp['created_at']) ? date('M d, Y', strtotime($rp['created_at'])) : 'Aug 03, 2026';
-              $status = htmlspecialchars($rp['status'] ?? 'Completed');
-              $isCompleted = ($status === 'Completed' || $status === 'Published' || $status === 'Evaluated');
+              $status = trim($rp['status'] ?? 'Draft');
+              $statusLower = strtolower($status);
+              $badgeBg = '#6c757d';
+              $badgeText = '#ffffff';
+              if ($statusLower === 'approved' || $statusLower === 'completed' || $statusLower === 'published' || $statusLower === 'evaluated') {
+                $badgeBg = '#198754'; // green
+                $badgeText = '#ffffff';
+              } elseif ($statusLower === 'draft') {
+                $badgeBg = '#ffc107'; // yellow
+                $badgeText = '#000000';
+              } elseif ($statusLower === 'under review' || $statusLower === 'in progress') {
+                $badgeBg = '#0dcaf0'; // cyan
+                $badgeText = '#000000';
+              } elseif ($statusLower === 'needs revision' || $statusLower === 'archived' || $statusLower === 'rejected') {
+                $badgeBg = '#dc3545'; // red
+                $badgeText = '#ffffff';
+              } elseif ($statusLower === 'pending' || $statusLower === 'pending approval') {
+                $badgeBg = '#ffc107';
+                $badgeText = '#000000';
+              }
               ?>
               <tr class="res-data-row" data-search="<?= strtolower($datasetName . ' ' . $category . ' ' . $dept) ?>" data-category="<?= strtolower($category) ?>">
                 <td class="px-3 py-3">
@@ -191,15 +209,9 @@ $num_departments = count($departments_map);
                   <i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i><?= $dateUploaded ?>
                 </td>
                 <td class="py-3">
-                  <?php if ($isCompleted): ?>
-                    <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #198754 !important; font-size: 0.78rem;">
-                      Completed
-                    </span>
-                  <?php else: ?>
-                    <span class="badge rounded-pill text-dark fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #ffc107 !important; color: #000000 !important; font-size: 0.78rem;">
-                      Draft
-                    </span>
-                  <?php endif; ?>
+                  <span class="badge rounded-pill fw-bold px-3 py-1.5 shadow-2xs" style="background-color: <?= $badgeBg ?> !important; color: <?= $badgeText ?> !important; font-size: 0.78rem;">
+                    <?= htmlspecialchars($status) ?>
+                  </span>
                 </td>
                 <td class="py-3 text-center">
                   <?php if (!empty($rp['file_path'])): ?>

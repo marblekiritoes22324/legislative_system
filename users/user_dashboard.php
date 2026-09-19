@@ -84,6 +84,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       }
       mysqli_stmt_close($stmt);
     }
+    if (!empty($_POST['ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+      header('Content-Type: application/json');
+      echo json_encode([
+        'success' => ($messageType === 'success'),
+        'message' => $message,
+        'policy_id' => $new_policy_id ?? null,
+        'title' => $title
+      ]);
+      exit;
+    }
   } elseif ($action === 'edit') {
     $id = (int) ($_POST['id'] ?? 0);
     $title = trim($_POST['title'] ?? '');
@@ -1801,66 +1811,128 @@ if (!empty($conn)) {
     </div>
   </div>
 
-  <!-- 3. Upload Policy Modal -->
+  <!-- 3. Direct Upload Policy Modal (Zero Form-Filling) -->
   <div class="modal fade" id="uploadPolicyModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow rounded-4">
-        <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title fw-bold text-dark"><i class="bi bi-upload text-warning me-2"></i> Upload Policy Record
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form method="POST" action="user_dashboard.php" enctype="multipart/form-data">
-          <input type="hidden" name="action" value="add">
-          <input type="hidden" name="section" value="policyLibrarySection">
-          <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
-            <div class="row g-3">
-              <div class="col-md-12">
-                <label class="form-label fw-semibold small">Research Title <span class="text-danger">*</span></label>
-                <input type="text" name="title" class="form-control" placeholder="e.g. Urban Traffic Study" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Category <span class="text-danger">*</span></label>
-                <select name="category" class="form-select" required>
-                  <option value="Health and Sanitation">Health and Sanitation</option>
-                  <option value="Civil Registry and Public Services">Civil Registry and Public Services</option>
-                  <option value="Education and Employment">Education and Employment</option>
-                  <option value="Social Welfare and Community Affairs">Social Welfare and Community Affairs</option>
-                  <option value="Infrastructure, Traffic and Environment">Infrastructure, Traffic and Environment
-                  </option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Author(s) <span class="text-danger">*</span></label>
-                <input type="text" name="author" class="form-control" placeholder="e.g. Staff Researcher" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Department/Office <span class="text-danger">*</span></label>
-                <input type="text" name="department" class="form-control" placeholder="e.g. Legislative Secretariat"
-                  required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold small">Publication Date</label>
-                <input type="date" name="publication_date" class="form-control" min="<?= date('Y-m-d') ?>">
-              </div>
-              <div class="col-md-12">
-                <label class="form-label fw-semibold small">Research Description</label>
-                <textarea name="description" class="form-control" rows="3"
-                  placeholder="Brief summary of the research..."></textarea>
-              </div>
-              <div class="col-md-12">
-                <label class="form-label fw-semibold small">Upload Document <span class="text-danger">*</span></label>
-                <input type="file" id="researchFileInput" name="research_file" class="form-control"
-                  accept=".pdf,.docx,.doc" required>
-              </div>
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 540px;">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header border-0 pb-0 pt-3 px-4 d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                 style="width: 36px; height: 36px; background: rgba(245, 158, 11, 0.15); color: #d97706;">
+              <i class="bi bi-cloud-arrow-up-fill fs-5"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold text-dark mb-0 fs-6">Upload Policy Record</h5>
+              <div class="text-muted small" style="font-size: 0.75rem;">Direct Document Ingestion &amp; Auto-Analysis</div>
             </div>
           </div>
-          <div class="modal-footer border-0 pt-0">
-            <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-warning fw-semibold rounded-3 text-dark">Upload Record</button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="uploadModalCloseBtn"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <!-- Hidden file input for file selection -->
+          <input type="file" id="directUploadFileInput" class="d-none" accept=".pdf,.docx,.doc">
+
+          <!-- 1. Idle Drag & Dropzone State -->
+          <div id="uploadDropzoneState" 
+               class="upload-dropzone p-4 rounded-4 text-center transition-all"
+               style="border: 2px dashed #cbd5e1; background: #f8fafc; cursor: pointer;"
+               onclick="triggerDirectFileUpload()"
+               ondragover="handleUploadDragOver(event)"
+               ondragleave="handleUploadDragLeave(event)"
+               ondrop="handleUploadDrop(event)">
+            
+            <div class="mb-3">
+              <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                   style="width: 68px; height: 68px; background: linear-gradient(135deg, #fef3c7, #fde68a); color: #b45309;">
+                <i class="bi bi-file-earmark-arrow-up fs-2"></i>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-dark mb-1">Drag and drop document here</h6>
+            <p class="text-muted small mb-3">or <span class="text-primary fw-semibold text-decoration-underline">Browse Files</span> from your computer</p>
+
+            <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap mb-3">
+              <span class="badge bg-light text-secondary border px-2.5 py-1 rounded-pill" style="font-size: 0.72rem;">
+                <i class="bi bi-filetype-pdf text-danger me-1"></i> PDF
+              </span>
+              <span class="badge bg-light text-secondary border px-2.5 py-1 rounded-pill" style="font-size: 0.72rem;">
+                <i class="bi bi-filetype-docx text-primary me-1"></i> DOCX / DOC
+              </span>
+              <span class="badge bg-light text-secondary border px-2.5 py-1 rounded-pill" style="font-size: 0.72rem;">
+                Max 25MB
+              </span>
+            </div>
+
+            <div class="p-2.5 rounded-3 text-start small d-flex align-items-center gap-2" 
+                 style="background: rgba(79, 70, 229, 0.06); border: 1px solid rgba(79, 70, 229, 0.12); color: #4338ca; font-size: 0.75rem;">
+              <i class="bi bi-stars fs-6 flex-shrink-0"></i>
+              <span><strong>Instant Processing:</strong> Metadata (Title, Category, Author, Date) is automatically extracted and saved immediately.</span>
+            </div>
           </div>
-        </form>
+
+          <!-- 2. Active Uploading & Analyzing State -->
+          <div id="uploadActiveState" class="d-none text-center p-4 rounded-4" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+            <div class="mb-3 position-relative d-inline-block">
+              <div class="spinner-border text-primary" style="width: 3.2rem; height: 3.2rem; border-width: 0.22em;" role="status"></div>
+            </div>
+
+            <h6 class="fw-bold text-dark mb-1" id="uploadActiveTitle">Analyzing &amp; Uploading Document...</h6>
+            <p class="text-muted small mb-3" id="uploadActiveStatus">Extracting metadata (title, category, author, date)...</p>
+
+            <div class="card border border-slate-200 bg-white shadow-sm p-3 mb-3 text-start rounded-3">
+              <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="background: rgba(239, 68, 68, 0.1); color: #dc2626;">
+                  <i class="bi bi-file-earmark-text-fill fs-4" id="uploadFileIcon"></i>
+                </div>
+                <div class="overflow-hidden flex-grow-1">
+                  <div class="fw-bold text-dark text-truncate small" id="uploadActiveFileName">document.pdf</div>
+                  <div class="text-muted small" style="font-size: 0.72rem;" id="uploadActiveFileSize">Calculating size...</div>
+                </div>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill small" id="uploadStepBadge">
+                  Analyzing
+                </span>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="progress mt-3" style="height: 6px;">
+                <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                     role="progressbar" style="width: 35%; transition: width 0.4s ease;"></div>
+              </div>
+            </div>
+
+            <div class="text-muted small" style="font-size: 0.75rem;">
+              <i class="bi bi-info-circle me-1"></i> Registering record directly in the Legislative repository...
+            </div>
+          </div>
+
+          <!-- 3. Success State -->
+          <div id="uploadSuccessState" class="d-none text-center p-4 rounded-4" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+            <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center shadow-sm mb-3"
+                 style="width: 56px; height: 56px; background: #22c55e; color: #ffffff;">
+              <i class="bi bi-check-lg fs-2"></i>
+            </div>
+            <h6 class="fw-bold text-success mb-1">Policy Uploaded Successfully!</h6>
+            <p class="text-muted small mb-3" id="uploadSuccessDetails">Record created and added to policy repository.</p>
+            <div class="d-flex align-items-center justify-content-center gap-2">
+              <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+              <span class="text-muted small" style="font-size: 0.75rem;">Refreshing repository view...</span>
+            </div>
+          </div>
+
+          <!-- 4. Error State -->
+          <div id="uploadErrorState" class="d-none text-center p-4 rounded-4" style="background: #fef2f2; border: 1px solid #fecaca;">
+            <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center shadow-sm mb-3"
+                 style="width: 56px; height: 56px; background: #ef4444; color: #ffffff;">
+              <i class="bi bi-exclamation-triangle fs-2"></i>
+            </div>
+            <h6 class="fw-bold text-danger mb-1">Upload Failed</h6>
+            <p class="text-muted small mb-3" id="uploadErrorMessage">An error occurred while uploading.</p>
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-3 px-3" onclick="resetDirectUploadUI()">
+              <i class="bi bi-arrow-repeat me-1"></i> Try Again
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

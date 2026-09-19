@@ -76,20 +76,28 @@ foreach ($u_report_policies as $pol) {
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
           <i class="bi bi-journal-check text-primary"></i> 1. Select Policy Record
         </h3>
-        <p class="text-muted mb-0 small">Click any policy title below to view its full official legislative report, download, or print.</p>
+        <p class="text-muted mb-0 small">Click any policy title below to view its full official legislative report,
+          download, or print.</p>
       </div>
 
       <!-- Filter Tabs -->
       <div class="d-flex align-items-center gap-2">
-        <div class="btn-group btn-group-sm p-1 bg-light rounded-pill border" role="group" id="userReportPolicyFilterGroup">
-          <button type="button" class="btn btn-sm rounded-pill px-3 fw-bold active btn-primary user-policy-filter-tab" onclick="filterUserReportPolicies('all', this)">
-            All Policies <span class="badge bg-white text-primary rounded-pill ms-1"><?= $total_user_report_count ?></span>
+        <div class="btn-group btn-group-sm p-1 bg-light rounded-pill border" role="group"
+          id="userReportPolicyFilterGroup">
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-bold active btn-primary user-policy-filter-tab"
+            onclick="filterUserReportPolicies('all', this)">
+            All Policies <span
+              class="badge bg-white text-primary rounded-pill ms-1"><?= $total_user_report_count ?></span>
           </button>
-          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary user-policy-filter-tab" onclick="filterUserReportPolicies('approved', this)">
-            <i class="bi bi-check-circle-fill text-success me-1"></i>Approved <span class="badge bg-success-subtle text-success rounded-pill ms-1"><?= $approved_user_report_count ?></span>
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary user-policy-filter-tab"
+            onclick="filterUserReportPolicies('approved', this)">
+            <i class="bi bi-check-circle-fill text-success me-1"></i>Approved <span
+              class="badge bg-success-subtle text-success rounded-pill ms-1"><?= $approved_user_report_count ?></span>
           </button>
-          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary user-policy-filter-tab" onclick="filterUserReportPolicies('pending', this)">
-            <i class="bi bi-clock-fill text-warning me-1"></i>Pending Approval <span class="badge bg-warning-subtle text-dark rounded-pill ms-1"><?= $pending_user_report_count ?></span>
+          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary user-policy-filter-tab"
+            onclick="filterUserReportPolicies('pending', this)">
+            <i class="bi bi-clock-fill text-warning me-1"></i>Pending Approval <span
+              class="badge bg-warning-subtle text-dark rounded-pill ms-1"><?= $pending_user_report_count ?></span>
           </button>
         </div>
       </div>
@@ -99,13 +107,15 @@ foreach ($u_report_policies as $pol) {
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
           <tr>
             <th class="py-3.5 text-uppercase text-dark fw-bold"
-              style="width: 38%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Policy Title</th>
+              style="width: 38%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Policy Title
+            </th>
             <th class="py-3.5 text-uppercase text-dark fw-bold"
               style="width: 18%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Category</th>
             <th class="py-3.5 text-center text-uppercase text-dark fw-bold"
               style="width: 16%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Status</th>
             <th class="py-3.5 text-uppercase text-dark fw-bold"
-              style="width: 14%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Date Uploaded</th>
+              style="width: 14%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Date Uploaded
+            </th>
             <th class="py-3.5 text-center text-uppercase text-dark fw-bold"
               style="width: 14%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Action</th>
           </tr>
@@ -159,8 +169,7 @@ foreach ($u_report_policies as $pol) {
             $policyJson = json_encode($policyData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
             ?>
             <tr class="user-report-policy-row clickable-report-row" style="cursor:pointer;"
-              data-eval-state="<?= $eval_state ?>"
-              data-policy='<?= htmlspecialchars($policyJson, ENT_QUOTES, 'UTF-8') ?>'
+              data-eval-state="<?= $eval_state ?>" data-policy='<?= htmlspecialchars($policyJson, ENT_QUOTES, 'UTF-8') ?>'
               onclick="openUserPolicyRowReport(this)">
               <td class="py-3">
                 <div class="d-flex align-items-center gap-2.5">
@@ -201,7 +210,8 @@ foreach ($u_report_policies as $pol) {
               </td>
               <td class="text-center py-3">
                 <?php if ($is_approved): ?>
-                  <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
+                  <button type="button"
+                    class="btn btn-sm btn-primary rounded-3 px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
                     style="font-size:0.8rem;"
                     onclick="event.stopPropagation(); openUserPolicyRowReport(this.closest('tr'));">
                     <i class="bi bi-file-earmark-pdf"></i><span>Report</span>
@@ -209,8 +219,7 @@ foreach ($u_report_policies as $pol) {
                 <?php else: ?>
                   <a href="user_dashboard.php?section=evaluationSection"
                     class="btn btn-sm btn-outline-warning rounded-3 px-2.5 py-1 fw-semibold text-dark d-inline-flex align-items-center gap-1"
-                    style="font-size:0.78rem;"
-                    onclick="event.stopPropagation();">
+                    style="font-size:0.78rem;" onclick="event.stopPropagation();">
                     <i class="bi bi-bar-chart-line text-warning"></i><span>View Status</span>
                   </a>
                 <?php endif; ?>
@@ -221,13 +230,21 @@ foreach ($u_report_policies as $pol) {
       </table>
     </div>
     <div class="d-flex align-items-center justify-content-between pt-1">
-      <small class="text-muted fw-medium" id="userReportPoliciesSummaryText">Showing 1 to 10 of <?= count($u_report_policies) ?> records</small>
+      <small class="text-muted fw-medium" id="userReportPoliciesSummaryText">Showing 1 to 10 of
+        <?= count($u_report_policies) ?> records</small>
       <div class="d-flex align-items-center gap-1" id="userReportPolicyPagination">
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="userReportPolicyPrevBtn" onclick="changeUserReportPolicyPage(-1)" title="Previous page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn"
+          id="userReportPolicyPrevBtn" onclick="changeUserReportPolicyPage(-1)" title="Previous page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-left"></i></button>
         <div id="userReportPolicyPageNumbers" class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
+          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold"
+            style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
         </div>
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="userReportPolicyNextBtn" onclick="changeUserReportPolicyPage(1)" title="Next page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-right"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn"
+          id="userReportPolicyNextBtn" onclick="changeUserReportPolicyPage(1)" title="Next page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -340,6 +357,7 @@ foreach ($u_report_policies as $pol) {
       transition: all 0.15s ease !important;
       box-sizing: border-box !important;
     }
+
     /* Clean Executive Recent Reports Styling */
     .badge-report-type {
       display: inline-flex;
@@ -409,7 +427,8 @@ foreach ($u_report_policies as $pol) {
       </div>
     </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-2" style="min-height: 520px;">
-      <table class="table table-hover align-middle mb-0" id="recentUserReportsTable" style="font-size:0.88rem; table-layout: fixed; width: 100%;">
+      <table class="table table-hover align-middle mb-0" id="recentUserReportsTable"
+        style="font-size:0.88rem; table-layout: fixed; width: 100%;">
         <colgroup>
           <col style="width: 28%;">
           <col style="width: 32%;">
@@ -419,13 +438,17 @@ foreach ($u_report_policies as $pol) {
         </colgroup>
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
           <tr>
-            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-truncate" style="font-size: 0.88rem; letter-spacing: 0.03em;">
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-truncate"
+              style="font-size: 0.88rem; letter-spacing: 0.03em;">
               Report Name</th>
-            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-truncate" style="font-size: 0.88rem; letter-spacing: 0.03em;">
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-truncate"
+              style="font-size: 0.88rem; letter-spacing: 0.03em;">
               Policy / Subject</th>
-            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap" style="font-size: 0.88rem; letter-spacing: 0.03em; width: 140px;">Type
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap"
+              style="font-size: 0.88rem; letter-spacing: 0.03em; width: 140px;">Type
             </th>
-            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap" style="font-size: 0.88rem; letter-spacing: 0.03em; width: 180px;">Date
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap"
+              style="font-size: 0.88rem; letter-spacing: 0.03em; width: 180px;">Date
               Generated</th>
             <th class="py-3 px-3 text-end text-uppercase text-dark fw-bold text-nowrap"
               style="font-size: 0.88rem; letter-spacing: 0.03em; width: 160px;">Action</th>
@@ -439,11 +462,18 @@ foreach ($u_report_policies as $pol) {
     <div class="d-flex align-items-center justify-content-between pt-2">
       <small class="text-muted fw-medium" id="recentUserReportsCount">Showing 0 records</small>
       <div class="d-flex align-items-center gap-1" id="recentUserReportsPagination">
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentUserReportsPrevBtn" onclick="changeRecentUserReportsPage(-1)" title="Previous page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn"
+          id="recentUserReportsPrevBtn" onclick="changeRecentUserReportsPage(-1)" title="Previous page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-left"></i></button>
         <div id="recentUserReportsPageNumbers" class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
+          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold"
+            style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
         </div>
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentUserReportsNextBtn" onclick="changeRecentUserReportsPage(1)" title="Next page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-right"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn"
+          id="recentUserReportsNextBtn" onclick="changeRecentUserReportsPage(1)" title="Next page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -455,33 +485,45 @@ foreach ($u_report_policies as $pol) {
         <div class="modal-header border-bottom px-4 py-3 bg-light d-flex align-items-center justify-content-between">
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-file-earmark-text-fill text-primary fs-5"></i>
-            <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative Document</h5>
+            <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative
+              Document</h5>
           </div>
           <div class="d-flex align-items-center gap-2">
             <!-- View Original Document Button -->
-            <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs" id="reportModalViewOriginalBtn" title="Open the original uploaded source document">
+            <button type="button"
+              class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
+              id="reportModalViewOriginalBtn" title="Open the original uploaded source document">
               <i class="bi bi-box-arrow-up-right"></i> View Original
             </button>
-            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" id="reportModalDownloadPdfBtn">
+            <button type="button"
+              class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
+              id="reportModalDownloadPdfBtn">
               <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
             </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs" id="reportModalDownloadDocxBtn">
+            <button type="button"
+              class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs"
+              id="reportModalDownloadDocxBtn">
               <i class="bi bi-file-earmark-word-fill text-primary"></i> Word (.docx)
             </button>
-            <button type="button" class="btn btn-sm text-white rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn" title="Print Document">
+            <button type="button"
+              class="btn btn-sm text-white rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
+              style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn" title="Print Document">
               <i class="bi bi-printer-fill"></i> Print
             </button>
             <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
         </div>
         <div class="modal-body p-4 p-md-4" style="max-height: 75vh; overflow-y: auto; background:#f8fafc;">
-          <div id="reportViewerModalDocumentBody" class="bg-white p-4 rounded-3 border shadow-sm mx-auto" style="max-width: 740px;">
+          <div id="reportViewerModalDocumentBody" class="bg-white p-4 rounded-3 border shadow-sm mx-auto"
+            style="max-width: 740px;">
             <!-- Rendered document will be injected here -->
           </div>
         </div>
         <div class="modal-footer border-top px-4 py-2.5 bg-light d-flex align-items-center justify-content-between">
-          <span class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i> Official City Council of Manila Legislative Document</span>
-          <button type="button" class="btn btn-sm btn-secondary rounded-3 px-3.5 py-1.5 fw-medium" data-bs-dismiss="modal">Close</button>
+          <span class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i> Official City Council of
+            Manila Legislative Document</span>
+          <button type="button" class="btn btn-sm btn-secondary rounded-3 px-3.5 py-1.5 fw-medium"
+            data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -1328,7 +1370,7 @@ foreach ($u_report_policies as $pol) {
     var group = btn ? btn.closest('#userReportPolicyFilterGroup') : document.getElementById('userReportPolicyFilterGroup');
     if (group && btn) {
       var btns = group.querySelectorAll('.user-policy-filter-tab');
-      btns.forEach(function(b) {
+      btns.forEach(function (b) {
         b.classList.remove('active', 'btn-primary', 'text-white');
         b.classList.add('text-secondary');
       });
@@ -1352,7 +1394,7 @@ foreach ($u_report_policies as $pol) {
     var allRows = Array.from(document.querySelectorAll('#userReportPolicyTableBody .user-report-policy-row'));
     if (!allRows.length) return;
 
-    var matchingRows = allRows.filter(function(r) {
+    var matchingRows = allRows.filter(function (r) {
       var state = r.getAttribute('data-eval-state');
       return (_userReportPolicyFilter === 'all' || state === _userReportPolicyFilter);
     });
@@ -1366,7 +1408,7 @@ foreach ($u_report_policies as $pol) {
     var startIdx = (_userReportPolicyCurrentPage - 1) * _userReportPolicyPageSize;
     var endIdx = Math.min(startIdx + _userReportPolicyPageSize, totalMatching);
 
-    allRows.forEach(function(r) {
+    allRows.forEach(function (r) {
       var matchIdx = matchingRows.indexOf(r);
       if (matchIdx >= startIdx && matchIdx < endIdx) {
         r.style.display = '';
@@ -1471,7 +1513,7 @@ foreach ($u_report_policies as $pol) {
   function openUserReportDocumentModal(rep, fileName) {
     _activeUserModalReport = rep;
     _activeUserModalFileName = fileName || (((rep.title || rep.policy_title || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_')) + '_Report.pdf');
-    
+
     var htmlContent = buildUserReportTemplate(rep);
 
     var bodyEl = document.getElementById('reportViewerModalDocumentBody');
@@ -1484,12 +1526,12 @@ foreach ($u_report_policies as $pol) {
     if (viewOrigBtn) {
       if (rep.file_path && rep.file_path.trim() !== '') {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = function() {
+        viewOrigBtn.onclick = function () {
           window.open('../assets/uploads/policies/' + encodeURIComponent(rep.file_path), '_blank');
         };
       } else {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = function() {
+        viewOrigBtn.onclick = function () {
           alert('No uploaded source document attachment is associated with this policy record.');
         };
       }
@@ -1497,14 +1539,14 @@ foreach ($u_report_policies as $pol) {
 
     var pdfBtn = document.getElementById('reportModalDownloadPdfBtn');
     if (pdfBtn) {
-      pdfBtn.onclick = function() {
+      pdfBtn.onclick = function () {
         saveUserReportAsPDF(_activeUserModalFileName, _activeUserModalReport);
       };
     }
 
     var docxBtn = document.getElementById('reportModalDownloadDocxBtn');
     if (docxBtn) {
-      docxBtn.onclick = function() {
+      docxBtn.onclick = function () {
         var docxName = _activeUserModalFileName.replace(/\.pdf$/i, '') + '.docx';
         generateUserReportWordDoc(docxName, _activeUserModalReport);
       };
@@ -1512,7 +1554,7 @@ foreach ($u_report_policies as $pol) {
 
     var printBtn = document.getElementById('reportModalPrintBtn');
     if (printBtn) {
-      printBtn.onclick = function() {
+      printBtn.onclick = function () {
         printSelectedUserReport(_activeUserModalReport);
       };
     }

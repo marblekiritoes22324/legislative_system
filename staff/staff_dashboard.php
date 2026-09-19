@@ -125,6 +125,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       }
       mysqli_stmt_close($stmt);
     }
+    if (!empty($_POST['ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+      header('Content-Type: application/json');
+      echo json_encode([
+        'success' => ($messageType === 'success'),
+        'message' => $message,
+        'policy_id' => $new_policy_id ?? null,
+        'title' => $title
+      ]);
+      exit;
+    }
     $active_section = 'policyResearchSection';
   } elseif ($action === 'edit') {
     $id = (int) ($_POST['id'] ?? 0);
@@ -423,6 +433,9 @@ $eval_sql = "
     p.id AS policy_id,
     p.title AS policy_title,
     p.category AS policy_category,
+    p.description AS policy_description,
+    p.keywords AS policy_keywords,
+    p.file_path AS policy_file_path,
     e.id AS evaluation_id,
     e.overall_score,
     e.economic_score,

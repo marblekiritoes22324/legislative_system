@@ -324,6 +324,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       $messageType = "danger";
     }
     mysqli_stmt_close($stmt);
+
+    if (!empty($_POST['ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+      header('Content-Type: application/json');
+      echo json_encode([
+        'success' => ($messageType === 'success'),
+        'message' => $message,
+        'policy_id' => $new_policy_id ?? null,
+        'title' => $title
+      ]);
+      exit;
+    }
   } elseif ($action === 'edit') {
     $id = $_POST['id'];
     $title = $_POST['title'];
@@ -479,11 +490,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         // Also sync approval to the latest version in evaluation_versions
         @mysqli_query($conn, "UPDATE evaluation_versions SET status = 'Approved', approved_by = '" . mysqli_real_escape_string($conn, $approved_by) . "', approved_at = NOW() WHERE policy_id = $policy_id ORDER BY version_number DESC LIMIT 1");
+        // Sync policy record status
+        @mysqli_query($conn, "UPDATE $policy_tbl SET status = 'Approved' WHERE id = $policy_id");
       } else {
         $update_stmt = mysqli_prepare($conn, "UPDATE evaluations SET status = ? WHERE policy_id = ?");
         mysqli_stmt_bind_param($update_stmt, "si", $new_status, $policy_id);
         mysqli_stmt_execute($update_stmt);
         mysqli_stmt_close($update_stmt);
+
+        // Sync policy record status
+        @mysqli_query($conn, "UPDATE $policy_tbl SET status = '" . mysqli_real_escape_string($conn, $new_status) . "' WHERE id = $policy_id");
       }
     } else {
       $p_stmt = mysqli_prepare($conn, "SELECT title FROM policy_records WHERE id = ?");
@@ -504,6 +520,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       }
       mysqli_stmt_execute($insert_stmt);
       mysqli_stmt_close($insert_stmt);
+
+      // Sync policy record status
+      @mysqli_query($conn, "UPDATE $policy_tbl SET status = '" . mysqli_real_escape_string($conn, $new_status) . "' WHERE id = $policy_id");
     }
 
     if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
@@ -624,6 +643,10 @@ if ($all_policies_res) {
 $evaluations = [];
 $eval_query = "
   SELECT p.id AS policy_id, p.title AS policy_title,
+         p.category AS policy_category,
+         p.description AS policy_description,
+         p.keywords AS policy_keywords,
+         p.file_path AS policy_file_path,
          e.id AS evaluation_id,
          e.economic_score,
          e.social_score,
@@ -1314,7 +1337,8 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
                   <div>
                     <div class="small fw-semibold text-muted text-uppercase"
                       style="font-size:0.75rem; letter-spacing:0.5px;">Evaluations</div>
-                    <div class="fw-bold text-dark lh-1 mt-2" style="font-size:2.2rem;" id="dashTotalEvaluations">27
+                    <div class="fw-bold text-dark lh-1 mt-2" style="font-size:2.2rem;" id="dashTotalEvaluations">
+                      <?= $total_evaluations_count ?>
                     </div>
                     <small class="text-muted mt-1 d-block">Total Completed Evaluations</small>
                   </div>
@@ -1339,7 +1363,9 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
                   <div>
                     <div class="small fw-semibold text-muted text-uppercase"
                       style="font-size:0.75rem; letter-spacing:0.5px;">Registered Users</div>
-                    <div class="fw-bold text-dark lh-1 mt-2" style="font-size:2.2rem;" id="dashTotalUsers">15</div>
+                    <div class="fw-bold text-dark lh-1 mt-2" style="font-size:2.2rem;" id="dashTotalUsers">
+                      <?= $total_users_count ?>
+                    </div>
                     <small class="text-muted mt-1 d-block">Total System Users</small>
                   </div>
                   <div

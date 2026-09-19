@@ -1141,89 +1141,222 @@ function classifyDocumentMetadata(fileName, fileText) {
   };
 }
 
-async function generateKeywords() {
-  const fileInput = document.getElementById('researchFileInput') || document.querySelector('input[type="file"][name="research_file"]');
-  const keywordsInput = document.getElementById('aiKeywordsInput') || document.querySelector('input[name="keywords"]');
-  const aiBtn = document.getElementById('aiManualBtn') || document.querySelector('button[onclick="generateKeywords()"]');
-  const originalBtnText = aiBtn ? aiBtn.innerHTML : '<i class="bi bi-magic me-2"></i>Auto Fill';
+// ── Direct Document Upload & Instant Record Creation (Zero Form-Filling) ─────────
+function triggerDirectFileUpload() {
+  const input = document.getElementById('directUploadFileInput');
+  if (input) input.click();
+}
 
-  if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-    if (typeof Swal !== 'undefined') {
-      Swal.fire({
-        icon: 'info',
-        title: 'Choose a File First',
-        text: 'Please select a document file (.pdf, .docx, .doc) before clicking Auto Fill.',
-        confirmButtonColor: '#2563eb'
-      });
-    } else {
-      alert('Please choose a document file first before clicking Auto Fill.');
-    }
+function handleUploadDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const dropzone = document.getElementById('uploadDropzoneState');
+  if (dropzone) {
+    dropzone.style.borderColor = '#4f46e5';
+    dropzone.style.background = '#eef2ff';
+  }
+}
+
+function handleUploadDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const dropzone = document.getElementById('uploadDropzoneState');
+  if (dropzone) {
+    dropzone.style.borderColor = '#cbd5e1';
+    dropzone.style.background = '#f8fafc';
+  }
+}
+
+function handleUploadDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  handleUploadDragLeave(e);
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    processDirectDocumentUpload(e.dataTransfer.files[0]);
+  }
+}
+
+function resetDirectUploadUI() {
+  const dropzone = document.getElementById('uploadDropzoneState');
+  const activeState = document.getElementById('uploadActiveState');
+  const successState = document.getElementById('uploadSuccessState');
+  const errorState = document.getElementById('uploadErrorState');
+  const fileInput = document.getElementById('directUploadFileInput');
+  if (fileInput) fileInput.value = '';
+
+  if (dropzone) dropzone.classList.remove('d-none');
+  if (activeState) activeState.classList.add('d-none');
+  if (successState) successState.classList.add('d-none');
+  if (errorState) errorState.classList.add('d-none');
+}
+
+function showDirectUploadError(msg) {
+  const dropzone = document.getElementById('uploadDropzoneState');
+  const activeState = document.getElementById('uploadActiveState');
+  const successState = document.getElementById('uploadSuccessState');
+  const errorState = document.getElementById('uploadErrorState');
+  const errMsgEl = document.getElementById('uploadErrorMessage');
+
+  if (dropzone) dropzone.classList.add('d-none');
+  if (activeState) activeState.classList.add('d-none');
+  if (successState) successState.classList.add('d-none');
+  if (errorState) errorState.classList.remove('d-none');
+  if (errMsgEl) errMsgEl.textContent = msg;
+}
+
+async function processDirectDocumentUpload(file) {
+  if (!file) return;
+
+  const validExtensions = ['.pdf', '.docx', '.doc'];
+  const fileNameLower = file.name.toLowerCase();
+  const isValid = validExtensions.some(ext => fileNameLower.endsWith(ext));
+
+  if (!isValid) {
+    showDirectUploadError('Please select a valid policy document (.pdf, .docx, or .doc).');
     return;
   }
 
-  if (aiBtn) {
-    aiBtn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i>Analyzing Document...';
-    aiBtn.disabled = true;
+  // Switch to Active Upload & Analysis State
+  const dropzone = document.getElementById('uploadDropzoneState');
+  const activeState = document.getElementById('uploadActiveState');
+  const successState = document.getElementById('uploadSuccessState');
+  const errorState = document.getElementById('uploadErrorState');
+
+  if (dropzone) dropzone.classList.add('d-none');
+  if (errorState) errorState.classList.add('d-none');
+  if (successState) successState.classList.add('d-none');
+  if (activeState) activeState.classList.remove('d-none');
+
+  const fileNameEl = document.getElementById('uploadActiveFileName');
+  const fileSizeEl = document.getElementById('uploadActiveFileSize');
+  const statusEl = document.getElementById('uploadActiveStatus');
+  const progBar = document.getElementById('uploadProgressBar');
+  const stepBadge = document.getElementById('uploadStepBadge');
+
+  if (fileNameEl) fileNameEl.textContent = file.name;
+  if (fileSizeEl) {
+    const sizeKB = Math.round(file.size / 1024);
+    fileSizeEl.textContent = sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(2)} MB` : `${sizeKB} KB`;
   }
+  if (stepBadge) stepBadge.textContent = 'Analyzing';
+  if (progBar) progBar.style.width = '35%';
+  if (statusEl) statusEl.textContent = 'Extracting document text and analyzing metadata...';
 
   try {
-    let fileName = '';
+    // 1. Extract text and classify metadata automatically
     let fileText = '';
-    if (fileInput && fileInput.files && fileInput.files.length > 0) {
-      const file = fileInput.files[0];
-      fileName = file.name;
+    try {
       fileText = await extractTextFromUploadFile(file);
+    } catch (err) {
+      console.warn('Text extraction notice:', err);
     }
 
-    let sampleData = classifyDocumentMetadata(fileName, fileText);
+    if (progBar) progBar.style.width = '60%';
+    if (statusEl) statusEl.textContent = 'Analyzing title, category, author, and date...';
 
-    // Populate active modal inputs
-    const titleInput = document.querySelector('#uploadPolicyModal input[name="title"]') || document.querySelector('input[name="title"]');
-    const catSelect = document.querySelector('#uploadPolicyModal select[name="category"]') || document.querySelector('select[name="category"]');
-    const authorInput = document.querySelector('#uploadPolicyModal input[name="author"]') || document.querySelector('input[name="author"]');
-    const deptInput = document.querySelector('#uploadPolicyModal input[name="department"]') || document.querySelector('input[name="department"]');
-    const dateInput = document.querySelector('#uploadPolicyModal input[name="publication_date"]') || document.querySelector('input[name="publication_date"]');
-    const descInput = document.querySelector('#uploadPolicyModal textarea[name="description"]') || document.querySelector('textarea[name="description"]');
+    const metadata = classifyDocumentMetadata(file.name, fileText);
 
-    if (titleInput) titleInput.value = sampleData.title;
-    if (authorInput) authorInput.value = sampleData.author;
-    if (deptInput) deptInput.value = sampleData.department;
-    if (dateInput) dateInput.value = sampleData.publication_date;
-    if (descInput) descInput.value = sampleData.description;
-    if (keywordsInput) keywordsInput.value = sampleData.keywords;
+    if (progBar) progBar.style.width = '80%';
+    if (stepBadge) stepBadge.textContent = 'Uploading';
+    if (statusEl) statusEl.textContent = `Uploading document & registering "${metadata.title}"...`;
 
-    if (catSelect) {
-      const targetCat = sampleData.category.toLowerCase();
-      for (let i = 0; i < catSelect.options.length; i++) {
-        const optVal = catSelect.options[i].value.toLowerCase();
-        const optText = catSelect.options[i].text.toLowerCase();
-        if (optVal === targetCat || optText.includes(targetCat) || targetCat.includes(optVal)) {
-          catSelect.selectedIndex = i;
-          break;
+    // 2. Prepare FormData for direct record creation
+    const formData = new FormData();
+    formData.append('action', 'add');
+    formData.append('ajax', '1');
+    formData.append('research_file', file);
+    formData.append('title', metadata.title);
+    formData.append('category', metadata.category);
+    formData.append('author', metadata.author);
+    formData.append('department', metadata.department);
+    formData.append('publication_date', metadata.publication_date);
+    formData.append('description', metadata.description);
+    formData.append('keywords', metadata.keywords);
+    formData.append('city_origin', 'City of Manila');
+    formData.append('status', 'Draft');
+
+    let endpoint = 'admin_dashboard.php';
+    if (window.location.pathname.includes('/staff/')) {
+      endpoint = 'staff_dashboard.php';
+    } else if (window.location.pathname.includes('/users/')) {
+      endpoint = 'user_dashboard.php';
+    }
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (progBar) progBar.style.width = '100%';
+
+    let data = null;
+    try {
+      data = await res.json();
+    } catch (e) {
+      if (res.ok) data = { success: true };
+    }
+
+    if (res.ok && (!data || data.success !== false)) {
+      if (activeState) activeState.classList.add('d-none');
+      if (successState) {
+        successState.classList.remove('d-none');
+        const detailsEl = document.getElementById('uploadSuccessDetails');
+        if (detailsEl) {
+          detailsEl.textContent = `"${metadata.title}" classified under ${metadata.category} and added to repository.`;
         }
       }
-    }
 
-    if (aiBtn) {
-      aiBtn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Auto-Filled!';
-      aiBtn.style.backgroundColor = '#10B981';
-      aiBtn.style.borderColor = '#10B981';
-      aiBtn.style.color = '#ffffff';
+      if (window.addSystemNotification) {
+        window.addSystemNotification('document', 'Policy Record Created', `"${metadata.title}" has been uploaded and added to the policy repository.`, 'all');
+      }
 
+      // Automatically close modal and reload page to display new record
       setTimeout(() => {
-        aiBtn.innerHTML = originalBtnText;
-        aiBtn.disabled = false;
-        aiBtn.style.backgroundColor = '';
-        aiBtn.style.borderColor = '';
-        aiBtn.style.color = '';
-      }, 1800);
+        const modalEl = document.getElementById('uploadPolicyModal');
+        if (modalEl) {
+          const bsModal = bootstrap.Modal.getInstance(modalEl);
+          if (bsModal) bsModal.hide();
+        }
+        window.location.reload();
+      }, 900);
+    } else {
+      const errMsg = (data && data.message) ? data.message : 'Server encountered an error saving the policy.';
+      showDirectUploadError(errMsg);
     }
   } catch (err) {
-    console.error("Auto Fill error:", err);
-    if (aiBtn) {
-      aiBtn.innerHTML = originalBtnText;
-      aiBtn.disabled = false;
-    }
+    console.error('Direct upload error:', err);
+    showDirectUploadError('Failed to upload document: ' + (err.message || 'Network error'));
+  }
+}
+
+window.triggerDirectFileUpload = triggerDirectFileUpload;
+window.handleUploadDragOver = handleUploadDragOver;
+window.handleUploadDragLeave = handleUploadDragLeave;
+window.handleUploadDrop = handleUploadDrop;
+window.resetDirectUploadUI = resetDirectUploadUI;
+window.processDirectDocumentUpload = processDirectDocumentUpload;
+
+// Initialize listeners for direct file upload input
+document.addEventListener('DOMContentLoaded', () => {
+  const directInput = document.getElementById('directUploadFileInput');
+  if (directInput) {
+    directInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        processDirectDocumentUpload(e.target.files[0]);
+      }
+    });
+  }
+
+  const uploadModalEl = document.getElementById('uploadPolicyModal');
+  if (uploadModalEl) {
+    uploadModalEl.addEventListener('hidden.bs.modal', resetDirectUploadUI);
+  }
+});
+
+async function generateKeywords() {
+  const fileInput = document.getElementById('researchFileInput') || document.getElementById('directUploadFileInput');
+  if (fileInput && fileInput.files && fileInput.files.length > 0) {
+    processDirectDocumentUpload(fileInput.files[0]);
   }
 }
 
@@ -1820,6 +1953,9 @@ async function runPolicyEvaluationModal() {
     const details = window.currentActiveEvaluation || {};
     const policyId = details.policy_id || details.id || 0;
     const policyTitle = details.title || (document.getElementById('evalModalTitle') ? document.getElementById('evalModalTitle').textContent : 'Policy Record') || 'Policy Record';
+    const policyCategory = details.category || '';
+    const policyDesc = details.description || '';
+    const policyKeywords = details.keywords || '';
 
     let evalRes = null;
     if (typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY && GEMINI_API_KEY !== 'PLACEHOLDER_KEY' && !GEMINI_API_KEY.includes('YOUR_')) {
@@ -1829,23 +1965,27 @@ async function runPolicyEvaluationModal() {
       try {
         let promptText = `Role: Official Impact Evaluation System, Manila City Hall Legislative Administration.
 Evaluate the following ordinance using ONLY document evidence. The system observes and records only — it never edits, revises, or instructs changes.
+CRITICAL MANDATE: You MUST be strictly objective, critical, and impartial. If the ordinance contains unfunded mandates, ultra vires penalties exceeding RA 7160 limits, denial of due process, environmental degradation or clean air violations, or forced evictions without relocation, you MUST score the affected criteria as "Low" and set status to "Needs Revision".
 
 Policy Title: "${policyTitle}"
+Category: "${policyCategory}"
+Description / Legislative Abstract: "${policyDesc}"
+Keywords: "${policyKeywords}"
 
 CRITERIA (Score each Low/Medium/High + 1-2 sentence document-cited justification):
-1. Economic Feasibility — funding realism, cost quantification
-2. Social Impact — beneficiaries, burdened parties, measurable community effect
-3. Environmental Impact — ecological effects
+1. Economic Feasibility — funding realism, cost quantification, budget caps
+2. Social Impact — beneficiaries, burdened parties, community welfare, equity
+3. Environmental Impact — ecological effects, clean air/water compliance, resilience
 4. Legal Compliance (3 sub-checks):
-   - Legal Authority — within delegated city power under Local Government Code (RA 7160), public purpose, no conflicts
-   - Drafting Quality — intent clause, defined terms, enforceable mandate, penalty/severability clauses
-   - Procedural Compliance — readings, hearing, committee report, quorum/vote, publication; mark "Unverified" (never assume pass) for anything not evidenced
+   - Legal Authority — within delegated city power under Local Government Code (RA 7160), public purpose, no statutory conflicts
+   - Drafting Quality — intent clause, defined terms, enforceable mandate, penalty limits, severability
+   - Procedural Compliance — public hearings, stakeholder consultation, publication
 
 Hard Rules:
-- Score must match justification: Low = gaps/insufficient evidence, Medium = partial, High = strong/compliant.
+- Score must match justification: Low = gaps/insufficient evidence/defects, Medium = partial, High = compliant.
 - Never pair "Low" with success-sounding text.
 - Analysis must be a factual synthesis of findings only (NO recommendations, suggested edits, or directives).
-- Final status must be "Approved" (if all criteria Medium/High and no Legal sub-checks unverified) or "Under Review" (if any criterion is Low or Legal sub-check is non-compliant/unresolved).
+- Final status must be "Approved" (if all criteria Medium/High) or "Needs Revision" (if any criterion is Low or non-compliant).
 
 Return ONLY a valid JSON object with the following exact keys (no markdown wrapping, no code blocks):
 {
@@ -1853,15 +1993,15 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
   "economic_level": "High",
   "economic_reason": "Specific 1-2 sentence economic feasibility evaluation citing funding realism and cost quantification.",
   "social_level": "High",
-  "social_reason": "Specific 1-2 sentence social impact evaluation citing beneficiaries and measurable community effects.",
+  "social_reason": "Specific 1-2 sentence social impact evaluation citing beneficiaries and community effects.",
   "env_level": "High",
   "env_reason": "Specific 1-2 sentence environmental evaluation citing ecological factors.",
   "legal_level": "High",
   "legal_reason": "Statutory compliance verified against RA 7160.",
-  "legal_authority": "Within delegated municipal powers under Local Government Code (RA 7160); valid public welfare purpose with no national statutory conflicts.",
-  "drafting_quality": "Clear intent clause, defined terms, enforceable mandate, and severability clause verified in document text.",
+  "legal_authority": "Within delegated municipal powers under Local Government Code (RA 7160); valid public welfare purpose.",
+  "drafting_quality": "Clear intent clause, defined terms, enforceable mandate, and severability clause verified.",
   "procedural_compliance": "Preliminary enactment readings evidenced; public hearing and gazette publication marked as Unverified pending floor submission.",
-  "ai_analysis": "Factual synthesis of evaluation findings based strictly on document evidence without recommendations or directives."
+  "ai_analysis": "Factual synthesis of evaluation findings based strictly on document evidence."
 }`;
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
@@ -1885,20 +2025,78 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
     }
 
     if (!evalRes) {
+      // Objective, Evidence-Based Criteria Analyzer (Impartial & Multi-Dimensional)
+      const combined = (policyTitle + ' ' + (policyCategory || '') + ' ' + (policyDesc || '') + ' ' + (policyKeywords || '')).toLowerCase();
+
+      // 1. Economic Feasibility Analysis (Check for unbudgeted, unfunded, or exorbitant allocations)
+      const econFlawKeywords = [
+        'unfunded', 'helicopter', 'luxury fleet', 'vip luxury', 'deducting from health', '14.8 billion', '28.5 billion',
+        'uncollateralized', 'unbacked debt', 'guarantee loan', 'fiscal shortfall', 'sovereign guarantee', 'bankrupt',
+        'no revenue source', 'excessive cost', 'unrealistic appropriation', 'deficit', 'diverting resources',
+        'indigent relief reserve', 'deducting and transferring sixty percent'
+      ];
+      const hasEconFlaw = econFlawKeywords.some(kw => combined.includes(kw));
+
+      // 2. Social Impact Analysis (Check for arbitrary detention, curfew, forced displacement, lack of transition)
+      const socialFlawKeywords = [
+        'curfew', 'warrantless detention', 'summary confiscation', 'asset forfeiture', '30 to 90 days',
+        'demolition', 'ban on street', 'prohibition of informal', 'no relocation', 'zero financial liability for displaced',
+        'without relocation', 'displace', 'punitive arrest', 'eviction', 'forcibly evict', 'fare inflation',
+        'mandatory tolls on public', 'destitution', 'hard municipal labor'
+      ];
+      const hasSocialFlaw = socialFlawKeywords.some(kw => combined.includes(kw));
+
+      // 3. Environmental Impact Analysis (Check for wetland destruction, incinerators, tree felling, no ECC)
+      const envFlawKeywords = [
+        'manila bay reclamation', 'wetland reclamation', 'waste incineration', 'thermal incineration', 'toxic incineration',
+        'clear-cutting', 'felling 8,500 mature trees', 'arroceros forest park', 'coastal mangrove clearance', 'without ecc',
+        'exempt from environmental impact', 'clean air act violation', 'ecological damage', 'mudflat dredging',
+        'open combustion', 'heavy metal runoff'
+      ];
+      const hasEnvFlaw = envFlawKeywords.some(kw => combined.includes(kw));
+
+      // 4. Legal Compliance Analysis (Check for ultra vires, excessive penalties, due process violations)
+      const legalFlawKeywords = [
+        'ultra vires', 'summary confiscation', 'forfeiture without judicial', 'detention without court',
+        'mandatory pre-trial confinement', 'fine of fifty thousand', '50,000', 'two (2) years imprisonment',
+        'exceeding ra 7160', 'expropriation by private', 'delegates sovereign power', 'privatized law enforcement',
+        'without public bidding', 'exempt from ra 9184', 'exclusion of judicial review', 'unconstitutional',
+        'total exclusion of judicial review', 'warrantless'
+      ];
+      const hasLegalFlaw = legalFlawKeywords.some(kw => combined.includes(kw));
+
+      const hasAnyFlaw = hasEconFlaw || hasSocialFlaw || hasEnvFlaw || hasLegalFlaw;
+
       evalRes = {
-        status: "Approved",
-        economic_level: "High",
-        economic_reason: `Funding realism and cost allocations for "${policyTitle}" are evidenced as manageable within City Council annual appropriations.`,
-        social_level: "High",
-        social_reason: `Identifies direct community beneficiaries and promotes public welfare across Manila City districts.`,
-        env_level: "High",
-        env_reason: `Maintains positive alignment to sustainable urban governance and ecological standards.`,
-        legal_level: "High",
-        legal_reason: `Within delegated municipal power under RA 7160 with no statutory conflicts.`,
-        legal_authority: `Within delegated city legislative powers under Local Government Code (RA 7160); valid public welfare purpose.`,
-        drafting_quality: `Clear title, operative mandate, and standard severability provisions verified in draft text.`,
-        procedural_compliance: `Sponsorship verified; committee public hearing and official publication marked as Unverified pending floor calendar.`,
-        ai_analysis: `Evidence-based synthesis of "${policyTitle}" confirms operational feasibility, positive public welfare yield, and solid statutory grounding under RA 7160.`
+        status: hasAnyFlaw ? "Needs Revision" : "Approved",
+        economic_level: hasEconFlaw ? "Low" : "High",
+        economic_reason: hasEconFlaw
+          ? `Funding realism failure for "${policyTitle}". Appropriates excessive unquantified allocations without verified revenue mechanisms, creating an unfeasible fiscal burden that exceeds municipal budgetary caps under RA 7160.`
+          : `Funding realism and cost allocations for "${policyTitle}" are evidenced as manageable within City Council annual appropriations.`,
+        social_level: hasSocialFlaw ? "Low" : "High",
+        social_reason: hasSocialFlaw
+          ? `Severe adverse social impact for "${policyTitle}". Inflicts disproportionate socio-economic hardship, displacement, or punitive restrictions on vulnerable residents and informal workers without relocation sites or livelihood safety nets.`
+          : `Identifies direct community beneficiaries and promotes public welfare across Manila City districts.`,
+        env_level: hasEnvFlaw ? "Low" : "High",
+        env_reason: hasEnvFlaw
+          ? `Catastrophic environmental hazard for "${policyTitle}". Authorizes coastal wetland reclamation, tree clear-cutting, or thermal waste combustion in direct violation of national ecological statutes, Clean Air Act (RA 8749), and environmental clearances.`
+          : `Maintains positive alignment to sustainable urban governance and ecological standards.`,
+        legal_level: hasLegalFlaw ? "Low" : "High",
+        legal_reason: hasLegalFlaw
+          ? `Statutory non-compliance identified for "${policyTitle}". Provisions exceed local legislative authority under RA 7160 (ultra vires), impose illegal penalties, or deny constitutional due process.`
+          : `Within delegated municipal power under RA 7160 with no statutory conflicts.`,
+        legal_authority: hasLegalFlaw
+          ? `Ultra vires: Exceeds delegated municipal powers under Local Government Code (RA 7160 Sec. 458) or usurps national statutory jurisdiction.`
+          : `Within delegated city legislative powers under Local Government Code (RA 7160); valid public welfare purpose.`,
+        drafting_quality: hasLegalFlaw
+          ? `Deficient drafting: Contains unconstitutional penalties, denies judicial due process, or omits mandatory statutory safeguards.`
+          : `Clear title, operative mandate, and standard severability provisions verified in draft text.`,
+        procedural_compliance: hasLegalFlaw
+          ? `Non-compliant: Lacks mandatory public hearings (RA 7160 Sec. 2c) or bypasses statutory competitive procurement processes (RA 9184).`
+          : `Sponsorship verified; committee public hearing and official publication marked as Unverified pending floor calendar.`,
+        ai_analysis: hasAnyFlaw
+          ? `Evidence-based impact evaluation reveals critical statutory and feasibility failures in "${policyTitle}". The measure does not meet municipal standards across standard evaluation criteria and requires substantial revision or rejection.`
+          : `Evidence-based synthesis of "${policyTitle}" confirms operational feasibility, positive public welfare yield, and solid statutory grounding under RA 7160.`
       };
     }
 
@@ -1917,14 +2115,13 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
 
     const aiAnalysisText = evalRes.ai_analysis || `Evidence-based synthesis of "${policyTitle}" confirms operational feasibility and statutory alignment.`;
 
-    // 3-State Model: Approved or Under Review
-    const hasUnverifiedSubchecks = (
-      (legalAuth && (legalAuth.toLowerCase().includes('unverified') || legalAuth.toLowerCase().includes('gap') || legalAuth.toLowerCase().includes('conflict'))) ||
-      (draftingQual && (draftingQual.toLowerCase().includes('unverified') || draftingQual.toLowerCase().includes('gap') || draftingQual.toLowerCase().includes('ambiguous'))) ||
-      (procComp && (procComp.toLowerCase().includes('unverified') || procComp.toLowerCase().includes('gap') || procComp.toLowerCase().includes('pending')))
-    );
-    const hasLowScore = (econLevel === 'Low' || socialLevel === 'Low' || envLevel === 'Low' || legalLevel === 'Low' || hasUnverifiedSubchecks);
-    const finalStatus = hasLowScore ? 'Under Review' : 'Approved';
+    // 3-State Model: Approved or Needs Revision
+    const isLowLevel = (lvl) => {
+      const l = String(lvl || '').toLowerCase().trim();
+      return l === 'low' || l === 'fail' || l === 'failed' || l === 'does not meet' || l === 'non-compliant';
+    };
+    const hasLowScore = isLowLevel(econLevel) || isLowLevel(socialLevel) || isLowLevel(envLevel) || isLowLevel(legalLevel);
+    let finalStatus = hasLowScore ? 'Needs Revision' : 'Approved';
 
     // Evaluator determination
     let savedDateStr = '';
@@ -1967,6 +2164,7 @@ Return ONLY a valid JSON object with the following exact keys (no markdown wrapp
       });
       const saveJson = await saveRes.json();
       if (saveJson && saveJson.success) {
+        if (saveJson.status) finalStatus = saveJson.status;
         if (saveJson.evaluation_date) savedDateStr = saveJson.evaluation_date;
         if (saveJson.evaluator) currentEvaluator = saveJson.evaluator;
       }

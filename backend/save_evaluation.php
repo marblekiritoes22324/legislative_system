@@ -241,6 +241,9 @@ if ($stmt) {
     mysqli_stmt_close($stmt);
 
     if ($executed) {
+        // Synchronize status with policy_records table
+        @mysqli_query($conn, "UPDATE policy_records SET status = '" . mysqli_real_escape_string($conn, $status) . "' WHERE id = " . intval($policy_id));
+
         // Log audit action
         $audit_actor = ($evaluator === 'Staff') ? 'Staff' : 'Admin';
         log_audit_action($conn, $audit_actor, 'Evaluations', 'Evaluated policy: ' . $policy_title, 'Completed');

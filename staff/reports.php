@@ -38,24 +38,35 @@ if (empty($report_policies)) {
   ];
 }
 
-// Compute counts for filter tabs (Only policies with status 'Approved' in evaluation count as Approved)
+// Compute counts for filter tabs dynamically from actual database statuses
 $total_report_count = count($report_policies);
-$approved_report_count = 0;
-$pending_report_count = 0;
-foreach ($report_policies as $pol) {
-  $is_approved = !empty($pol['evaluation_id']) && ($pol['eval_status'] ?? '') === 'Approved';
-  if ($is_approved) {
-    $approved_report_count++;
-  } else {
-    $pending_report_count++;
+$status_counts = [];
+foreach ($report_policies as &$pol) {
+  // Determine accurate status directly from database values
+  $raw_status = !empty($pol['eval_status']) ? trim($pol['eval_status']) : (!empty($pol['status']) ? trim($pol['status']) : 'Draft');
+  if ($raw_status === 'Completed' || $raw_status === 'Published') {
+    $raw_status = 'Approved';
   }
+  $pol['computed_status'] = $raw_status;
+  $status_key = strtolower(str_replace(' ', '_', $raw_status));
+  $pol['status_key'] = $status_key;
+
+  if (!isset($status_counts[$status_key])) {
+    $status_counts[$status_key] = [
+      'key' => $status_key,
+      'label' => $raw_status,
+      'count' => 0
+    ];
+  }
+  $status_counts[$status_key]['count']++;
 }
+unset($pol);
 ?>
 <section id="reportGenerationSection"
   class="content-section <?= ($active_section ?? 'staffDashboardSection') !== 'reportGenerationSection' ? 'd-none' : '' ?>">
 
   <!-- Top Header -->
-  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
     <div>
       <h2 class="h3 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
         <i class="bi bi-file-earmark-text-fill text-primary fs-4"></i> Report Generation Module
@@ -65,43 +76,111 @@ foreach ($report_policies as $pol) {
     </div>
   </div>
 
-  <!-- 1. Select Policy Record -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+  <style>
+    .pagination-step-btn {
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      max-width: 32px !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 0.85rem !important;
+      font-weight: 600 !important;
+      line-height: 1 !important;
+      border-radius: 6px !important;
+      transition: all 0.15s ease !important;
+      box-sizing: border-box !important;
+    }
+    .clickable-report-row {
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+    .clickable-report-row:hover {
+      background-color: #f1f5f9 !important;
+    }
+    .clickable-report-row:hover .policy-title-link {
+      color: #0d6efd !important;
+      text-decoration: underline !important;
+    }
+    body.dark-theme .clickable-report-row:hover {
+      background-color: #1e293b !important;
+    }
+    body.dark-theme .clickable-report-row .policy-title-link {
+      color: #f8fafc !important;
+    }
+    body.dark-theme .clickable-report-row:hover .policy-title-link {
+      color: #60a5fa !important;
+    }
+    .badge-report-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: #EFF6FF;
+      color: #1E40AF;
+      border: 1px solid #DBEAFE;
+      white-space: nowrap;
+    }
+    .btn-report-download {
+      background: #FFFFFF !important;
+      color: #0B2E59 !important;
+      border: 1.5px solid #CBD5E1 !important;
+      padding: 5px 12px !important;
+      border-radius: 8px !important;
+      font-size: 0.82rem !important;
+      font-weight: 600 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      transition: all 0.18s ease !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+      text-decoration: none !important;
+    }
+    .btn-report-download:hover {
+      background: #0B2E59 !important;
+      color: #FFFFFF !important;
+      border-color: #0B2E59 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(11, 46, 89, 0.15) !important;
+    }
+    .btn-report-download:hover i {
+      color: #F59E0B !important;
+    }
+  </style>
+
+  <!-- Unified Report Generation Module Card -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <!-- 1. Select Policy Record -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
       <div>
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
           <i class="bi bi-journal-check text-primary"></i> 1. Select Policy Record
         </h3>
-        <p class="text-muted mb-0 small">Browse policies, view evaluation status, or click to generate the official legislative report.</p>
+        <p class="text-muted mb-0 small">Browse policies or click to generate the official legislative report.</p>
       </div>
 
-      <!-- Filter Tabs -->
       <div class="d-flex align-items-center gap-2">
-        <div class="btn-group btn-group-sm p-1 bg-light rounded-pill border" role="group" id="reportPolicyFilterGroup">
-          <button type="button" class="btn btn-sm rounded-pill px-3 fw-bold active btn-primary policy-filter-tab" onclick="filterReportPolicies('all', this)">
-            All Policies <span class="badge bg-white text-primary rounded-pill ms-1"><?= $total_report_count ?></span>
-          </button>
-          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary policy-filter-tab" onclick="filterReportPolicies('approved', this)">
-            <i class="bi bi-check-circle-fill text-success me-1"></i>Approved <span class="badge bg-success-subtle text-success rounded-pill ms-1"><?= $approved_report_count ?></span>
-          </button>
-          <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold text-secondary policy-filter-tab" onclick="filterReportPolicies('pending', this)">
-            <i class="bi bi-clock-fill text-warning me-1"></i>Pending Approval <span class="badge bg-warning-subtle text-dark rounded-pill ms-1"><?= $pending_report_count ?></span>
-          </button>
-        </div>
+        <span class="badge bg-light text-secondary border rounded-pill px-3 py-2 fw-semibold" style="font-size: 0.82rem;">
+          <i class="bi bi-collection-fill text-primary me-1.5"></i><?= $total_report_count ?> Policies Available
+        </span>
       </div>
     </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0" style="font-size:0.88rem;">
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
           <tr>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="width: 38%; font-size: 0.85rem; letter-spacing: 0.03em;">
+            <th class="py-3.5 text-uppercase text-dark fw-bold" style="width: 44%; font-size: 0.85rem; letter-spacing: 0.03em;">
               Policy Title</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="width: 18%; font-size: 0.85rem; letter-spacing: 0.03em;">
+            <th class="py-3.5 text-uppercase text-dark fw-bold" style="width: 22%; font-size: 0.85rem; letter-spacing: 0.03em;">
               Category</th>
-            <th class="py-3.5 text-center text-uppercase text-dark fw-bold"
-              style="width: 16%; font-size: 0.85rem; letter-spacing: 0.03em;">Status</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="width: 14%; font-size: 0.85rem; letter-spacing: 0.03em;">Date Uploaded</th>
-            <th class="py-3.5 text-center text-uppercase text-dark fw-bold" style="width: 14%; font-size: 0.85rem; letter-spacing: 0.03em;">Action</th>
+            <th class="py-3.5 text-uppercase text-dark fw-bold" style="width: 16%; font-size: 0.85rem; letter-spacing: 0.03em;">Date Uploaded</th>
+            <th class="py-3.5 text-center text-uppercase text-dark fw-bold" style="width: 18%; font-size: 0.85rem; letter-spacing: 0.03em;">Action</th>
           </tr>
         </thead>
         <tbody id="reportPolicyTableBody">
@@ -133,14 +212,15 @@ foreach ($report_policies as $pol) {
             $risk = !empty($pol['risk_level']) ? $pol['risk_level'] : 'Low Risk';
             $recText = !empty($pol['ai_recommendation']) ? $pol['ai_recommendation'] : 'Proceed with implementation and continue monitoring the effectiveness of the policy.';
 
-            $is_approved = !empty($pol['evaluation_id']) && ($pol['eval_status'] ?? '') === 'Approved';
-            $eval_state = $is_approved ? 'approved' : 'pending';
+            $current_status = $pol['computed_status'] ?? 'Approved';
+            $eval_state = $pol['status_key'] ?? 'approved';
+            $is_approved = ($current_status === 'Approved');
 
             $policyData = [
               'title' => $pol['title'],
               'policy_title' => $pol['title'],
               'category' => $pol['category'] ?? 'General Legislation',
-              'status' => $is_approved ? 'Approved' : 'Draft',
+              'status' => $current_status,
               'date' => $dateStr,
               'date_uploaded' => $dateStr,
               'summary' => $summary,
@@ -178,38 +258,18 @@ foreach ($report_policies as $pol) {
                   <?= htmlspecialchars($pol['category'] ?? '—') ?>
                 </span>
               </td>
-              <td class="text-center py-3">
-                <?php if ($is_approved): ?>
-                  <span class="badge rounded-pill fw-bold px-3 py-1.5 d-inline-flex align-items-center gap-1 shadow-2xs"
-                    style="background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.78rem;">
-                    <i class="bi bi-check-circle-fill text-success"></i> Approved
-                  </span>
-                <?php else: ?>
-                  <span class="badge rounded-pill fw-bold px-3 py-1.5 d-inline-flex align-items-center gap-1 shadow-2xs"
-                    style="background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 0.78rem;">
-                    <i class="bi bi-hourglass-split text-warning"></i> Pending Approval
-                  </span>
-                <?php endif; ?>
-              </td>
+
               <td class="text-secondary fw-medium py-3">
                 <i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>
                 <?= $dateStr ?>
               </td>
               <td class="text-center py-3">
-                <?php if ($is_approved): ?>
-                  <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
-                    style="font-size:0.8rem;"
-                    onclick="event.stopPropagation(); openPolicyRowReport(this.closest('tr'));">
-                    <i class="bi bi-file-earmark-pdf"></i><span>Report</span>
-                  </button>
-                <?php else: ?>
-                  <a href="staff_dashboard.php?section=impactAssessmentSection"
-                    class="btn btn-sm btn-outline-warning rounded-3 px-2.5 py-1 fw-semibold text-dark d-inline-flex align-items-center gap-1"
-                    style="font-size:0.78rem;"
-                    onclick="event.stopPropagation();">
-                    <i class="bi bi-bar-chart-line text-warning"></i><span>Evaluate</span>
-                  </a>
-                <?php endif; ?>
+                <button type="button" class="btn btn-sm btn-report-download"
+                  onclick="event.stopPropagation(); openPolicyRowReport(this.closest('tr'));"
+                  title="Download / View Official Legislative Report">
+                  <i class="bi bi-download text-primary"></i>
+                  <span>Download / View</span>
+                </button>
               </td>
             </tr>
           <?php endforeach; ?>
@@ -217,7 +277,7 @@ foreach ($report_policies as $pol) {
       </table>
     </div>
     <div class="d-flex align-items-center justify-content-between pt-1">
-      <small class="text-muted fw-medium" id="reportPoliciesSummaryText">Showing 1 to 10 of <?= count($report_policies) ?> records</small>
+      <small class="text-muted fw-medium" id="reportPoliciesSummaryText">Showing 1 to <?= min(10, count($report_policies)) ?> of <?= count($report_policies) ?> records</small>
       <div class="d-flex align-items-center gap-1" id="reportPolicyPagination">
         <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyPrevBtn" onclick="changeReportPolicyPage(-1)" title="Previous page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-left"></i></button>
         <div id="reportPolicyPageNumbers" class="d-flex align-items-center gap-1">
@@ -226,94 +286,11 @@ foreach ($report_policies as $pol) {
         <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyNextBtn" onclick="changeReportPolicyPage(1)" title="Next page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
-  </div>
 
-  <style>
-    .pagination-step-btn {
-      width: 32px !important;
-      height: 32px !important;
-      min-width: 32px !important;
-      max-width: 32px !important;
-      padding: 0 !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      font-size: 0.85rem !important;
-      font-weight: 600 !important;
-      line-height: 1 !important;
-      border-radius: 6px !important;
-      transition: all 0.15s ease !important;
-      box-sizing: border-box !important;
-    }
-    /* Clickable Policy Records Table Styling */
-    .clickable-report-row {
-      transition: background-color 0.15s ease, transform 0.1s ease;
-    }
-    .clickable-report-row:hover {
-      background-color: #f1f5f9 !important;
-    }
-    .clickable-report-row:hover .policy-title-link {
-      color: #0d6efd !important;
-      text-decoration: underline !important;
-    }
-    body.dark-theme .clickable-report-row:hover {
-      background-color: #1e293b !important;
-    }
-    body.dark-theme .clickable-report-row .policy-title-link {
-      color: #f8fafc !important;
-    }
-    body.dark-theme .clickable-report-row:hover .policy-title-link {
-      color: #60a5fa !important;
-    }
+    <!-- Clean Divider Merging Section 1 and Section 2 seamlessly -->
+    <hr class="my-4" style="border-color: #e2e8f0; opacity: 0.7;">
 
-    /* Clean Executive Recent Reports Styling */
-    .badge-report-type {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      background: #EFF6FF;
-      color: #1E40AF;
-      border: 1px solid #DBEAFE;
-      white-space: nowrap;
-    }
-
-    .btn-report-download {
-      background: #FFFFFF !important;
-      color: #0B2E59 !important;
-      border: 1.5px solid #CBD5E1 !important;
-      padding: 5px 12px !important;
-      border-radius: 8px !important;
-      font-size: 0.82rem !important;
-      font-weight: 600 !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      gap: 6px !important;
-      white-space: nowrap !important;
-      flex-shrink: 0 !important;
-      transition: all 0.18s ease !important;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-      text-decoration: none !important;
-    }
-
-    .btn-report-download:hover {
-      background: #0B2E59 !important;
-      color: #FFFFFF !important;
-      border-color: #0B2E59 !important;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 10px rgba(11, 46, 89, 0.15) !important;
-    }
-
-    .btn-report-download:hover i {
-      color: #F59E0B !important;
-    }
-  </style>
-
-  <!-- 2. Generated Reports & Comparative Analyses -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <!-- 2. Generated Reports & Comparative Analyses -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
       <div>
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
@@ -334,7 +311,7 @@ foreach ($report_policies as $pol) {
         </div>
       </div>
     </div>
-    <div class="table-responsive border rounded-4 overflow-hidden mb-2" style="min-height: 520px;">
+    <div class="table-responsive border rounded-4 overflow-hidden mb-2">
       <table class="table table-hover align-middle mb-0" id="recentGeneratedReportsTable" style="font-size:0.88rem; table-layout: fixed; width: 100%;">
         <colgroup>
           <col style="width: 28%;">

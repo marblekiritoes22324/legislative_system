@@ -130,7 +130,14 @@ try {
         }
     }
 
+    // 6. Ensure external_ordinances table and verified benchmarks exist
+    if (file_exists(__DIR__ . '/../backend/external_ordinances_helper.php')) {
+        require_once __DIR__ . '/../backend/external_ordinances_helper.php';
+        ensure_external_ordinances_table($conn);
+    }
+
     @mysqli_query($conn, "SET FOREIGN_KEY_CHECKS = 1");
 } catch (Throwable $e) {
     // Gracefully ignore seed errors so page still renders
 }
+
