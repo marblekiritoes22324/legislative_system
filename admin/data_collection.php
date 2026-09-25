@@ -35,9 +35,170 @@ if (!empty($all_policies)) {
 
 $num_categories = count($categories_map);
 $num_departments = count($departments_map);
-?>
 
-<section id="dataCollectionSection" class="content-section <?= ($active_section ?? 'adminDashboardSection') !== 'dataCollectionSection' ? 'd-none' : '' ?>">
+if (!function_exists('renderDataCollectionCategoryBadge')) {
+  function renderDataCollectionCategoryBadge($category)
+  {
+    $cat = trim($category ?? '');
+    $lower = strtolower($cat);
+
+    // Exact requested color pairs (light background + dark text):
+    // 1. Health and Sanitation (#E1F5EE, #085041)
+    if (strpos($lower, 'health') !== false || strpos($lower, 'sanitation') !== false || strpos($lower, 'medical') !== false) {
+      $bg = '#E1F5EE';
+      $text = '#085041';
+      $border = '#9FE1CB';
+      $icon = 'bi-heart-pulse-fill';
+      $label = !empty($cat) ? $cat : 'Health and Sanitation';
+    }
+    // 2. Civil Registry and Public Services (#E6F1FB, #0C447C)
+    elseif (strpos($lower, 'civil') !== false || strpos($lower, 'registry') !== false || strpos($lower, 'public service') !== false || strpos($lower, 'governance') !== false || strpos($lower, 'legal') !== false) {
+      $bg = '#E6F1FB';
+      $text = '#0C447C';
+      $border = '#B5D7F8';
+      $icon = 'bi-file-earmark-person-fill';
+      $label = !empty($cat) ? $cat : 'Civil Registry and Public Services';
+    }
+    // 3. Education and Employment (#EEEDFE, #3C3489)
+    elseif (strpos($lower, 'education') !== false || strpos($lower, 'employment') !== false || strpos($lower, 'school') !== false || strpos($lower, 'labor') !== false || strpos($lower, 'livelihood') !== false) {
+      $bg = '#EEEDFE';
+      $text = '#3C3489';
+      $border = '#CBC6FC';
+      $icon = 'bi-mortarboard-fill';
+      $label = !empty($cat) ? $cat : 'Education and Employment';
+    }
+    // 4. Social Welfare and Community Affairs (#FAECE7, #712B13)
+    elseif (strpos($lower, 'social') !== false || strpos($lower, 'welfare') !== false || strpos($lower, 'community') !== false) {
+      $bg = '#FAECE7';
+      $text = '#712B13';
+      $border = '#F3C4B6';
+      $icon = 'bi-people-fill';
+      $label = !empty($cat) ? $cat : 'Social Welfare and Community Affairs';
+    }
+    // 5. Infrastructure, Traffic and Environment (#EAF3DE, #27500A)
+    elseif (strpos($lower, 'infrastructure') !== false || strpos($lower, 'traffic') !== false || strpos($lower, 'environment') !== false || strpos($lower, 'transport') !== false || strpos($lower, 'mobility') !== false) {
+      $bg = '#EAF3DE';
+      $text = '#27500A';
+      $border = '#C8E2AE';
+      $icon = 'bi-buildings';
+      $label = !empty($cat) ? $cat : 'Infrastructure, Traffic and Environment';
+    }
+    // 6. Other (#F1EFE8, #444441)
+    else {
+      $bg = '#F1EFE8';
+      $text = '#444441';
+      $border = '#DCD7C9';
+      $icon = 'bi-tag-fill';
+      $label = !empty($cat) ? $cat : 'Other';
+    }
+
+    return '<span class="category-badge-pill" style="background-color: ' . $bg . ' !important; color: ' . $text . ' !important; border: 1px solid ' . $border . ' !important;" title="' . htmlspecialchars($label) . '">' .
+      '<i class="bi ' . $icon . '" style="color: ' . $text . ' !important; opacity: 0.9;"></i>' .
+      '<span>' . htmlspecialchars($label) . '</span>' .
+      '</span>';
+  }
+}
+?>
+<style>
+  /* Refined Civic Category Badges (Light Background + Dark Text) - Compact & Sleek */
+  .category-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+
+  .category-badge-pill i {
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .res-data-row:hover .category-badge-pill,
+  tr:hover .category-badge-pill {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+  }
+
+  /* Option 1: Civic Slate Metadata Chip (Structured, Neutral, High-End) */
+  .report-date-cell,
+  .report-date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.81rem;
+    color: #334155;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 6px;
+    padding: 3.5px 9.5px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .report-date-cell i,
+  .report-date-badge i {
+    color: #0B2E59 !important;
+    opacity: 0.78;
+    font-size: 0.8rem;
+    transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+  }
+
+  .report-date-cell:hover,
+  .report-date-badge:hover,
+  .res-data-row:hover .report-date-cell,
+  .res-data-row:hover .report-date-badge,
+  tr:hover .report-date-cell,
+  tr:hover .report-date-badge {
+    background: #FFFFFF !important;
+    border-color: #CBD5E1 !important;
+    box-shadow: 0 2px 5px rgba(11, 46, 89, 0.08) !important;
+    transform: translateY(-1px);
+  }
+
+  .res-data-row:hover .report-date-cell i,
+  .res-data-row:hover .report-date-badge i,
+  tr:hover .report-date-cell i,
+  tr:hover .report-date-badge i {
+    opacity: 1;
+    transform: scale(1.08);
+    color: #0B2E59 !important;
+  }
+
+  .res-data-row:hover .report-date-cell .report-date-text,
+  .res-data-row:hover .report-date-badge span,
+  tr:hover .report-date-cell .report-date-text,
+  tr:hover .report-date-badge span {
+    color: #0B2E59 !important;
+    font-weight: 600;
+  }
+
+  /* Deep Manila Navy Table Header */
+  .policy-table-thead th {
+    background-color: #0B2E59 !important;
+    color: #FFFFFF !important;
+    font-size: 0.82rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 2.5px solid #082242 !important;
+    border-top: none !important;
+    vertical-align: middle !important;
+  }
+</style>
+
+<section id="dataCollectionSection"
+  class="content-section <?= ($active_section ?? 'adminDashboardSection') !== 'dataCollectionSection' ? 'd-none' : '' ?>">
 
   <!-- Header Title -->
   <div class="mb-4">
@@ -114,15 +275,21 @@ $num_departments = count($departments_map);
   <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
 
     <!-- Table Title, Filters & Actions Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-2 border-bottom border-light-subtle">
+    <div
+      class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-2 border-bottom border-light-subtle">
       <div class="d-flex align-items-center gap-2">
         <h3 class="h6 fw-bold text-dark mb-0" style="font-size: 1.1rem; letter-spacing: -0.2px;">Collected Data</h3>
-        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 rounded-pill px-2.5 py-1 fw-semibold ms-1" style="font-size:0.75rem;" id="resTableBadge"><?= !empty($all_policies) ? count($all_policies) : 4 ?> Datasets</span>
+        <span
+          class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 rounded-pill px-2.5 py-1 fw-semibold ms-1"
+          style="font-size:0.75rem;" id="resTableBadge"><?= !empty($all_policies) ? count($all_policies) : 4 ?>
+          Datasets</span>
       </div>
-      
+
       <div class="d-flex flex-wrap align-items-center gap-2">
         <!-- Category Filter Dropdown -->
-        <select id="researchCategoryFilter" class="form-select form-select-sm rounded-3 border-light-subtle py-2 text-secondary fw-medium shadow-2xs" style="width: 190px; font-size: 0.84rem;" onchange="filterResearchDataTable()">
+        <select id="researchCategoryFilter"
+          class="form-select form-select-sm rounded-3 border-light-subtle py-2 text-secondary fw-medium shadow-2xs"
+          style="width: 190px; font-size: 0.84rem;" onchange="filterResearchDataTable()">
           <option value="">All Categories</option>
           <option value="Health">Health & Sanitation</option>
           <option value="Civil Registry">Civil Registry & Public</option>
@@ -137,7 +304,8 @@ $num_departments = count($departments_map);
 
         <!-- Search Bar -->
         <div class="position-relative" style="width: 250px;">
-          <input type="search" id="researchDataSearch" class="form-control form-control-sm pe-4 ps-3 py-2 rounded-3 border-light-subtle shadow-2xs"
+          <input type="search" id="researchDataSearch"
+            class="form-control form-control-sm pe-4 ps-3 py-2 rounded-3 border-light-subtle shadow-2xs"
             placeholder="Search datasets..." onkeyup="filterResearchDataTable()" style="font-size: 0.84rem;">
           <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-2.5 text-muted small"></i>
         </div>
@@ -147,14 +315,14 @@ $num_departments = count($departments_map);
     <!-- Table Responsive Wrapper -->
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;" id="researchDataTable">
-        <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+        <thead class="policy-table-thead">
           <tr>
-            <th class="py-3.5 px-3 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Dataset Name</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Category</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Department</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Date Uploaded</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Status</th>
-            <th class="py-3.5 text-center text-uppercase text-dark fw-bold" style="width: 100px; font-size: 0.88rem; letter-spacing: 0.03em; color: #000000 !important;">Action</th>
+            <th class="py-3 px-3 text-uppercase">Dataset Name</th>
+            <th class="py-3 px-3 text-uppercase">Category</th>
+            <th class="py-3 px-3 text-uppercase">Department</th>
+            <th class="py-3 px-3 text-uppercase">Date Uploaded</th>
+            <th class="py-3 px-3 text-uppercase">Status</th>
+            <th class="py-3 px-3 text-center text-uppercase" style="width: 100px;">Action</th>
           </tr>
         </thead>
         <tbody id="researchDataTableBody">
@@ -185,10 +353,13 @@ $num_departments = count($departments_map);
                 $badgeText = '#000000';
               }
               ?>
-              <tr class="res-data-row" data-search="<?= strtolower($datasetName . ' ' . $category . ' ' . $dept) ?>" data-category="<?= strtolower($category) ?>">
+              <tr class="res-data-row" data-search="<?= strtolower($datasetName . ' ' . $category . ' ' . $dept) ?>"
+                data-category="<?= strtolower($category) ?>">
                 <td class="px-3 py-3">
                   <div class="d-flex align-items-center gap-2.5">
-                    <div class="rounded-3 p-2 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary flex-shrink-0" style="width: 36px; height: 36px;">
+                    <div
+                      class="rounded-3 p-2 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary flex-shrink-0"
+                      style="width: 36px; height: 36px;">
                       <i class="bi bi-file-earmark-bar-graph-fill fs-6"></i>
                     </div>
                     <div>
@@ -198,24 +369,26 @@ $num_departments = count($departments_map);
                   </div>
                 </td>
                 <td class="py-3">
-                  <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #0d6efd !important; font-size: 0.78rem;">
-                    <?= $category ?>
-                  </span>
+                  <?= renderDataCollectionCategoryBadge($category) ?>
                 </td>
                 <td class="py-3 text-secondary fw-medium">
                   <i class="bi bi-building me-1.5 text-muted opacity-75"></i><?= $dept ?>
                 </td>
-                <td class="py-3 text-secondary fw-medium">
-                  <i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i><?= $dateUploaded ?>
+                <td class="py-3">
+                  <div class="report-date-cell">
+                    <i class="bi bi-calendar3"></i>
+                    <span class="report-date-text"><?= $dateUploaded ?></span>
+                  </div>
                 </td>
                 <td class="py-3">
-                  <span class="badge rounded-pill fw-bold px-3 py-1.5 shadow-2xs" style="background-color: <?= $badgeBg ?> !important; color: <?= $badgeText ?> !important; font-size: 0.78rem;">
+                  <span class="badge rounded-pill fw-bold px-3 py-1.5 shadow-2xs"
+                    style="background-color: <?= $badgeBg ?> !important; color: <?= $badgeText ?> !important; font-size: 0.78rem;">
                     <?= htmlspecialchars($status) ?>
                   </span>
                 </td>
                 <td class="py-3 text-center">
                   <?php if (!empty($rp['id'])): ?>
-                    <a href="../backend/view_policy_document.php?id=<?= (int)$rp['id'] ?>" target="_blank"
+                    <a href="../backend/view_policy_document.php?id=<?= (int) $rp['id'] ?>" target="_blank"
                       class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
                       style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;">
                       <i class="bi bi-eye-fill text-primary"></i> View
@@ -229,7 +402,8 @@ $num_departments = count($departments_map);
                   <?php else: ?>
                     <button
                       class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                      style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;" onclick="showSection('policyResearchSection')">
+                      style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
+                      onclick="showSection('policyResearchSection')">
                       <i class="bi bi-eye-fill text-primary"></i> View
                     </button>
                   <?php endif; ?>
@@ -238,10 +412,13 @@ $num_departments = count($departments_map);
             <?php endforeach; ?>
           <?php else: ?>
             <!-- Default Fallback Records -->
-            <tr class="res-data-row" data-search="plastic reduction study environment environmental management office" data-category="infrastructure, traffic and environment">
+            <tr class="res-data-row" data-search="plastic reduction study environment environmental management office"
+              data-category="infrastructure, traffic and environment">
               <td class="px-3 py-3">
                 <div class="d-flex align-items-center gap-2.5">
-                  <div class="rounded-3 p-2 d-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success flex-shrink-0" style="width: 36px; height: 36px;">
+                  <div
+                    class="rounded-3 p-2 d-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success flex-shrink-0"
+                    style="width: 36px; height: 36px;">
                     <i class="bi bi-file-earmark-bar-graph-fill fs-6"></i>
                   </div>
                   <div>
@@ -251,29 +428,40 @@ $num_departments = count($departments_map);
                 </div>
               </td>
               <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #0d6efd !important; font-size: 0.78rem;">
-                  Infrastructure, Traffic & Environment
+                <?= renderDataCollectionCategoryBadge('Infrastructure, Traffic and Environment') ?>
+              </td>
+              <td class="py-3 text-secondary fw-medium"><i
+                  class="bi bi-building me-1.5 text-muted opacity-75"></i>Environmental Management Office</td>
+              <td class="py-3">
+                <span class="d-inline-flex align-items-center gap-1.5 px-2.5 py-1 rounded-3 border"
+                  style="background: #F8FAFC; border-color: #E2E8F0 !important; color: #334155; font-size: 0.81rem; font-weight: 500;">
+                  <i class="bi bi-calendar-event text-primary" style="font-size: 0.82rem;"></i>
+                  <span>Aug. 3, 2026</span>
                 </span>
               </td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-building me-1.5 text-muted opacity-75"></i>Environmental Management Office</td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>Aug. 3, 2026</td>
               <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #198754 !important; font-size: 0.78rem;">
+                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs"
+                  style="background-color: #198754 !important; font-size: 0.78rem;">
                   Completed
                 </span>
               </td>
               <td class="py-3 text-center">
-                <button class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;" onclick="showSection('policyResearchSection')">
+                <button
+                  class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
+                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
+                  onclick="showSection('policyResearchSection')">
                   <i class="bi bi-eye-fill text-primary"></i> View
                 </button>
               </td>
             </tr>
 
-            <tr class="res-data-row" data-search="traffic congestion study transportation city planning office" data-category="infrastructure, traffic and environment">
+            <tr class="res-data-row" data-search="traffic congestion study transportation city planning office"
+              data-category="infrastructure, traffic and environment">
               <td class="px-3 py-3">
                 <div class="d-flex align-items-center gap-2.5">
-                  <div class="rounded-3 p-2 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary flex-shrink-0" style="width: 36px; height: 36px;">
+                  <div
+                    class="rounded-3 p-2 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary flex-shrink-0"
+                    style="width: 36px; height: 36px;">
                     <i class="bi bi-file-earmark-bar-graph-fill fs-6"></i>
                   </div>
                   <div>
@@ -283,29 +471,35 @@ $num_departments = count($departments_map);
                 </div>
               </td>
               <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #0d6efd !important; font-size: 0.78rem;">
-                  Transportation
-                </span>
+                <?= renderDataCollectionCategoryBadge('Infrastructure, Traffic and Environment') ?>
               </td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-building me-1.5 text-muted opacity-75"></i>City Planning Office</td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>Aug. 2, 2026</td>
+              <td class="py-3 text-secondary fw-medium"><i class="bi bi-building me-1.5 text-muted opacity-75"></i>City
+                Planning Office</td>
+              <td class="py-3 text-secondary fw-medium"><i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>Aug.
+                2, 2026</td>
               <td class="py-3">
-                <span class="badge rounded-pill text-dark fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #ffc107 !important; color: #000000 !important; font-size: 0.78rem;">
+                <span class="badge rounded-pill text-dark fw-bold px-3 py-1.5 shadow-2xs"
+                  style="background-color: #ffc107 !important; color: #000000 !important; font-size: 0.78rem;">
                   Draft
                 </span>
               </td>
               <td class="py-3 text-center">
-                <button class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;" onclick="showSection('policyResearchSection')">
+                <button
+                  class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
+                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
+                  onclick="showSection('policyResearchSection')">
                   <i class="bi bi-eye-fill text-primary"></i> View
                 </button>
               </td>
             </tr>
 
-            <tr class="res-data-row" data-search="flood risk assessment public safety engineering office" data-category="infrastructure, traffic and environment">
+            <tr class="res-data-row" data-search="flood risk assessment public safety engineering office"
+              data-category="infrastructure, traffic and environment">
               <td class="px-3 py-3">
                 <div class="d-flex align-items-center gap-2.5">
-                  <div class="rounded-3 p-2 d-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger flex-shrink-0" style="width: 36px; height: 36px;">
+                  <div
+                    class="rounded-3 p-2 d-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger flex-shrink-0"
+                    style="width: 36px; height: 36px;">
                     <i class="bi bi-file-earmark-bar-graph-fill fs-6"></i>
                   </div>
                   <div>
@@ -315,29 +509,35 @@ $num_departments = count($departments_map);
                 </div>
               </td>
               <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #0d6efd !important; font-size: 0.78rem;">
-                  Infrastructure, Traffic & Environment
-                </span>
+                <?= renderDataCollectionCategoryBadge('Infrastructure, Traffic and Environment') ?>
               </td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-building me-1.5 text-muted opacity-75"></i>Engineering Office</td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>Aug. 1, 2026</td>
+              <td class="py-3 text-secondary fw-medium"><i
+                  class="bi bi-building me-1.5 text-muted opacity-75"></i>Engineering Office</td>
+              <td class="py-3 text-secondary fw-medium"><i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>Aug.
+                1, 2026</td>
               <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #198754 !important; font-size: 0.78rem;">
+                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs"
+                  style="background-color: #198754 !important; font-size: 0.78rem;">
                   Completed
                 </span>
               </td>
               <td class="py-3 text-center">
-                <button class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;" onclick="showSection('policyResearchSection')">
+                <button
+                  class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
+                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
+                  onclick="showSection('policyResearchSection')">
                   <i class="bi bi-eye-fill text-primary"></i> View
                 </button>
               </td>
             </tr>
 
-            <tr class="res-data-row" data-search="mental health survey health health department" data-category="health and sanitation">
+            <tr class="res-data-row" data-search="mental health survey health health department"
+              data-category="health and sanitation">
               <td class="px-3 py-3">
                 <div class="d-flex align-items-center gap-2.5">
-                  <div class="rounded-3 p-2 d-flex align-items-center justify-content-center bg-purple bg-opacity-10 text-purple flex-shrink-0" style="width: 36px; height: 36px; background-color: #f3e8ff; color: #6b21a8;">
+                  <div
+                    class="rounded-3 p-2 d-flex align-items-center justify-content-center bg-purple bg-opacity-10 text-purple flex-shrink-0"
+                    style="width: 36px; height: 36px; background-color: #f3e8ff; color: #6b21a8;">
                     <i class="bi bi-file-earmark-bar-graph-fill fs-6"></i>
                   </div>
                   <div>
@@ -347,20 +547,23 @@ $num_departments = count($departments_map);
                 </div>
               </td>
               <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #0d6efd !important; font-size: 0.78rem;">
-                  Health & Sanitation
-                </span>
+                <?= renderDataCollectionCategoryBadge('Health and Sanitation') ?>
               </td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-building me-1.5 text-muted opacity-75"></i>Health Department</td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>Jul. 31, 2026</td>
+              <td class="py-3 text-secondary fw-medium"><i class="bi bi-building me-1.5 text-muted opacity-75"></i>Health
+                Department</td>
+              <td class="py-3 text-secondary fw-medium"><i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>Jul.
+                31, 2026</td>
               <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs" style="background-color: #198754 !important; font-size: 0.78rem;">
+                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs"
+                  style="background-color: #198754 !important; font-size: 0.78rem;">
                   Completed
                 </span>
               </td>
               <td class="py-3 text-center">
-                <button class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;" onclick="showSection('policyResearchSection')">
+                <button
+                  class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
+                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
+                  onclick="showSection('policyResearchSection')">
                   <i class="bi bi-eye-fill text-primary"></i> View
                 </button>
               </td>
@@ -386,7 +589,8 @@ $num_departments = count($departments_map);
         <?= !empty($all_policies) ? count($all_policies) : 4 ?> entries
       </div>
       <div class="d-flex align-items-center gap-1">
-        <button class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" disabled><i class="bi bi-chevron-left"></i></button>
+        <button class="btn btn-sm btn-light border rounded-2 px-2.5 py-1" disabled><i
+            class="bi bi-chevron-left"></i></button>
         <button class="btn btn-sm btn-primary rounded-2 px-3 py-1 fw-bold">1</button>
         <button class="btn btn-sm btn-light border rounded-2 px-2.5 py-1"><i class="bi bi-chevron-right"></i></button>
       </div>

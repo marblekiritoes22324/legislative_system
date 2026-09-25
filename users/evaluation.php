@@ -38,6 +38,20 @@ if (!empty($conn)) {
 }
 ?>
 
+<style>
+  /* Deep Manila Navy Table Header */
+  .policy-table-thead th {
+    background-color: #0B2E59 !important;
+    color: #FFFFFF !important;
+    font-size: 0.82rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 2.5px solid #082242 !important;
+    border-top: none !important;
+    vertical-align: middle !important;
+  }
+</style>
+
 <section id="policyImpactSection"
   class="content-section <?= ($active_section ?? 'userDashboardSection') !== 'policyImpactSection' ? 'd-none' : '' ?>">
 
@@ -52,18 +66,14 @@ if (!empty($conn)) {
     </div>
 
     <!-- Evaluation Records Table (View Only) -->
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0;">
-        <thead class="table-light">
+    <div class="table-responsive border rounded-4 overflow-hidden mb-3">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="policy-table-thead">
           <tr>
-            <th scope="col" class="py-3 px-3 text-dark fw-bold text-uppercase"
-              style="width: 32%; font-size: 0.85rem; letter-spacing: 0.5px;">Policy Title</th>
-            <th scope="col" class="py-3 px-3 text-dark fw-bold text-uppercase"
-              style="width: 40%; font-size: 0.85rem; letter-spacing: 0.5px;">Evaluation Findings &amp; Analysis</th>
-            <th scope="col" class="py-3 px-3 text-dark fw-bold text-uppercase text-center"
-              style="width: 14%; font-size: 0.85rem; letter-spacing: 0.5px;">Status</th>
-            <th scope="col" class="py-3 px-3 text-dark fw-bold text-uppercase text-center"
-              style="width: 14%; font-size: 0.85rem; letter-spacing: 0.5px;">Action</th>
+            <th scope="col" class="py-3 px-3 text-uppercase" style="width: 32%;">Policy Title</th>
+            <th scope="col" class="py-3 px-3 text-uppercase" style="width: 40%;">Evaluation Findings &amp; Analysis</th>
+            <th scope="col" class="py-3 px-3 text-uppercase text-center" style="width: 14%;">Status</th>
+            <th scope="col" class="py-3 px-3 text-uppercase text-center" style="width: 14%;">Action</th>
           </tr>
         </thead>
         <tbody>

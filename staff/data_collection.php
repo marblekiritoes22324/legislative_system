@@ -35,6 +35,20 @@ $num_categories = count($categories_map);
 $num_departments = count($departments_map);
 ?>
 
+<style>
+  /* Deep Manila Navy Table Header */
+  .policy-table-thead th {
+    background-color: #0B2E59 !important;
+    color: #FFFFFF !important;
+    font-size: 0.82rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 2.5px solid #082242 !important;
+    border-top: none !important;
+    vertical-align: middle !important;
+  }
+</style>
+
 <section id="dataCollectionSection" class="content-section <?= ($active_section ?? 'staffDashboardSection') !== 'dataCollectionSection' ? 'd-none' : '' ?>">
 
   <!-- Header Title -->
@@ -149,20 +163,14 @@ $num_departments = count($departments_map);
     <!-- Table Responsive Wrapper -->
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;" id="researchDataTable">
-        <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+        <thead class="policy-table-thead">
           <tr>
-            <th class="py-3.5 px-3 text-uppercase text-dark fw-bold"
-              style="font-size: 0.88rem; letter-spacing: 0.03em;">Dataset Name</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
-              Category</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
-              Department</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">Date
-              Uploaded</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="font-size: 0.88rem; letter-spacing: 0.03em;">
-              Status</th>
-            <th class="py-3.5 text-center text-uppercase text-dark fw-bold"
-              style="width: 100px; font-size: 0.88rem; letter-spacing: 0.03em;">Action</th>
+            <th class="py-3 px-3 text-uppercase">Dataset Name</th>
+            <th class="py-3 px-3 text-uppercase">Category</th>
+            <th class="py-3 px-3 text-uppercase">Department</th>
+            <th class="py-3 px-3 text-uppercase">Date Uploaded</th>
+            <th class="py-3 px-3 text-uppercase">Status</th>
+            <th class="py-3 px-3 text-center text-uppercase" style="width: 100px;">Action</th>
           </tr>
         </thead>
         <tbody id="researchDataTableBody">

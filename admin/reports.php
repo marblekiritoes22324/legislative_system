@@ -78,6 +78,18 @@ unset($pol);
   </div>
 
   <style>
+    /* Deep Manila Navy Table Header */
+    .policy-table-thead th {
+      background-color: #0B2E59 !important;
+      color: #FFFFFF !important;
+      font-size: 0.82rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.05em !important;
+      border-bottom: 2.5px solid #082242 !important;
+      border-top: none !important;
+      vertical-align: middle !important;
+    }
+
     .pagination-step-btn {
       width: 32px !important;
       height: 32px !important;
@@ -94,25 +106,39 @@ unset($pol);
       transition: all 0.15s ease !important;
       box-sizing: border-box !important;
     }
+
     .clickable-report-row {
       transition: background-color 0.15s ease, transform 0.1s ease;
     }
+
     .clickable-report-row:hover {
       background-color: #f1f5f9 !important;
     }
-    .clickable-report-row:hover .policy-title-link {
-      color: #0d6efd !important;
-      text-decoration: underline !important;
+
+    .clickable-report-row .policy-title-link {
+      color: #0F172A !important;
+      font-weight: 600 !important;
+      transition: color 0.15s ease !important;
+      text-decoration: none !important;
     }
+
+    .clickable-report-row:hover .policy-title-link {
+      color: #0B2E59 !important;
+      text-decoration: none !important;
+    }
+
     body.dark-theme .clickable-report-row:hover {
       background-color: #1e293b !important;
     }
+
     body.dark-theme .clickable-report-row .policy-title-link {
       color: #f8fafc !important;
     }
+
     body.dark-theme .clickable-report-row:hover .policy-title-link {
       color: #60a5fa !important;
     }
+
     .badge-report-type {
       display: inline-flex;
       align-items: center;
@@ -126,32 +152,277 @@ unset($pol);
       border: 1px solid #DBEAFE;
       white-space: nowrap;
     }
-    .btn-report-download {
-      background: #FFFFFF !important;
-      color: #0B2E59 !important;
-      border: 1.5px solid #CBD5E1 !important;
-      padding: 5px 12px !important;
+
+    /* Executive Manila Navy & Gold Action Button (Eliminates AI neon-blue look) */
+    .btn-report-download,
+    .btn-report-action-view {
+      background: #0B2E59 !important;
+      color: #FFFFFF !important;
+      border: 1px solid #082242 !important;
+      padding: 6.5px 15px !important;
       border-radius: 8px !important;
-      font-size: 0.82rem !important;
+      font-size: 0.81rem !important;
       font-weight: 600 !important;
       display: inline-flex !important;
       align-items: center !important;
-      gap: 6px !important;
+      gap: 7px !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
-      transition: all 0.18s ease !important;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
       text-decoration: none !important;
+      box-shadow: 0 1px 3px rgba(11, 46, 89, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
     }
-    .btn-report-download:hover {
-      background: #0B2E59 !important;
+
+    .btn-report-download i,
+    .btn-report-action-view i {
+      color: #FCD34D !important;
+      /* Manila Gold */
+      font-size: 0.88rem !important;
+      transition: transform 0.2s ease, color 0.2s ease !important;
+    }
+
+    .btn-report-download:hover,
+    .btn-report-action-view:hover {
+      background: #123E75 !important;
+      border-color: #123E75 !important;
       color: #FFFFFF !important;
-      border-color: #0B2E59 !important;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 10px rgba(11, 46, 89, 0.15) !important;
+      box-shadow: 0 4px 12px rgba(11, 46, 89, 0.3) !important;
+      transform: translateY(-1px) !important;
     }
-    .btn-report-download:hover i {
-      color: #F59E0B !important;
+
+    .btn-report-download:hover i,
+    .btn-report-action-view:hover i {
+      color: #FDE047 !important;
+      transform: translateY(1px) scale(1.1) !important;
+    }
+
+    .btn-report-download:active,
+    .btn-report-action-view:active {
+      transform: translateY(0) !important;
+      box-shadow: 0 1px 2px rgba(11, 46, 89, 0.15) !important;
+    }
+
+    /* Clean Minimalist Policy Filter Toolbar */
+
+    .policy-search-box {
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 8px !important;
+      height: 40px !important;
+      display: flex !important;
+      align-items: center !important;
+      padding: 0 12px !important;
+      gap: 10px !important;
+      transition: all 0.18s ease !important;
+      flex-grow: 1 !important;
+      min-width: 250px !important;
+    }
+
+    .policy-search-box:focus-within {
+      background: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 0 0 3px rgba(11, 46, 89, 0.06) !important;
+    }
+
+    .policy-search-icon {
+      color: #94A3B8 !important;
+      font-size: 0.88rem !important;
+      flex-shrink: 0 !important;
+    }
+
+    .policy-search-input {
+      border: none !important;
+      background: transparent !important;
+      outline: none !important;
+      box-shadow: none !important;
+      width: 100% !important;
+      font-size: 0.86rem !important;
+      color: #1E293B !important;
+      padding: 0 !important;
+    }
+
+    .policy-search-input::placeholder {
+      color: #94A3B8 !important;
+      font-size: 0.85rem !important;
+      font-weight: 400 !important;
+    }
+
+    .policy-search-clear {
+      border: none !important;
+      background: transparent !important;
+      color: #94A3B8 !important;
+      padding: 0 !important;
+      font-size: 0.75rem !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      transition: color 0.15s ease !important;
+    }
+
+    .policy-search-clear:hover {
+      color: #334155 !important;
+    }
+
+    .policy-category-wrapper {
+      flex-shrink: 0 !important;
+      min-width: 165px !important;
+    }
+
+    .policy-category-select {
+      background-color: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 8px !important;
+      height: 40px !important;
+      font-size: 0.86rem !important;
+      color: #334155 !important;
+      font-weight: 500 !important;
+      padding: 0 32px 0 12px !important;
+      cursor: pointer !important;
+      box-shadow: none !important;
+      transition: all 0.18s ease !important;
+    }
+
+    .policy-category-select:focus,
+    .policy-category-select:hover {
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 0 0 3px rgba(11, 46, 89, 0.06) !important;
+    }
+
+    .policy-date-filter-btn {
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 8px !important;
+      height: 40px !important;
+      font-size: 0.86rem !important;
+      color: #334155 !important;
+      font-weight: 500 !important;
+      padding: 0 12px !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 10px !important;
+      min-width: 135px !important;
+      box-shadow: none !important;
+      white-space: nowrap !important;
+      transition: all 0.18s ease !important;
+    }
+
+    .policy-date-filter-btn:hover,
+    .policy-date-filter-btn:focus {
+      border-color: #CBD5E1 !important;
+      background: #F8FAFC !important;
+      color: #0F172A !important;
+      box-shadow: 0 0 0 3px rgba(11, 46, 89, 0.06) !important;
+    }
+
+    .policy-date-filter-btn #reportDateFilterIcon {
+      color: #475569 !important;
+      font-size: 0.86rem !important;
+    }
+
+    .policy-date-filter-btn .policy-chevron {
+      color: #94A3B8 !important;
+      font-size: 0.72rem !important;
+    }
+
+    /* Option 1: Civic Slate Metadata Chip (Structured, Neutral, High-End) */
+    .report-date-cell,
+    .report-date-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.81rem;
+      color: #334155;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 6px;
+      padding: 3.5px 9.5px !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .report-date-cell i,
+    .report-date-badge i {
+      color: #0B2E59 !important;
+      opacity: 0.78;
+      font-size: 0.8rem;
+      transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .report-date-cell:hover,
+    .report-date-badge:hover,
+    .clickable-report-row:hover .report-date-cell,
+    .clickable-report-row:hover .report-date-badge,
+    tr:hover .report-date-cell,
+    tr:hover .report-date-badge {
+      background: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 2px 5px rgba(11, 46, 89, 0.08) !important;
+      transform: translateY(-1px);
+    }
+
+    .clickable-report-row:hover .report-date-cell i,
+    .clickable-report-row:hover .report-date-badge i,
+    tr:hover .report-date-cell i,
+    tr:hover .report-date-badge i {
+      opacity: 1;
+      transform: scale(1.08);
+      color: #0B2E59 !important;
+    }
+
+    .clickable-report-row:hover .report-date-cell .report-date-text,
+    .clickable-report-row:hover .report-date-badge span,
+    tr:hover .report-date-cell .report-date-text,
+    tr:hover .report-date-badge span {
+      color: #0B2E59 !important;
+      font-weight: 600;
+    }
+
+    /* Refined Civic Category Badges (Light Background + Dark Text) - Compact & Sleek */
+    .category-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+
+    .category-badge-pill i {
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .clickable-report-row:hover .category-badge-pill,
+    tr:hover .category-badge-pill {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+    }
+
+    @keyframes spinReport {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spin-report-icon {
+      animation: spinReport 0.8s linear infinite !important;
+      display: inline-block !important;
     }
   </style>
 
@@ -167,28 +438,232 @@ unset($pol);
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <span class="badge bg-light text-secondary border rounded-pill px-3 py-2 fw-semibold" style="font-size: 0.82rem;">
-          <i class="bi bi-collection-fill text-primary me-1.5"></i><?= $total_report_count ?> Policies Available
+        <span class="badge border rounded-pill px-3 py-2 fw-semibold"
+          style="background: #EFF6FF; color: #0B2E59; border-color: #BFDBFE !important; font-size: 0.82rem;">
+          <i class="bi bi-collection-fill text-primary me-1.5"></i><span
+            id="reportPolicyAvailableCount"><?= $total_report_count ?></span> Policies Available
         </span>
       </div>
     </div>
+
+    <!-- Filter Bar: Live Search, Category & Date Filters -->
+    <div class="d-flex flex-wrap flex-md-nowrap align-items-center gap-2.5 mb-3">
+
+        <!-- Search Input -->
+        <div class="policy-search-box flex-grow-1">
+          <i class="bi bi-search policy-search-icon"></i>
+          <input type="text" id="reportPolicySearchInput" class="policy-search-input"
+            placeholder="Search policies by title, number or author..." aria-label="Search policies"
+            oninput="onReportPolicyFilterChange()">
+          <button type="button" class="policy-search-clear" id="reportPolicyClearSearchBtn" title="Clear search"
+            style="display: none;" onclick="clearReportPolicySearch()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <!-- All Categories Dropdown -->
+        <div class="policy-category-wrapper">
+          <select id="reportPolicyCategorySelect" class="form-select policy-category-select"
+            aria-label="Filter by category" onchange="onReportPolicyFilterChange()">
+            <option value="">All Categories</option>
+            <option value="Health and Sanitation">Health and Sanitation</option>
+            <option value="Civil Registry and Public Services">Civil Registry and Public Services</option>
+            <option value="Education and Employment">Education and Employment</option>
+            <option value="Social Welfare and Community Affairs">Social Welfare and Community Affairs</option>
+            <option value="Infrastructure, Traffic and Environment">Infrastructure, Traffic and Environment</option>
+            <option value="Other">Other</option>
+            <?php
+            $standardCats = [
+              'health and sanitation',
+              'civil registry and public services',
+              'education and employment',
+              'social welfare and community affairs',
+              'infrastructure, traffic and environment',
+              'other'
+            ];
+            $extraCats = [];
+            foreach ($report_policies as $p) {
+              $catName = trim($p['category'] ?? '');
+              if ($catName !== '' && !in_array(strtolower($catName), $standardCats) && !in_array($catName, $extraCats)) {
+                $extraCats[] = $catName;
+              }
+            }
+            foreach ($extraCats as $ec):
+              ?>
+              <option value="<?= htmlspecialchars($ec) ?>"><?= htmlspecialchars($ec) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <!-- Date Filter Dropdown -->
+        <div class="dropdown position-relative" id="reportDateFilterInputGroup" style="flex-shrink: 0;">
+          <button class="btn policy-date-filter-btn" type="button" id="reportDateFilterDropdownBtn"
+            onclick="toggleReportDateDropdown(event)">
+            <span class="d-inline-flex align-items-center gap-2">
+              <i class="bi bi-calendar3" id="reportDateFilterIcon"></i>
+              <span id="reportDateFilterLabel">Filter Date</span>
+              <span class="badge bg-primary rounded-pill px-2 py-0.5" id="reportDateFilterActiveBadge"
+                style="font-size: 0.68rem; display: none;">Active</span>
+            </span>
+            <i class="bi bi-chevron-down policy-chevron"></i>
+          </button>
+
+          <div class="dropdown-menu dropdown-menu-end shadow-lg border rounded-4 p-3"
+            id="reportDateFilterDropdownMenu"
+            style="width: 320px; z-index: 1060; position: absolute; right: 0; top: 100%; margin-top: 6px; display: none;"
+            aria-labelledby="reportDateFilterDropdownBtn">
+            <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom">
+              <span class="fw-bold small text-dark"><i class="bi bi-calendar3 me-1.5 text-primary"></i>Filter by
+                Date</span>
+              <a href="javascript:void(0);" id="reportDateResetLink"
+                onclick="applyReportDateFilter('', 'Filter Date');"
+                class="text-danger small text-decoration-none fw-semibold" style="display: none;">Reset</a>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="mb-3">
+              <div class="text-muted fw-semibold small mb-2"
+                style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Quick Presets</div>
+              <div class="d-flex flex-wrap gap-1.5" id="reportDatePresetGroup">
+                <button type="button" onclick="applyReportDateFilter('', 'All Dates')"
+                  class="btn btn-sm rounded-3 btn-primary text-white date-preset-btn" data-type=""
+                  style="font-size: 0.78rem;">All Dates</button>
+                <button type="button" onclick="applyReportDateFilter('today', 'Today')"
+                  class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="today"
+                  style="font-size: 0.78rem;">Today</button>
+                <button type="button" onclick="applyReportDateFilter('last_7_days', 'Last 7 Days')"
+                  class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="last_7_days"
+                  style="font-size: 0.78rem;">Last 7 Days</button>
+                <button type="button" onclick="applyReportDateFilter('last_30_days', 'Last 30 Days')"
+                  class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="last_30_days"
+                  style="font-size: 0.78rem;">Last 30 Days</button>
+                <button type="button" onclick="applyReportDateFilter('this_month', 'This Month')"
+                  class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="this_month"
+                  style="font-size: 0.78rem;">This Month</button>
+                <button type="button" onclick="applyReportDateFilter('last_month', 'Last Month')"
+                  class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="last_month"
+                  style="font-size: 0.78rem;">Last Month</button>
+              </div>
+            </div>
+
+            <!-- By Year -->
+            <div class="mb-3">
+              <div class="text-muted fw-semibold small mb-2"
+                style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">By Year</div>
+              <div class="d-flex gap-1.5" id="reportDateYearGroup">
+                <button type="button" onclick="applyReportDateFilter('2026', '2026')"
+                  class="btn btn-sm rounded-3 flex-fill btn-light text-dark border date-preset-btn" data-type="2026"
+                  style="font-size: 0.78rem;">2026</button>
+                <button type="button" onclick="applyReportDateFilter('2025', '2025')"
+                  class="btn btn-sm rounded-3 flex-fill btn-light text-dark border date-preset-btn" data-type="2025"
+                  style="font-size: 0.78rem;">2025</button>
+                <button type="button" onclick="applyReportDateFilter('2024', '2024')"
+                  class="btn btn-sm rounded-3 flex-fill btn-light text-dark border date-preset-btn" data-type="2024"
+                  style="font-size: 0.78rem;">2024</button>
+              </div>
+            </div>
+
+            <!-- Custom Range -->
+            <div class="pt-2 border-top">
+              <div class="text-muted fw-semibold small mb-2"
+                style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Custom Range</div>
+              <div class="row g-1.5 mb-2">
+                <div class="col-6">
+                  <input type="date" id="reportCustomDateFrom" class="form-control form-control-sm rounded-2"
+                    style="font-size: 0.75rem;" placeholder="From">
+                </div>
+                <div class="col-6">
+                  <input type="date" id="reportCustomDateTo" class="form-control form-control-sm rounded-2"
+                    style="font-size: 0.75rem;" placeholder="To">
+                </div>
+              </div>
+              <button type="button" onclick="applyReportCustomDateRange()"
+                class="btn btn-primary btn-sm rounded-3 w-100 fw-semibold" style="font-size: 0.8rem;">
+                <i class="bi bi-check2 me-1"></i> Apply Range
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0" style="font-size:0.88rem;">
-        <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+        <thead class="policy-table-thead">
           <tr>
-            <th class="py-3.5 text-uppercase text-dark fw-bold"
-              style="width: 44%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Policy Title</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold"
-              style="width: 22%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Category</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold"
-              style="width: 16%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Date Uploaded</th>
-            <th class="py-3.5 text-center text-uppercase text-dark fw-bold"
-              style="width: 18%; font-size: 0.85rem; letter-spacing: 0.03em; color: #000000 !important;">Action</th>
+            <th class="py-3 px-3 text-uppercase" style="width: 44%;">Policy Title</th>
+            <th class="py-3 px-3 text-uppercase" style="width: 22%;">Category</th>
+            <th class="py-3 px-3 text-uppercase" style="width: 16%;">Date Uploaded</th>
+            <th class="py-3 px-3 text-center text-uppercase" style="width: 18%;">Action</th>
           </tr>
         </thead>
         <tbody id="reportPolicyTableBody">
-          <?php foreach ($report_policies as $i => $pol):
+          <?php
+          if (!function_exists('renderPolicyCategoryBadge')) {
+            function renderPolicyCategoryBadge($category)
+            {
+              $cat = trim($category ?? '');
+              $lower = strtolower($cat);
+
+              // Exact requested color pairs (light background + dark text):
+              // 1. Health and Sanitation (#E1F5EE, #085041)
+              if (strpos($lower, 'health') !== false || strpos($lower, 'sanitation') !== false || strpos($lower, 'medical') !== false) {
+                $bg = '#E1F5EE';
+                $text = '#085041';
+                $border = '#9FE1CB';
+                $icon = 'bi-heart-pulse-fill';
+                $label = !empty($cat) ? $cat : 'Health and Sanitation';
+              }
+              // 2. Civil Registry and Public Services (#E6F1FB, #0C447C)
+              elseif (strpos($lower, 'civil') !== false || strpos($lower, 'registry') !== false || strpos($lower, 'public service') !== false || strpos($lower, 'governance') !== false || strpos($lower, 'legal') !== false) {
+                $bg = '#E6F1FB';
+                $text = '#0C447C';
+                $border = '#B5D7F8';
+                $icon = 'bi-file-earmark-person-fill';
+                $label = !empty($cat) ? $cat : 'Civil Registry and Public Services';
+              }
+              // 3. Education and Employment (#EEEDFE, #3C3489)
+              elseif (strpos($lower, 'education') !== false || strpos($lower, 'employment') !== false || strpos($lower, 'school') !== false || strpos($lower, 'labor') !== false || strpos($lower, 'livelihood') !== false) {
+                $bg = '#EEEDFE';
+                $text = '#3C3489';
+                $border = '#CBC6FC';
+                $icon = 'bi-mortarboard-fill';
+                $label = !empty($cat) ? $cat : 'Education and Employment';
+              }
+              // 4. Social Welfare and Community Affairs (#FAECE7, #712B13)
+              elseif (strpos($lower, 'social') !== false || strpos($lower, 'welfare') !== false || strpos($lower, 'community') !== false) {
+                $bg = '#FAECE7';
+                $text = '#712B13';
+                $border = '#F3C4B6';
+                $icon = 'bi-people-fill';
+                $label = !empty($cat) ? $cat : 'Social Welfare and Community Affairs';
+              }
+              // 5. Infrastructure, Traffic and Environment (#EAF3DE, #27500A)
+              elseif (strpos($lower, 'infrastructure') !== false || strpos($lower, 'traffic') !== false || strpos($lower, 'environment') !== false || strpos($lower, 'transport') !== false || strpos($lower, 'mobility') !== false) {
+                $bg = '#EAF3DE';
+                $text = '#27500A';
+                $border = '#C8E2AE';
+                $icon = 'bi-buildings';
+                $label = !empty($cat) ? $cat : 'Infrastructure, Traffic and Environment';
+              }
+              // 6. Other (#F1EFE8, #444441)
+              else {
+                $bg = '#F1EFE8';
+                $text = '#444441';
+                $border = '#DCD7C9';
+                $icon = 'bi-tag-fill';
+                $label = !empty($cat) ? $cat : 'Other';
+              }
+
+              return '<span class="category-badge-pill" style="background-color: ' . $bg . ' !important; color: ' . $text . ' !important; border: 1px solid ' . $border . ' !important;" title="' . htmlspecialchars($label) . '">' .
+                '<i class="bi ' . $icon . '" style="color: ' . $text . ' !important; opacity: 0.9;"></i>' .
+                '<span>' . htmlspecialchars($label) . '</span>' .
+                '</span>';
+            }
+          }
+          foreach ($report_policies as $i => $pol):
             $dateStr = !empty($pol['created_at']) ? date('M d, Y', strtotime($pol['created_at'])) : '—';
+            $dateYmd = !empty($pol['created_at']) ? date('Y-m-d', strtotime($pol['created_at'])) : '';
             $isFirst = ($i === 0);
 
             $rawSummary = $pol['ai_summary'] ?? '';
@@ -240,54 +715,76 @@ unset($pol);
             ?>
             <tr class="report-policy-row clickable-report-row" style="cursor:pointer;"
               data-eval-state="<?= $eval_state ?>"
-              data-policy='<?= htmlspecialchars($policyJson, ENT_QUOTES, 'UTF-8') ?>'
+              data-title="<?= htmlspecialchars(strtolower(trim($pol['title'] ?? '')), ENT_QUOTES, 'UTF-8') ?>"
+              data-author="<?= htmlspecialchars(strtolower(trim($pol['author'] ?? '')), ENT_QUOTES, 'UTF-8') ?>"
+              data-number="<?= htmlspecialchars(strtolower(trim($pol['ordinance_number'] ?? '')), ENT_QUOTES, 'UTF-8') ?>"
+              data-category="<?= htmlspecialchars(strtolower(trim($pol['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>"
+              data-date="<?= $dateYmd ?>" data-policy='<?= htmlspecialchars($policyJson, ENT_QUOTES, 'UTF-8') ?>'
               onclick="openPolicyRowReport(this)">
-              <td class="py-3">
+              <td class="py-3 px-3">
                 <div class="d-flex align-items-center gap-2.5">
                   <div
                     class="rounded-3 p-1.5 <?= $is_approved ? 'bg-primary bg-opacity-10 text-primary' : 'bg-warning bg-opacity-10 text-warning' ?> d-flex align-items-center justify-content-center flex-shrink-0"
                     style="width: 32px; height: 32px;">
                     <i class="bi <?= $is_approved ? 'bi-file-earmark-check-fill' : 'bi-file-earmark-text' ?> fs-6"></i>
                   </div>
-                  <div>
-                    <a href="javascript:void(0)" class="fw-bold text-dark text-decoration-none policy-title-link"
+                  <div class="min-w-0">
+                    <a href="javascript:void(0)"
+                      class="fw-semibold text-dark text-decoration-none policy-title-link text-truncate d-block"
                       onclick="event.stopPropagation(); openPolicyRowReport(this.closest('tr'));">
                       <?= htmlspecialchars($pol['title']) ?>
                     </a>
                   </div>
                 </div>
               </td>
-              <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs"
-                  style="background-color: #0d6efd !important; font-size: 0.78rem;">
-                  <?= htmlspecialchars($pol['category'] ?? '—') ?>
-                </span>
+              <td class="py-3 px-3">
+                <?= renderPolicyCategoryBadge($pol['category'] ?? '') ?>
               </td>
 
-              <td class="text-secondary fw-medium py-3">
-                <i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i><?= $dateStr ?>
+              <td class="py-3 px-3">
+                <div class="report-date-cell">
+                  <i class="bi bi-calendar3"></i>
+                  <span class="report-date-text"><?= $dateStr ?></span>
+                </div>
               </td>
-              <td class="text-center py-3">
+              <td class="text-center py-3 px-3">
                 <button type="button" class="btn btn-sm btn-report-download"
                   onclick="event.stopPropagation(); openPolicyRowReport(this.closest('tr'));"
                   title="Download / View Official Legislative Report">
-                  <i class="bi bi-download text-primary"></i>
+                  <i class="bi bi-download"></i>
                   <span>Download / View</span>
                 </button>
               </td>
             </tr>
           <?php endforeach; ?>
+          <tr id="reportPolicyNoDataRow" style="display: none;">
+            <td colspan="4" class="text-center py-5 text-muted bg-white">
+              <div class="py-3">
+                <i class="bi bi-search text-secondary opacity-50 d-block mb-2" style="font-size: 2rem;"></i>
+                <h6 class="fw-bold text-dark mb-1">No matching policies found</h6>
+                <p class="small text-muted mb-0">Try adjusting your search query or selecting a different category.</p>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
     <div class="d-flex align-items-center justify-content-between pt-1">
-      <small class="text-muted fw-medium" id="reportPoliciesSummaryText">Showing 1 to <?= min(10, count($report_policies)) ?> of <?= count($report_policies) ?> records</small>
+      <small class="text-muted fw-medium" id="reportPoliciesSummaryText">Showing 1 to
+        <?= min(10, count($report_policies)) ?> of <?= count($report_policies) ?> records</small>
       <div class="d-flex align-items-center gap-1" id="reportPolicyPagination">
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyPrevBtn" onclick="changeReportPolicyPage(-1)" title="Previous page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyPrevBtn"
+          onclick="changeReportPolicyPage(-1)" title="Previous page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-left"></i></button>
         <div id="reportPolicyPageNumbers" class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
+          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold"
+            style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
         </div>
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyNextBtn" onclick="changeReportPolicyPage(1)" title="Next page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-right"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyNextBtn"
+          onclick="changeReportPolicyPage(1)" title="Next page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-right"></i></button>
       </div>
     </div>
 
@@ -315,7 +812,8 @@ unset($pol);
       </div>
     </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-2">
-      <table class="table table-hover align-middle mb-0" id="recentGeneratedReportsTable" style="font-size:0.88rem; table-layout: fixed; width: 100%;">
+      <table class="table table-hover align-middle mb-0" id="recentGeneratedReportsTable"
+        style="font-size:0.88rem; table-layout: fixed; width: 100%;">
         <colgroup>
           <col style="width: 28%;">
           <col style="width: 32%;">
@@ -345,11 +843,18 @@ unset($pol);
     <div class="d-flex align-items-center justify-content-between pt-2">
       <small class="text-muted fw-medium" id="recentGeneratedReportsCount">Showing 0 records</small>
       <div class="d-flex align-items-center gap-1" id="recentReportsPagination">
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentReportsPrevBtn" onclick="changeRecentReportsPage(-1)" title="Previous page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn"
+          id="recentReportsPrevBtn" onclick="changeRecentReportsPage(-1)" title="Previous page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-left"></i></button>
         <div id="recentReportsPageNumbers" class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
+          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold"
+            style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
         </div>
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentReportsNextBtn" onclick="changeRecentReportsPage(1)" title="Next page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-right"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn"
+          id="recentReportsNextBtn" onclick="changeRecentReportsPage(1)" title="Next page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -361,36 +866,48 @@ unset($pol);
         <div class="modal-header border-bottom px-4 py-3 bg-light d-flex align-items-center justify-content-between">
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-file-earmark-text-fill text-primary fs-5"></i>
-            <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative Document</h5>
+            <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative
+              Document</h5>
           </div>
           <div class="d-flex align-items-center gap-2">
             <!-- View Original Document Button -->
-            <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs" id="reportModalViewOriginalBtn" title="Open the original uploaded source document">
+            <button type="button"
+              class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
+              id="reportModalViewOriginalBtn" title="Open the original uploaded source document">
               <i class="bi bi-box-arrow-up-right"></i> View Original
             </button>
             <!-- Download PDF -->
-            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" id="reportModalDownloadPdfBtn">
+            <button type="button"
+              class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
+              id="reportModalDownloadPdfBtn">
               <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
             </button>
             <!-- Download Word -->
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs" id="reportModalDownloadDocxBtn">
+            <button type="button"
+              class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs"
+              id="reportModalDownloadDocxBtn">
               <i class="bi bi-file-earmark-word-fill text-primary"></i> Word (.docx)
             </button>
             <!-- Print Button -->
-            <button type="button" class="btn btn-sm text-white rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn" title="Print Document">
+            <button type="button"
+              class="btn btn-sm text-white rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
+              style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn" title="Print Document">
               <i class="bi bi-printer-fill"></i> Print
             </button>
             <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
         </div>
         <div class="modal-body p-4 p-md-4" style="max-height: 75vh; overflow-y: auto; background:#f8fafc;">
-          <div id="reportViewerModalDocumentBody" class="bg-white p-4 rounded-3 border shadow-sm mx-auto" style="max-width: 740px;">
+          <div id="reportViewerModalDocumentBody" class="bg-white p-4 rounded-3 border shadow-sm mx-auto"
+            style="max-width: 740px;">
             <!-- Rendered document will be injected here -->
           </div>
         </div>
         <div class="modal-footer border-top px-4 py-2.5 bg-light d-flex align-items-center justify-content-between">
-          <span class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i> Official City Council of Manila Legislative Document</span>
-          <button type="button" class="btn btn-sm btn-secondary rounded-3 px-3.5 py-1.5 fw-medium" data-bs-dismiss="modal">Close</button>
+          <span class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i> Official City Council of
+            Manila Legislative Document</span>
+          <button type="button" class="btn btn-sm btn-secondary rounded-3 px-3.5 py-1.5 fw-medium"
+            data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -1042,12 +1559,12 @@ unset($pol);
         '<td class="py-2.5 px-3 text-nowrap">' +
         typeBadge +
         '</td>' +
-        '<td class="py-2.5 px-3 text-muted small text-nowrap">' +
-        '<i class="bi bi-calendar3 me-1.5 text-muted"></i>' + esc(r.date_generated) +
+        '<td class="py-2.5 px-3 text-nowrap">' +
+        '<span class="report-date-badge"><i class="bi bi-calendar3"></i><span>' + esc(r.date_generated) + '</span></span>' +
         '</td>' +
         '<td class="py-2.5 px-3 text-end text-nowrap">' +
         '<button type="button" class="btn btn-sm btn-report-download" onclick="downloadRecentGeneratedReport(' + downloadIdx + ')">' +
-        '<i class="bi bi-download text-primary"></i>' +
+        '<i class="bi bi-download"></i>' +
         '<span>Download / View</span>' +
         '</button>' +
         '</td>' +
@@ -1120,25 +1637,223 @@ unset($pol);
     };
   }
 
-  var _reportPolicyFilter = 'all';
   var _reportPolicyCurrentPage = 1;
   var _reportPolicyPageSize = 10;
+  var _reportPolicyDateFilter = {
+    type: '',
+    from: '',
+    to: '',
+    label: 'Filter Date'
+  };
 
-  function filterReportPolicies(type, btn) {
-    _reportPolicyFilter = type || 'all';
+  function toggleReportDateDropdown(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    var menu = document.getElementById('reportDateFilterDropdownMenu');
+    var btn = document.getElementById('reportDateFilterDropdownBtn');
+    if (!menu) return;
+    var isOpen = (menu.style.display === 'block' || menu.classList.contains('show'));
+    if (isOpen) {
+      menu.classList.remove('show');
+      menu.style.display = 'none';
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    } else {
+      menu.classList.add('show');
+      menu.style.display = 'block';
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  function closeReportDateDropdown() {
+    var menu = document.getElementById('reportDateFilterDropdownMenu');
+    var btn = document.getElementById('reportDateFilterDropdownBtn');
+    if (menu) {
+      menu.classList.remove('show');
+      menu.style.display = 'none';
+    }
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+
+  document.addEventListener('click', function (e) {
+    var menu = document.getElementById('reportDateFilterDropdownMenu');
+    var group = document.getElementById('reportDateFilterInputGroup');
+    if (menu && (menu.style.display === 'block' || menu.classList.contains('show'))) {
+      if (!menu.contains(e.target) && (!group || !group.contains(e.target))) {
+        closeReportDateDropdown();
+      }
+    }
+  });
+
+  function applyReportDateFilter(type, label) {
+    _reportPolicyDateFilter.type = type || '';
+    _reportPolicyDateFilter.from = '';
+    _reportPolicyDateFilter.to = '';
+    _reportPolicyDateFilter.label = label || 'Filter Date';
+
+    // Reset custom date inputs
+    var fromInput = document.getElementById('reportCustomDateFrom');
+    var toInput = document.getElementById('reportCustomDateTo');
+    if (fromInput) fromInput.value = '';
+    if (toInput) toInput.value = '';
+
+    updateReportDateFilterUI();
     _reportPolicyCurrentPage = 1;
+    renderReportPolicyPagination();
 
-    var group = btn ? btn.closest('#reportPolicyFilterGroup') : document.getElementById('reportPolicyFilterGroup');
-    if (group && btn) {
-      var btns = group.querySelectorAll('.policy-filter-tab');
-      btns.forEach(function(b) {
-        b.classList.remove('active', 'btn-primary', 'text-white');
-        b.classList.add('text-secondary');
-      });
-      btn.classList.add('active', 'btn-primary', 'text-white');
-      btn.classList.remove('text-secondary');
+    closeReportDateDropdown();
+  }
+
+  function applyReportCustomDateRange() {
+    var fromInput = document.getElementById('reportCustomDateFrom');
+    var toInput = document.getElementById('reportCustomDateTo');
+    var fromVal = fromInput ? fromInput.value.trim() : '';
+    var toVal = toInput ? toInput.value.trim() : '';
+
+    if (!fromVal && !toVal) {
+      applyReportDateFilter('', 'Filter Date');
+      return;
     }
 
+    _reportPolicyDateFilter.type = 'custom';
+    _reportPolicyDateFilter.from = fromVal;
+    _reportPolicyDateFilter.to = toVal;
+    _reportPolicyDateFilter.label = (fromVal && toVal) ? (fromVal + ' to ' + toVal) : (fromVal ? 'From ' + fromVal : 'Until ' + toVal);
+
+    updateReportDateFilterUI();
+    _reportPolicyCurrentPage = 1;
+    renderReportPolicyPagination();
+
+    closeReportDateDropdown();
+  }
+
+  function updateReportDateFilterUI() {
+    var hasActive = (_reportPolicyDateFilter.type !== '' || _reportPolicyDateFilter.from || _reportPolicyDateFilter.to);
+    var labelEl = document.getElementById('reportDateFilterLabel');
+    var badgeEl = document.getElementById('reportDateFilterActiveBadge');
+    var resetLink = document.getElementById('reportDateResetLink');
+    var btn = document.getElementById('reportDateFilterDropdownBtn');
+    var icon = document.getElementById('reportDateFilterIcon') || document.getElementById('reportDateFilterAddonIcon');
+
+    if (labelEl) {
+      labelEl.textContent = hasActive ? _reportPolicyDateFilter.label : 'Filter Date';
+    }
+    if (badgeEl) {
+      badgeEl.style.display = hasActive ? 'inline-block' : 'none';
+    }
+    if (resetLink) {
+      resetLink.style.display = hasActive ? 'inline' : 'none';
+    }
+    if (icon) {
+      icon.className = hasActive ? 'bi bi-calendar3-fill text-primary' : 'bi bi-calendar3';
+    }
+    if (btn) {
+      if (hasActive) {
+        btn.classList.add('border-primary', 'bg-primary', 'bg-opacity-10', 'text-primary');
+        btn.classList.remove('text-dark');
+      } else {
+        btn.classList.remove('border-primary', 'bg-primary', 'bg-opacity-10', 'text-primary');
+        btn.classList.add('text-dark');
+      }
+    }
+
+    // Highlight active preset button
+    document.querySelectorAll('#reportDatePresetGroup .date-preset-btn, #reportDateYearGroup .date-preset-btn').forEach(function (b) {
+      var btnType = b.getAttribute('data-type');
+      if (btnType === _reportPolicyDateFilter.type) {
+        b.classList.remove('btn-light', 'text-dark', 'border');
+        b.classList.add('btn-primary', 'text-white');
+      } else {
+        b.classList.remove('btn-primary', 'text-white');
+        b.classList.add('btn-light', 'text-dark', 'border');
+      }
+    });
+  }
+
+  function rowMatchesDateFilter(rowDateStr) {
+    if (!_reportPolicyDateFilter || !_reportPolicyDateFilter.type) return true;
+    if (!rowDateStr) return false;
+
+    var rowParts = rowDateStr.split('-');
+    if (rowParts.length !== 3) return false;
+    var rowYear = parseInt(rowParts[0], 10);
+    var rowMonth = parseInt(rowParts[1], 10);
+    var rowDay = parseInt(rowParts[2], 10);
+
+    var rowDate = new Date(rowYear, rowMonth - 1, rowDay, 0, 0, 0);
+
+    var now = new Date();
+    var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    var todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    switch (_reportPolicyDateFilter.type) {
+      case 'today':
+        return rowDate >= todayStart && rowDate <= todayEnd;
+
+      case 'last_7_days':
+        var d7 = new Date(todayStart);
+        d7.setDate(d7.getDate() - 7);
+        return rowDate >= d7 && rowDate <= todayEnd;
+
+      case 'last_30_days':
+        var d30 = new Date(todayStart);
+        d30.setDate(d30.getDate() - 30);
+        return rowDate >= d30 && rowDate <= todayEnd;
+
+      case 'this_month':
+        return rowYear === now.getFullYear() && (rowMonth - 1) === now.getMonth();
+
+      case 'last_month':
+        var lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        return rowYear === lastMonthDate.getFullYear() && (rowMonth - 1) === lastMonthDate.getMonth();
+
+      case '2026':
+        return rowYear === 2026;
+      case '2025':
+        return rowYear === 2025;
+      case '2024':
+        return rowYear === 2024;
+
+      case 'custom':
+        var fromDate = _reportPolicyDateFilter.from ? new Date(_reportPolicyDateFilter.from + 'T00:00:00') : null;
+        var toDate = _reportPolicyDateFilter.to ? new Date(_reportPolicyDateFilter.to + 'T23:59:59') : null;
+        if (fromDate && toDate) {
+          return rowDate >= fromDate && rowDate <= toDate;
+        } else if (fromDate) {
+          return rowDate >= fromDate;
+        } else if (toDate) {
+          return rowDate <= toDate;
+        }
+        return true;
+
+      default:
+        return true;
+    }
+  }
+
+  function onReportPolicyFilterChange() {
+    var searchInput = document.getElementById('reportPolicySearchInput');
+    var clearBtn = document.getElementById('reportPolicyClearSearchBtn');
+    if (clearBtn && searchInput) {
+      clearBtn.style.display = searchInput.value.trim() ? 'inline-flex' : 'none';
+    }
+
+    _reportPolicyCurrentPage = 1;
+    renderReportPolicyPagination();
+  }
+
+  function clearReportPolicySearch() {
+    var searchInput = document.getElementById('reportPolicySearchInput');
+    var clearBtn = document.getElementById('reportPolicyClearSearchBtn');
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.focus();
+    }
+    if (clearBtn) {
+      clearBtn.style.display = 'none';
+    }
+    _reportPolicyCurrentPage = 1;
     renderReportPolicyPagination();
   }
 
@@ -1153,11 +1868,40 @@ unset($pol);
 
   function renderReportPolicyPagination() {
     var allRows = Array.from(document.querySelectorAll('#reportPolicyTableBody .report-policy-row'));
-    if (!allRows.length) return;
+    var noDataRow = document.getElementById('reportPolicyNoDataRow');
+    if (!allRows.length && !noDataRow) return;
 
-    var matchingRows = allRows.filter(function(r) {
-      var state = r.getAttribute('data-eval-state');
-      return (_reportPolicyFilter === 'all' || state === _reportPolicyFilter);
+    var searchInput = document.getElementById('reportPolicySearchInput');
+    var categorySelect = document.getElementById('reportPolicyCategorySelect');
+
+    var query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    var selectedCat = categorySelect ? categorySelect.value.toLowerCase().trim() : '';
+
+    // Filter rows by Title, Number, Author, Category, and Date simultaneously
+    var matchingRows = allRows.filter(function (r) {
+      var rowTitle = (r.getAttribute('data-title') || (r.querySelector('.policy-title-link') ? r.querySelector('.policy-title-link').textContent : '')).toLowerCase().trim();
+      var rowAuthor = (r.getAttribute('data-author') || '').toLowerCase().trim();
+      var rowNumber = (r.getAttribute('data-number') || '').toLowerCase().trim();
+      var rowCat = (r.getAttribute('data-category') || (r.querySelector('.badge') ? r.querySelector('.badge').textContent : '')).toLowerCase().trim();
+      var rowDate = (r.getAttribute('data-date') || '').trim();
+
+      var matchSearch = !query || rowTitle.indexOf(query) !== -1 || rowAuthor.indexOf(query) !== -1 || rowNumber.indexOf(query) !== -1;
+      var matchCategory = true;
+      if (selectedCat) {
+        if (selectedCat === 'other') {
+          var isStd = (rowCat.indexOf('health') !== -1 || rowCat.indexOf('sanitation') !== -1 ||
+            rowCat.indexOf('civil') !== -1 || rowCat.indexOf('registry') !== -1 ||
+            rowCat.indexOf('education') !== -1 || rowCat.indexOf('employment') !== -1 ||
+            rowCat.indexOf('social') !== -1 || rowCat.indexOf('welfare') !== -1 ||
+            rowCat.indexOf('infrastructure') !== -1 || rowCat.indexOf('traffic') !== -1 || rowCat.indexOf('environment') !== -1);
+          matchCategory = !isStd || rowCat === 'other';
+        } else {
+          matchCategory = (rowCat === selectedCat) || (rowCat.indexOf(selectedCat) !== -1) || (selectedCat.indexOf(rowCat) !== -1);
+        }
+      }
+      var matchDate = rowMatchesDateFilter(rowDate);
+
+      return matchSearch && matchCategory && matchDate;
     });
 
     var totalMatching = matchingRows.length;
@@ -1169,7 +1913,8 @@ unset($pol);
     var startIdx = (_reportPolicyCurrentPage - 1) * _reportPolicyPageSize;
     var endIdx = Math.min(startIdx + _reportPolicyPageSize, totalMatching);
 
-    allRows.forEach(function(r) {
+    // Show/hide matching rows based on current page
+    allRows.forEach(function (r) {
       var matchIdx = matchingRows.indexOf(r);
       if (matchIdx >= startIdx && matchIdx < endIdx) {
         r.style.display = '';
@@ -1178,6 +1923,18 @@ unset($pol);
       }
     });
 
+    // Show or hide "No matching policies found" row
+    if (noDataRow) {
+      noDataRow.style.display = totalMatching === 0 ? '' : 'none';
+    }
+
+    // Update "X Policies Available" badge counter
+    var counterEl = document.getElementById('reportPolicyAvailableCount');
+    if (counterEl) {
+      counterEl.textContent = totalMatching;
+    }
+
+    // Update summary text: e.g. "Showing 1 to 10 of 11 records"
     var summaryEl = document.getElementById('reportPoliciesSummaryText');
     if (summaryEl) {
       if (totalMatching === 0) {
@@ -1187,6 +1944,7 @@ unset($pol);
       }
     }
 
+    // Update Previous button state
     var prevBtn = document.getElementById('reportPolicyPrevBtn');
     if (prevBtn) {
       prevBtn.disabled = (_reportPolicyCurrentPage <= 1);
@@ -1197,16 +1955,18 @@ unset($pol);
       }
     }
 
+    // Update Next button state
     var nextBtn = document.getElementById('reportPolicyNextBtn');
     if (nextBtn) {
-      nextBtn.disabled = (_reportPolicyCurrentPage >= totalPages);
-      if (_reportPolicyCurrentPage >= totalPages) {
+      nextBtn.disabled = (_reportPolicyCurrentPage >= totalPages || totalMatching === 0);
+      if (_reportPolicyCurrentPage >= totalPages || totalMatching === 0) {
         nextBtn.classList.add('opacity-50');
       } else {
         nextBtn.classList.remove('opacity-50');
       }
     }
 
+    // Render pagination page buttons
     var pagesContainer = document.getElementById('reportPolicyPageNumbers');
     if (pagesContainer) {
       var pagesHtml = '';
@@ -1219,7 +1979,10 @@ unset($pol);
     }
   }
 
-  window.filterReportPolicies = filterReportPolicies;
+  window.applyReportDateFilter = applyReportDateFilter;
+  window.applyReportCustomDateRange = applyReportCustomDateRange;
+  window.onReportPolicyFilterChange = onReportPolicyFilterChange;
+  window.clearReportPolicySearch = clearReportPolicySearch;
   window.changeReportPolicyPage = changeReportPolicyPage;
   window.goToReportPolicyPage = goToReportPolicyPage;
   window.renderReportPolicyPagination = renderReportPolicyPagination;
@@ -1272,7 +2035,7 @@ unset($pol);
     _activeModalReport = rep;
     var cleanTitle = ((rep.title || rep.policy_title || 'Policy').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '_'));
     _activeModalFileName = fileName || (cleanTitle + '_Report.pdf');
-    
+
     var logoUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/admin/')) + '/assets/images/manilacityhall.svg';
     var htmlContent = buildSharedReportTemplate(rep, logoUrl);
 
@@ -1287,17 +2050,17 @@ unset($pol);
       const pId = rep.id || rep.policy_id;
       if (pId) {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = function() {
+        viewOrigBtn.onclick = function () {
           window.open('../backend/view_policy_document.php?id=' + encodeURIComponent(pId), '_blank');
         };
       } else if (rep.file_path && rep.file_path.trim() !== '') {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = function() {
+        viewOrigBtn.onclick = function () {
           window.open('../assets/uploads/policies/' + encodeURIComponent(rep.file_path), '_blank');
         };
       } else {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = function() {
+        viewOrigBtn.onclick = function () {
           alert('No uploaded source document attachment is associated with this policy record.');
         };
       }
@@ -1305,14 +2068,14 @@ unset($pol);
 
     var pdfBtn = document.getElementById('reportModalDownloadPdfBtn');
     if (pdfBtn) {
-      pdfBtn.onclick = function() {
+      pdfBtn.onclick = function () {
         saveReportAsPDF(_activeModalFileName, _activeModalReport);
       };
     }
 
     var docxBtn = document.getElementById('reportModalDownloadDocxBtn');
     if (docxBtn) {
-      docxBtn.onclick = function() {
+      docxBtn.onclick = function () {
         var docxName = _activeModalFileName.replace(/\.pdf$/i, '') + '.docx';
         generateWordDoc(docxName, _activeModalReport);
       };
@@ -1320,7 +2083,7 @@ unset($pol);
 
     var printBtn = document.getElementById('reportModalPrintBtn');
     if (printBtn) {
-      printBtn.onclick = function() {
+      printBtn.onclick = function () {
         printSelectedReport(_activeModalReport);
       };
     }

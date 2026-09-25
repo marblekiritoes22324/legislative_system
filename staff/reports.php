@@ -77,6 +77,18 @@ unset($pol);
   </div>
 
   <style>
+    /* Deep Manila Navy Table Header */
+    .policy-table-thead th {
+      background-color: #0B2E59 !important;
+      color: #FFFFFF !important;
+      font-size: 0.82rem !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.05em !important;
+      border-bottom: 2.5px solid #082242 !important;
+      border-top: none !important;
+      vertical-align: middle !important;
+    }
+
     .pagination-step-btn {
       width: 32px !important;
       height: 32px !important;
@@ -93,25 +105,32 @@ unset($pol);
       transition: all 0.15s ease !important;
       box-sizing: border-box !important;
     }
+
     .clickable-report-row {
       transition: background-color 0.15s ease, transform 0.1s ease;
     }
+
     .clickable-report-row:hover {
       background-color: #f1f5f9 !important;
     }
+
     .clickable-report-row:hover .policy-title-link {
       color: #0d6efd !important;
       text-decoration: underline !important;
     }
+
     body.dark-theme .clickable-report-row:hover {
       background-color: #1e293b !important;
     }
+
     body.dark-theme .clickable-report-row .policy-title-link {
       color: #f8fafc !important;
     }
+
     body.dark-theme .clickable-report-row:hover .policy-title-link {
       color: #60a5fa !important;
     }
+
     .badge-report-type {
       display: inline-flex;
       align-items: center;
@@ -125,32 +144,138 @@ unset($pol);
       border: 1px solid #DBEAFE;
       white-space: nowrap;
     }
-    .btn-report-download {
-      background: #FFFFFF !important;
-      color: #0B2E59 !important;
-      border: 1.5px solid #CBD5E1 !important;
-      padding: 5px 12px !important;
+
+    /* Executive Manila Navy & Gold Action Button (Eliminates AI neon-blue look) */
+    .btn-report-download,
+    .btn-report-action-view {
+      background: #0B2E59 !important;
+      color: #FFFFFF !important;
+      border: 1px solid #082242 !important;
+      padding: 6.5px 15px !important;
       border-radius: 8px !important;
-      font-size: 0.82rem !important;
+      font-size: 0.81rem !important;
       font-weight: 600 !important;
       display: inline-flex !important;
       align-items: center !important;
-      gap: 6px !important;
+      gap: 7px !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
-      transition: all 0.18s ease !important;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
       text-decoration: none !important;
+      box-shadow: 0 1px 3px rgba(11, 46, 89, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
     }
-    .btn-report-download:hover {
-      background: #0B2E59 !important;
+
+    .btn-report-download i,
+    .btn-report-action-view i {
+      color: #FCD34D !important;
+      /* Manila Gold */
+      font-size: 0.88rem !important;
+      transition: transform 0.2s ease, color 0.2s ease !important;
+    }
+
+    .btn-report-download:hover,
+    .btn-report-action-view:hover {
+      background: #123E75 !important;
+      border-color: #123E75 !important;
       color: #FFFFFF !important;
-      border-color: #0B2E59 !important;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 10px rgba(11, 46, 89, 0.15) !important;
+      box-shadow: 0 4px 12px rgba(11, 46, 89, 0.3) !important;
+      transform: translateY(-1px) !important;
     }
-    .btn-report-download:hover i {
-      color: #F59E0B !important;
+
+    .btn-report-download:hover i,
+    .btn-report-action-view:hover i {
+      color: #FDE047 !important;
+      transform: translateY(1px) scale(1.1) !important;
+    }
+
+    .btn-report-download:active,
+    .btn-report-action-view:active {
+      transform: translateY(0) !important;
+      box-shadow: 0 1px 2px rgba(11, 46, 89, 0.15) !important;
+    }
+
+    /* Option 1: Civic Slate Metadata Chip (Structured, Neutral, High-End) */
+    .report-date-cell,
+    .report-date-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.81rem;
+      color: #334155;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 6px;
+      padding: 3.5px 9.5px !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .report-date-cell i,
+    .report-date-badge i {
+      color: #0B2E59 !important;
+      opacity: 0.78;
+      font-size: 0.8rem;
+      transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .report-date-cell:hover,
+    .report-date-badge:hover,
+    .clickable-report-row:hover .report-date-cell,
+    .clickable-report-row:hover .report-date-badge,
+    tr:hover .report-date-cell,
+    tr:hover .report-date-badge {
+      background: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 2px 5px rgba(11, 46, 89, 0.08) !important;
+      transform: translateY(-1px);
+    }
+
+    .clickable-report-row:hover .report-date-cell i,
+    .clickable-report-row:hover .report-date-badge i,
+    tr:hover .report-date-cell i,
+    tr:hover .report-date-badge i {
+      opacity: 1;
+      transform: scale(1.08);
+      color: #0B2E59 !important;
+    }
+
+    .clickable-report-row:hover .report-date-cell .report-date-text,
+    .clickable-report-row:hover .report-date-badge span,
+    tr:hover .report-date-cell .report-date-text,
+    tr:hover .report-date-badge span {
+      color: #0B2E59 !important;
+      font-weight: 600;
+    }
+
+    /* Refined Civic Category Badges (Light Background + Dark Text) - Compact & Sleek */
+    .category-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+
+    .category-badge-pill i {
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .clickable-report-row:hover .category-badge-pill,
+    tr:hover .category-badge-pill {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
     }
   </style>
 
@@ -166,25 +291,87 @@ unset($pol);
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <span class="badge bg-light text-secondary border rounded-pill px-3 py-2 fw-semibold" style="font-size: 0.82rem;">
+        <span class="badge bg-light text-secondary border rounded-pill px-3 py-2 fw-semibold"
+          style="font-size: 0.82rem;">
           <i class="bi bi-collection-fill text-primary me-1.5"></i><?= $total_report_count ?> Policies Available
         </span>
       </div>
     </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0" style="font-size:0.88rem;">
-        <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+        <thead class="policy-table-thead">
           <tr>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="width: 44%; font-size: 0.85rem; letter-spacing: 0.03em;">
-              Policy Title</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="width: 22%; font-size: 0.85rem; letter-spacing: 0.03em;">
-              Category</th>
-            <th class="py-3.5 text-uppercase text-dark fw-bold" style="width: 16%; font-size: 0.85rem; letter-spacing: 0.03em;">Date Uploaded</th>
-            <th class="py-3.5 text-center text-uppercase text-dark fw-bold" style="width: 18%; font-size: 0.85rem; letter-spacing: 0.03em;">Action</th>
+            <th class="py-3 px-3 text-uppercase" style="width: 44%;">Policy Title</th>
+            <th class="py-3 px-3 text-uppercase" style="width: 22%;">Category</th>
+            <th class="py-3 px-3 text-uppercase" style="width: 16%;">Date Uploaded</th>
+            <th class="py-3 px-3 text-center text-uppercase" style="width: 18%;">Action</th>
           </tr>
         </thead>
         <tbody id="reportPolicyTableBody">
-          <?php foreach ($report_policies as $i => $pol):
+          <?php
+          if (!function_exists('renderStaffPolicyCategoryBadge')) {
+            function renderStaffPolicyCategoryBadge($category)
+            {
+              $cat = trim($category ?? '');
+              $lower = strtolower($cat);
+
+              // Exact requested color pairs (light background + dark text):
+              // 1. Health and Sanitation (#E1F5EE, #085041)
+              if (strpos($lower, 'health') !== false || strpos($lower, 'sanitation') !== false || strpos($lower, 'medical') !== false) {
+                $bg = '#E1F5EE';
+                $text = '#085041';
+                $border = '#9FE1CB';
+                $icon = 'bi-heart-pulse-fill';
+                $label = !empty($cat) ? $cat : 'Health and Sanitation';
+              }
+              // 2. Civil Registry and Public Services (#E6F1FB, #0C447C)
+              elseif (strpos($lower, 'civil') !== false || strpos($lower, 'registry') !== false || strpos($lower, 'public service') !== false || strpos($lower, 'governance') !== false || strpos($lower, 'legal') !== false) {
+                $bg = '#E6F1FB';
+                $text = '#0C447C';
+                $border = '#B5D7F8';
+                $icon = 'bi-file-earmark-person-fill';
+                $label = !empty($cat) ? $cat : 'Civil Registry and Public Services';
+              }
+              // 3. Education and Employment (#EEEDFE, #3C3489)
+              elseif (strpos($lower, 'education') !== false || strpos($lower, 'employment') !== false || strpos($lower, 'school') !== false || strpos($lower, 'labor') !== false || strpos($lower, 'livelihood') !== false) {
+                $bg = '#EEEDFE';
+                $text = '#3C3489';
+                $border = '#CBC6FC';
+                $icon = 'bi-mortarboard-fill';
+                $label = !empty($cat) ? $cat : 'Education and Employment';
+              }
+              // 4. Social Welfare and Community Affairs (#FAECE7, #712B13)
+              elseif (strpos($lower, 'social') !== false || strpos($lower, 'welfare') !== false || strpos($lower, 'community') !== false) {
+                $bg = '#FAECE7';
+                $text = '#712B13';
+                $border = '#F3C4B6';
+                $icon = 'bi-people-fill';
+                $label = !empty($cat) ? $cat : 'Social Welfare and Community Affairs';
+              }
+              // 5. Infrastructure, Traffic and Environment (#EAF3DE, #27500A)
+              elseif (strpos($lower, 'infrastructure') !== false || strpos($lower, 'traffic') !== false || strpos($lower, 'environment') !== false || strpos($lower, 'transport') !== false || strpos($lower, 'mobility') !== false) {
+                $bg = '#EAF3DE';
+                $text = '#27500A';
+                $border = '#C8E2AE';
+                $icon = 'bi-buildings';
+                $label = !empty($cat) ? $cat : 'Infrastructure, Traffic and Environment';
+              }
+              // 6. Other (#F1EFE8, #444441)
+              else {
+                $bg = '#F1EFE8';
+                $text = '#444441';
+                $border = '#DCD7C9';
+                $icon = 'bi-tag-fill';
+                $label = !empty($cat) ? $cat : 'Other';
+              }
+
+              return '<span class="category-badge-pill" style="background-color: ' . $bg . ' !important; color: ' . $text . ' !important; border: 1px solid ' . $border . ' !important;" title="' . htmlspecialchars($label) . '">' .
+                '<i class="bi ' . $icon . '" style="color: ' . $text . ' !important; opacity: 0.9;"></i>' .
+                '<span>' . htmlspecialchars($label) . '</span>' .
+                '</span>';
+            }
+          }
+          foreach ($report_policies as $i => $pol):
             $dateStr = !empty($pol['created_at']) ? date('M d, Y', strtotime($pol['created_at'])) : '—';
             $isFirst = ($i === 0);
 
@@ -236,8 +423,7 @@ unset($pol);
             $policyJson = json_encode($policyData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
             ?>
             <tr class="report-policy-row clickable-report-row" style="cursor:pointer;"
-              data-eval-state="<?= $eval_state ?>"
-              data-policy='<?= htmlspecialchars($policyJson, ENT_QUOTES, 'UTF-8') ?>'
+              data-eval-state="<?= $eval_state ?>" data-policy='<?= htmlspecialchars($policyJson, ENT_QUOTES, 'UTF-8') ?>'
               onclick="openPolicyRowReport(this)">
               <td class="py-3">
                 <div class="d-flex align-items-center gap-2.5">
@@ -254,22 +440,21 @@ unset($pol);
                   </div>
                 </div>
               </td>
-              <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs"
-                  style="background-color: #0d6efd !important; font-size: 0.78rem;">
-                  <?= htmlspecialchars($pol['category'] ?? '—') ?>
-                </span>
+              <td class="py-3 px-3">
+                <?= renderStaffPolicyCategoryBadge($pol['category'] ?? '') ?>
               </td>
 
-              <td class="text-secondary fw-medium py-3">
-                <i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>
-                <?= $dateStr ?>
+              <td class="py-3 px-3">
+                <div class="report-date-cell">
+                  <i class="bi bi-calendar3"></i>
+                  <span class="report-date-text"><?= $dateStr ?></span>
+                </div>
               </td>
-              <td class="text-center py-3">
+              <td class="text-center py-3 px-3">
                 <button type="button" class="btn btn-sm btn-report-download"
                   onclick="event.stopPropagation(); openPolicyRowReport(this.closest('tr'));"
                   title="Download / View Official Legislative Report">
-                  <i class="bi bi-download text-primary"></i>
+                  <i class="bi bi-download"></i>
                   <span>Download / View</span>
                 </button>
               </td>
@@ -279,13 +464,21 @@ unset($pol);
       </table>
     </div>
     <div class="d-flex align-items-center justify-content-between pt-1">
-      <small class="text-muted fw-medium" id="reportPoliciesSummaryText">Showing 1 to <?= min(10, count($report_policies)) ?> of <?= count($report_policies) ?> records</small>
+      <small class="text-muted fw-medium" id="reportPoliciesSummaryText">Showing 1 to
+        <?= min(10, count($report_policies)) ?> of <?= count($report_policies) ?> records</small>
       <div class="d-flex align-items-center gap-1" id="reportPolicyPagination">
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyPrevBtn" onclick="changeReportPolicyPage(-1)" title="Previous page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyPrevBtn"
+          onclick="changeReportPolicyPage(-1)" title="Previous page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-left"></i></button>
         <div id="reportPolicyPageNumbers" class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
+          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold"
+            style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
         </div>
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyNextBtn" onclick="changeReportPolicyPage(1)" title="Next page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-right"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="reportPolicyNextBtn"
+          onclick="changeReportPolicyPage(1)" title="Next page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-right"></i></button>
       </div>
     </div>
 
@@ -314,7 +507,8 @@ unset($pol);
       </div>
     </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-2">
-      <table class="table table-hover align-middle mb-0" id="recentGeneratedReportsTable" style="font-size:0.88rem; table-layout: fixed; width: 100%;">
+      <table class="table table-hover align-middle mb-0" id="recentGeneratedReportsTable"
+        style="font-size:0.88rem; table-layout: fixed; width: 100%;">
         <colgroup>
           <col style="width: 28%;">
           <col style="width: 32%;">
@@ -324,13 +518,17 @@ unset($pol);
         </colgroup>
         <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
           <tr>
-            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-truncate" style="font-size: 0.88rem; letter-spacing: 0.03em;">
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-truncate"
+              style="font-size: 0.88rem; letter-spacing: 0.03em;">
               Report Name</th>
-            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-truncate" style="font-size: 0.88rem; letter-spacing: 0.03em;">
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-truncate"
+              style="font-size: 0.88rem; letter-spacing: 0.03em;">
               Policy / Subject</th>
-            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap" style="font-size: 0.88rem; letter-spacing: 0.03em; width: 140px;">Type
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap"
+              style="font-size: 0.88rem; letter-spacing: 0.03em; width: 140px;">Type
             </th>
-            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap" style="font-size: 0.88rem; letter-spacing: 0.03em; width: 180px;">Date
+            <th class="py-3 px-3 text-uppercase text-dark fw-bold text-nowrap"
+              style="font-size: 0.88rem; letter-spacing: 0.03em; width: 180px;">Date
               Generated</th>
             <th class="py-3 px-3 text-end text-uppercase text-dark fw-bold text-nowrap"
               style="font-size: 0.88rem; letter-spacing: 0.03em; width: 160px;">Action</th>
@@ -344,11 +542,18 @@ unset($pol);
     <div class="d-flex align-items-center justify-content-between pt-2">
       <small class="text-muted fw-medium" id="recentGeneratedReportsCount">Showing 0 records</small>
       <div class="d-flex align-items-center gap-1" id="recentReportsPagination">
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentReportsPrevBtn" onclick="changeRecentReportsPage(-1)" title="Previous page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-left"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn"
+          id="recentReportsPrevBtn" onclick="changeRecentReportsPage(-1)" title="Previous page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-left"></i></button>
         <div id="recentReportsPageNumbers" class="d-flex align-items-center gap-1">
-          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
+          <button type="button" class="btn btn-sm btn-primary rounded-2 pagination-step-btn fw-bold"
+            style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;">1</button>
         </div>
-        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn" id="recentReportsNextBtn" onclick="changeRecentReportsPage(1)" title="Next page" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i class="bi bi-chevron-right"></i></button>
+        <button type="button" class="btn btn-sm btn-light border rounded-2 pagination-step-btn"
+          id="recentReportsNextBtn" onclick="changeRecentReportsPage(1)" title="Next page"
+          style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;"><i
+            class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -360,23 +565,32 @@ unset($pol);
         <div class="modal-header border-bottom px-4 py-3 bg-light d-flex align-items-center justify-content-between">
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-file-earmark-text-fill text-primary fs-5"></i>
-            <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative Document</h5>
+            <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative
+              Document</h5>
           </div>
           <div class="d-flex align-items-center gap-2">
             <!-- View Original Document Button -->
-            <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs" id="reportModalViewOriginalBtn" title="Open the original uploaded source document">
+            <button type="button"
+              class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
+              id="reportModalViewOriginalBtn" title="Open the original uploaded source document">
               <i class="bi bi-box-arrow-up-right"></i> View Original
             </button>
             <!-- Download PDF -->
-            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" id="reportModalDownloadPdfBtn">
+            <button type="button"
+              class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
+              id="reportModalDownloadPdfBtn">
               <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
             </button>
             <!-- Download Word -->
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs" id="reportModalDownloadDocxBtn">
+            <button type="button"
+              class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs"
+              id="reportModalDownloadDocxBtn">
               <i class="bi bi-file-earmark-word-fill text-primary"></i> Word (.docx)
             </button>
             <!-- Print Button -->
-            <button type="button" class="btn btn-sm text-white rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn" title="Print Document">
+            <button type="button"
+              class="btn btn-sm text-white rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
+              style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn" title="Print Document">
               <i class="bi bi-printer-fill"></i> Print
             </button>
             <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -389,8 +603,10 @@ unset($pol);
           </div>
         </div>
         <div class="modal-footer border-top px-4 py-2.5 bg-light d-flex align-items-center justify-content-between">
-          <span class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i> Official City Council of Manila Legislative Document</span>
-          <button type="button" class="btn btn-sm btn-secondary rounded-3 px-3.5 py-1.5 fw-medium" data-bs-dismiss="modal">Close</button>
+          <span class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i> Official City Council of
+            Manila Legislative Document</span>
+          <button type="button" class="btn btn-sm btn-secondary rounded-3 px-3.5 py-1.5 fw-medium"
+            data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -1115,7 +1331,7 @@ unset($pol);
     var group = btn ? btn.closest('#reportPolicyFilterGroup') : document.getElementById('reportPolicyFilterGroup');
     if (group && btn) {
       var btns = group.querySelectorAll('.policy-filter-tab');
-      btns.forEach(function(b) {
+      btns.forEach(function (b) {
         b.classList.remove('active', 'btn-primary', 'text-white');
         b.classList.add('text-secondary');
       });
@@ -1139,68 +1355,68 @@ unset($pol);
     var allRows = Array.from(document.querySelectorAll('#reportPolicyTableBody .report-policy-row'));
     if (!allRows.length) return;
 
-    var matchingRows = allRows.filter(function(r) {
+    var matchingRows = allRows.filter(functio n(r) {
       var state = r.getAttribute('data-eval-state');
-      return (_reportPolicyFilter === 'all' || state === _reportPolicyFilter);
+      return(_reportPolicyFilter === 'all' || state === _reportPolicyFilter);
+  });
+
+  var totalMatching = matchingRows.length;
+  var totalPages = Math.max(1, Math.ceil(totalMatching / _reportPolicyPageSize));
+
+  if (_reportPolicyCurrentPage < 1) _reportPolicyCurrentPage = 1;
+  if (_reportPolicyCurrentPage > totalPages) _reportPolicyCurrentPage = totalPages;
+
+  var startIdx = (_reportPolicyCurrentPage - 1) * _reportPolicyPageSize;
+  var endIdx = Math.min(startIdx + _reportPolicyPageSize, totalMatching);
+
+  allRows.forEach(functi on(r) {
+    var matchIdx = matchingRows.indexOf(r);
+    if(matchIdx >= startIdx && matchIdx < endIdx) {
+    r.style.display = '';
+  } else {
+    r.style.display = 'none';
+  }
     });
 
-    var totalMatching = matchingRows.length;
-    var totalPages = Math.max(1, Math.ceil(totalMatching / _reportPolicyPageSize));
-
-    if (_reportPolicyCurrentPage < 1) _reportPolicyCurrentPage = 1;
-    if (_reportPolicyCurrentPage > totalPages) _reportPolicyCurrentPage = totalPages;
-
-    var startIdx = (_reportPolicyCurrentPage - 1) * _reportPolicyPageSize;
-    var endIdx = Math.min(startIdx + _reportPolicyPageSize, totalMatching);
-
-    allRows.forEach(function(r) {
-      var matchIdx = matchingRows.indexOf(r);
-      if (matchIdx >= startIdx && matchIdx < endIdx) {
-        r.style.display = '';
-      } else {
-        r.style.display = 'none';
-      }
-    });
-
-    var summaryEl = document.getElementById('reportPoliciesSummaryText');
-    if (summaryEl) {
-      if (totalMatching === 0) {
-        summaryEl.textContent = 'Showing 0 records';
-      } else {
-        summaryEl.textContent = 'Showing ' + (startIdx + 1) + ' to ' + endIdx + ' of ' + totalMatching + ' records';
-      }
+  var summaryEl = document.getElementById('reportPoliciesSummaryText');
+  if (summaryEl) {
+    if (totalMatching === 0) {
+      summaryEl.textContent = 'Showing 0 records';
+    } else {
+      summaryEl.textContent = 'Showing ' + (startIdx + 1) + ' to ' + endIdx + ' of ' + totalMatching + ' records';
     }
+  }
 
-    var prevBtn = document.getElementById('reportPolicyPrevBtn');
-    if (prevBtn) {
-      prevBtn.disabled = (_reportPolicyCurrentPage <= 1);
-      if (_reportPolicyCurrentPage <= 1) {
-        prevBtn.classList.add('opacity-50');
-      } else {
-        prevBtn.classList.remove('opacity-50');
-      }
+  var prevBtn = document.getElementById('reportPolicyPrevBtn');
+  if (prevBtn) {
+    prevBtn.disabled = (_reportPolicyCurrentPage <= 1);
+    if (_reportPolicyCurrentPage <= 1) {
+      prevBtn.classList.add('opacity-50');
+    } else {
+      prevBtn.classList.remove('opacity-50');
     }
+  }
 
-    var nextBtn = document.getElementById('reportPolicyNextBtn');
-    if (nextBtn) {
-      nextBtn.disabled = (_reportPolicyCurrentPage >= totalPages);
-      if (_reportPolicyCurrentPage >= totalPages) {
-        nextBtn.classList.add('opacity-50');
-      } else {
-        nextBtn.classList.remove('opacity-50');
-      }
+  var nextBtn = document.getElementById('reportPolicyNextBtn');
+  if (nextBtn) {
+    nextBtn.disabled = (_reportPolicyCurrentPage >= totalPages);
+    if (_reportPolicyCurrentPage >= totalPages) {
+      nextBtn.classList.add('opacity-50');
+    } else {
+      nextBtn.classList.remove('opacity-50');
     }
+  }
 
-    var pagesContainer = document.getElementById('reportPolicyPageNumbers');
-    if (pagesContainer) {
-      var pagesHtml = '';
-      for (var p = 1; p <= totalPages; p++) {
-        var isActive = (p === _reportPolicyCurrentPage);
-        var cls = isActive ? 'btn-primary text-white fw-bold' : 'btn-light border text-dark';
-        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 pagination-step-btn ' + cls + '" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;" onclick="goToReportPolicyPage(' + p + ')">' + p + '</button>';
-      }
-      pagesContainer.innerHTML = pagesHtml;
+  var pagesContainer = document.getElementById('reportPolicyPageNumbers');
+  if (pagesContainer) {
+    var pagesHtml = '';
+    for (var p = 1; p <= totalPages; p++) {
+      var isActive = (p === _reportPolicyCurrentPage);
+      var cls = isActive ? 'btn-primary text-white fw-bold' : 'btn-light border text-dark';
+      pagesHtml += '<button type="button" class="btn btn-sm rounded-2 pagination-step-btn ' + cls + '" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;" onclick="goToReportPolicyPage(' + p + ')">' + p + '</button>';
     }
+    pagesContainer.innerHTML = pagesHtml;
+  }
   }
 
   window.filterReportPolicies = filterReportPolicies;
@@ -1274,17 +1490,17 @@ unset($pol);
       const pId = rep.id || rep.policy_id;
       if (pId) {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = function() {
+        viewOrigBtn.onclick = funct ion() {
           window.open('../backend/view_policy_document.php?id=' + encodeURIComponent(pId), '_blank');
         };
       } else if (rep.file_path && rep.file_path.trim() !== '') {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = function() {
+        viewOrigBtn.onclick = func tion() {
           window.open('../assets/uploads/policies/' + encodeURIComponent(rep.file_path), '_blank');
         };
       } else {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = function() {
+        viewOrigBtn.onclick = fun ction() {
           alert('No uploaded source document attachment is associated with this policy record.');
         };
       }

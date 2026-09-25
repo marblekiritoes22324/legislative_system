@@ -33,6 +33,270 @@
     </div>
 
     <?php
+    if (!function_exists('renderPolicyCategoryBadge')) {
+      function renderPolicyCategoryBadge($category)
+      {
+        $cat = trim($category ?? '');
+        $lower = strtolower($cat);
+
+        // Exact requested color pairs (light background + dark text):
+        // 1. Health and Sanitation (#E1F5EE, #085041)
+        if (strpos($lower, 'health') !== false || strpos($lower, 'sanitation') !== false || strpos($lower, 'medical') !== false) {
+          $bg = '#E1F5EE';
+          $text = '#085041';
+          $border = '#9FE1CB';
+          $icon = 'bi-heart-pulse-fill';
+          $label = !empty($cat) ? $cat : 'Health and Sanitation';
+        }
+        // 2. Civil Registry and Public Services (#E6F1FB, #0C447C)
+        elseif (strpos($lower, 'civil') !== false || strpos($lower, 'registry') !== false || strpos($lower, 'public service') !== false || strpos($lower, 'governance') !== false || strpos($lower, 'legal') !== false) {
+          $bg = '#E6F1FB';
+          $text = '#0C447C';
+          $border = '#B5D7F8';
+          $icon = 'bi-file-earmark-person-fill';
+          $label = !empty($cat) ? $cat : 'Civil Registry and Public Services';
+        }
+        // 3. Education and Employment (#EEEDFE, #3C3489)
+        elseif (strpos($lower, 'education') !== false || strpos($lower, 'employment') !== false || strpos($lower, 'school') !== false || strpos($lower, 'labor') !== false || strpos($lower, 'job') !== false) {
+          $bg = '#EEEDFE';
+          $text = '#3C3489';
+          $border = '#CECBF6';
+          $icon = 'bi-mortarboard-fill';
+          $label = !empty($cat) ? $cat : 'Education and Employment';
+        }
+        // 4. Social Welfare and Community Affairs (#FAECE7, #712B13)
+        elseif (strpos($lower, 'social') !== false || strpos($lower, 'welfare') !== false || strpos($lower, 'community') !== false || strpos($lower, 'senior') !== false || strpos($lower, 'youth') !== false || strpos($lower, 'family') !== false) {
+          $bg = '#FAECE7';
+          $text = '#712B13';
+          $border = '#F5C4B5';
+          $icon = 'bi-people-fill';
+          $label = !empty($cat) ? $cat : 'Social Welfare and Community Affairs';
+        }
+        // 5. Infrastructure, Traffic and Environment (#EAF3DE, #27500A)
+        elseif (strpos($lower, 'infrastructure') !== false || strpos($lower, 'traffic') !== false || strpos($lower, 'transport') !== false || strpos($lower, 'environment') !== false || strpos($lower, 'zoning') !== false || strpos($lower, 'flood') !== false || strpos($lower, 'waste') !== false || strpos($lower, 'road') !== false) {
+          $bg = '#EAF3DE';
+          $text = '#27500A';
+          $border = '#BFE09A';
+          $icon = 'bi-tree-fill';
+          $label = !empty($cat) ? $cat : 'Infrastructure, Traffic and Environment';
+        }
+        // 6. Other (#F1EFE8, #444441)
+        else {
+          $bg = '#F1EFE8';
+          $text = '#444441';
+          $border = '#DCD7C9';
+          $icon = 'bi-tag-fill';
+          $label = !empty($cat) ? $cat : 'Other';
+        }
+
+        return '<span class="category-badge-pill" style="background-color: ' . $bg . ' !important; color: ' . $text . ' !important; border: 1px solid ' . $border . ' !important;" title="' . htmlspecialchars($label) . '">' .
+          '<i class="bi ' . $icon . '" style="color: ' . $text . ' !important; opacity: 0.9;"></i>' .
+          '<span>' . htmlspecialchars($label) . '</span>' .
+          '</span>';
+      }
+    }
+    ?>
+    <style>
+      /* Refined Civic Category Badges (Light Background + Dark Text) - Compact & Sleek */
+      .category-badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 9px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      }
+
+      .category-badge-pill i {
+        font-size: 0.75rem;
+        flex-shrink: 0;
+      }
+
+      tr:hover .category-badge-pill {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+      }
+
+      /* Clean Minimalist Toolbar Controls */
+      .policy-search-box {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        height: 40px !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 0 12px !important;
+        gap: 10px !important;
+        transition: all 0.18s ease !important;
+      }
+
+      .policy-search-box:focus-within {
+        background: #FFFFFF !important;
+        border-color: #CBD5E1 !important;
+        box-shadow: 0 0 0 3px rgba(11, 46, 89, 0.06) !important;
+      }
+
+      .policy-search-icon {
+        color: #94A3B8 !important;
+        font-size: 0.88rem !important;
+        flex-shrink: 0 !important;
+      }
+
+      .policy-search-input {
+        border: none !important;
+        background: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        font-size: 0.86rem !important;
+        color: #1E293B !important;
+        padding: 0 !important;
+      }
+
+      .policy-search-input::placeholder {
+        color: #94A3B8 !important;
+        font-size: 0.85rem !important;
+        font-weight: 400 !important;
+      }
+
+      .policy-search-clear {
+        border: none !important;
+        background: transparent !important;
+        color: #94A3B8 !important;
+        padding: 0 !important;
+        font-size: 0.75rem !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        transition: color 0.15s ease !important;
+      }
+
+      .policy-search-clear:hover {
+        color: #334155 !important;
+      }
+
+      .policy-category-wrapper {
+        flex-shrink: 0 !important;
+        min-width: 165px !important;
+      }
+
+      .policy-category-select {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        height: 40px !important;
+        font-size: 0.86rem !important;
+        color: #334155 !important;
+        font-weight: 500 !important;
+        padding: 0 32px 0 12px !important;
+        cursor: pointer !important;
+        box-shadow: none !important;
+        transition: all 0.18s ease !important;
+      }
+
+      .policy-category-select:focus,
+      .policy-category-select:hover {
+        border-color: #CBD5E1 !important;
+        box-shadow: 0 0 0 3px rgba(11, 46, 89, 0.06) !important;
+      }
+
+      .policy-date-filter-btn {
+        background: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        height: 40px !important;
+        font-size: 0.86rem !important;
+        color: #334155 !important;
+        font-weight: 500 !important;
+        padding: 0 12px !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        min-width: 135px !important;
+        box-shadow: none !important;
+        white-space: nowrap !important;
+        transition: all 0.18s ease !important;
+      }
+
+      .policy-date-filter-btn:hover,
+      .policy-date-filter-btn:focus {
+        border-color: #CBD5E1 !important;
+        background: #F8FAFC !important;
+        color: #0F172A !important;
+        box-shadow: 0 0 0 3px rgba(11, 46, 89, 0.06) !important;
+      }
+
+      .policy-date-filter-btn .policy-chevron {
+        color: #94A3B8 !important;
+        font-size: 0.72rem !important;
+      }
+
+      /* Option 1: Civic Slate Metadata Chip */
+      .report-date-cell {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.81rem;
+        color: #334155;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        letter-spacing: -0.01em;
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 6px;
+        padding: 3.5px 9.5px !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .report-date-cell i {
+        color: #0B2E59 !important;
+        opacity: 0.78;
+        font-size: 0.8rem;
+        transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+      }
+
+      tr:hover .report-date-cell {
+        background: #FFFFFF !important;
+        border-color: #CBD5E1 !important;
+        box-shadow: 0 2px 5px rgba(11, 46, 89, 0.08) !important;
+        transform: translateY(-1px);
+      }
+
+      tr:hover .report-date-cell i {
+        opacity: 1;
+        transform: scale(1.08);
+        color: #0B2E59 !important;
+      }
+
+      tr:hover .report-date-cell .report-date-text {
+        color: #0B2E59 !important;
+        font-weight: 600;
+      }
+
+      /* Deep Manila Navy Table Header */
+      .policy-table-thead th {
+        background-color: #0B2E59 !important;
+        color: #FFFFFF !important;
+        font-size: 0.82rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.05em !important;
+        border-bottom: 2.5px solid #082242 !important;
+        border-top: none !important;
+        vertical-align: middle !important;
+      }
+    </style>
+
+    <?php
     $timeframe_labels = [
       '' => 'All Dates',
       'today' => 'Today',
@@ -56,8 +320,8 @@
     }
     ?>
 
-    <!-- Search & Filters -->
-    <form method="GET" action="staff_dashboard.php" class="row g-2.5 mb-4 align-items-center" id="policyFilterForm">
+    <!-- Search & Filters (Clean Minimalist Toolbar) -->
+    <form method="GET" action="staff_dashboard.php" class="d-flex flex-wrap flex-md-nowrap align-items-center gap-2.5 mb-4" id="policyFilterForm">
       <input type="hidden" name="section" value="policyResearchSection">
       <input type="hidden" name="timeframe" id="filterTimeframeInput" value="<?= htmlspecialchars($timeframe_filter ?? '') ?>">
       <input type="hidden" name="date_from" id="filterDateFromInput" value="<?= htmlspecialchars($_GET['date_from'] ?? '') ?>">
@@ -66,103 +330,99 @@
         <input type="hidden" name="status" value="<?= htmlspecialchars($status_filter) ?>">
       <?php endif; ?>
       <!-- Search Input -->
-      <div class="col-12 col-md-5">
-        <div class="input-group shadow-2xs">
-          <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-search"></i></span>
-          <input type="text" name="search" class="form-control border-start-0 ps-0"
-            placeholder="Search ordinances by title or keyword..." value="<?= htmlspecialchars($search ?? '') ?>">
-          <?php if (!empty($search)): ?>
-            <button class="btn btn-white bg-white border-start-0 border-end border-top border-bottom text-muted" type="button" onclick="this.form.search.value=''; this.form.submit();">
-              <i class="bi bi-x"></i>
-            </button>
-          <?php endif; ?>
-        </div>
+      <div class="policy-search-box flex-grow-1" style="min-width: 250px;">
+        <i class="bi bi-search policy-search-icon"></i>
+        <input type="text" name="search" class="policy-search-input"
+          placeholder="Search policies by title, number or author..." value="<?= htmlspecialchars($search ?? '') ?>"
+          onkeydown="if(event.key === 'Enter') this.form.submit();">
+        <?php if (!empty($search)): ?>
+          <button class="policy-search-clear" type="button" onclick="this.form.search.value=''; this.form.submit();" title="Clear search">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        <?php endif; ?>
       </div>
 
       <!-- Category Filter -->
-      <div class="col-12 col-md-3">
-        <div class="input-group shadow-2xs">
-          <span class="input-group-text bg-white border-end-0 text-primary"><i class="bi bi-tag-fill"></i></span>
-          <select name="category" class="form-select border-start-0 ps-0" onchange="this.form.submit()">
-            <option value="">All Categories</option>
-            <option value="Health and Sanitation" <?= (($category_filter ?? '') === 'Health and Sanitation' || ($category_filter ?? '') === 'Health') ? 'selected' : '' ?>>Health and Sanitation</option>
-            <option value="Civil Registry and Public Services" <?= (($category_filter ?? '') === 'Civil Registry and Public Services') ? 'selected' : '' ?>>Civil Registry and Public Services</option>
-            <option value="Education and Employment" <?= (($category_filter ?? '') === 'Education and Employment' || ($category_filter ?? '') === 'Education') ? 'selected' : '' ?>>Education and Employment</option>
-            <option value="Social Welfare and Community Affairs" <?= (($category_filter ?? '') === 'Social Welfare and Community Affairs') ? 'selected' : '' ?>>Social Welfare and Community Affairs</option>
-            <option value="Infrastructure, Traffic and Environment" <?= (($category_filter ?? '') === 'Infrastructure, Traffic and Environment' || ($category_filter ?? '') === 'Infrastructure' || ($category_filter ?? '') === 'Environment') ? 'selected' : '' ?>>Infrastructure, Traffic and Environment</option>
-            <option value="Other" <?= (($category_filter ?? '') === 'Other') ? 'selected' : '' ?>>Other</option>
-          </select>
-        </div>
+      <div class="policy-category-wrapper">
+        <select name="category" class="form-select policy-category-select" onchange="this.form.submit()">
+          <option value="">All Categories</option>
+          <option value="Health and Sanitation" <?= (($category_filter ?? '') === 'Health and Sanitation' || ($category_filter ?? '') === 'Health') ? 'selected' : '' ?>>Health and Sanitation</option>
+          <option value="Civil Registry and Public Services" <?= (($category_filter ?? '') === 'Civil Registry and Public Services') ? 'selected' : '' ?>>Civil Registry and Public Services</option>
+          <option value="Education and Employment" <?= (($category_filter ?? '') === 'Education and Employment' || ($category_filter ?? '') === 'Education') ? 'selected' : '' ?>>Education and Employment</option>
+          <option value="Social Welfare and Community Affairs" <?= (($category_filter ?? '') === 'Social Welfare and Community Affairs') ? 'selected' : '' ?>>Social Welfare and Community Affairs</option>
+          <option value="Infrastructure, Traffic and Environment" <?= (($category_filter ?? '') === 'Infrastructure, Traffic and Environment' || ($category_filter ?? '') === 'Infrastructure' || ($category_filter ?? '') === 'Environment') ? 'selected' : '' ?>>Infrastructure, Traffic and Environment</option>
+          <option value="Other" <?= (($category_filter ?? '') === 'Other') ? 'selected' : '' ?>>Other</option>
+        </select>
       </div>
 
       <!-- Compact Date Filter Button & Popover -->
-      <div class="col-auto">
-        <div class="dropdown">
-          <button class="btn btn-white bg-white border d-inline-flex align-items-center gap-2 rounded-3 py-2 px-3 shadow-2xs <?= $has_active_date ? 'border-primary bg-primary bg-opacity-10 text-primary' : 'text-dark' ?>" 
-                  type="button" id="dateFilterDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="min-height: 38px;">
-            <i class="bi <?= $has_active_date ? 'bi-funnel-fill text-primary' : 'bi-funnel text-primary' ?>"></i>
-            <span class="fw-semibold small"><?= $has_active_date ? htmlspecialchars($current_timeframe_label) : 'Filter' ?></span>
+      <div class="dropdown position-relative" style="flex-shrink: 0;">
+        <button class="btn policy-date-filter-btn <?= $has_active_date ? 'border-primary bg-primary bg-opacity-10 text-primary' : '' ?>" 
+                type="button" id="dateFilterDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+          <span class="d-inline-flex align-items-center gap-2">
+            <i class="bi <?= $has_active_date ? 'bi-calendar3-fill text-primary' : 'bi-calendar3' ?>" style="color: <?= $has_active_date ? '#0D6EFD' : '#64748B' ?>; font-size: 0.86rem;"></i>
+            <span><?= $has_active_date ? htmlspecialchars($current_timeframe_label) : 'Filter Date' ?></span>
             <?php if ($has_active_date): ?>
               <span class="badge bg-primary rounded-pill px-1.5 py-0.5 ms-0.5" style="font-size: 0.65rem;">Active</span>
             <?php endif; ?>
-            <i class="bi bi-chevron-down text-muted ms-1" style="font-size: 0.7rem;"></i>
-          </button>
+          </span>
+          <i class="bi bi-chevron-down policy-chevron"></i>
+        </button>
+        
+        <div class="dropdown-menu dropdown-menu-end shadow-lg border rounded-4 p-3" style="width: 320px; z-index: 1060;" aria-labelledby="dateFilterDropdownBtn">
+          <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom">
+            <span class="fw-bold small text-dark"><i class="bi bi-calendar3 me-1.5 text-primary"></i>Filter by Date</span>
+            <?php if ($has_active_date): ?>
+              <a href="javascript:void(0);" onclick="applyDateFilter('');" class="text-danger small text-decoration-none fw-semibold">Reset</a>
+            <?php endif; ?>
+          </div>
           
-          <div class="dropdown-menu dropdown-menu-end shadow-lg border rounded-4 p-3" style="width: 320px; z-index: 1060;" aria-labelledby="dateFilterDropdownBtn">
-            <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom">
-              <span class="fw-bold small text-dark"><i class="bi bi-funnel-fill me-1.5 text-primary"></i>Filter by Date</span>
-              <?php if ($has_active_date): ?>
-                <a href="javascript:void(0);" onclick="applyDateFilter('');" class="text-danger small text-decoration-none fw-semibold">Reset</a>
-              <?php endif; ?>
+          <!-- Quick Preset Buttons -->
+          <div class="mb-3">
+            <div class="text-muted fw-semibold small mb-2" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Quick Presets</div>
+            <div class="d-flex flex-wrap gap-1.5">
+              <button type="button" onclick="applyDateFilter('')" class="btn btn-sm rounded-3 <?= empty($timeframe_filter) && empty($_GET['date_from']) ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">All Dates</button>
+              <button type="button" onclick="applyDateFilter('today')" class="btn btn-sm rounded-3 <?= ($timeframe_filter === 'today') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">Today</button>
+              <button type="button" onclick="applyDateFilter('last_7_days')" class="btn btn-sm rounded-3 <?= ($timeframe_filter === 'last_7_days') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">Last 7 Days</button>
+              <button type="button" onclick="applyDateFilter('last_30_days')" class="btn btn-sm rounded-3 <?= ($timeframe_filter === 'last_30_days') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">Last 30 Days</button>
+              <button type="button" onclick="applyDateFilter('this_month')" class="btn btn-sm rounded-3 <?= ($timeframe_filter === 'this_month') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">This Month</button>
+              <button type="button" onclick="applyDateFilter('last_month')" class="btn btn-sm rounded-3 <?= ($timeframe_filter === 'last_month') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">Last Month</button>
             </div>
-            
-            <!-- Quick Preset Buttons -->
-            <div class="mb-3">
-              <div class="text-muted fw-semibold small mb-2" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Quick Presets</div>
-              <div class="d-flex flex-wrap gap-1.5">
-                <button type="button" onclick="applyDateFilter('')" class="btn btn-sm rounded-3 <?= empty($timeframe_filter) && empty($_GET['date_from']) ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">All Dates</button>
-                <button type="button" onclick="applyDateFilter('today')" class="btn btn-sm rounded-3 <?= ($timeframe_filter === 'today') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">Today</button>
-                <button type="button" onclick="applyDateFilter('last_7_days')" class="btn btn-sm rounded-3 <?= ($timeframe_filter === 'last_7_days') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">Last 7 Days</button>
-                <button type="button" onclick="applyDateFilter('last_30_days')" class="btn btn-sm rounded-3 <?= ($timeframe_filter === 'last_30_days') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">Last 30 Days</button>
-                <button type="button" onclick="applyDateFilter('this_month')" class="btn btn-sm rounded-3 <?= ($timeframe_filter === 'this_month') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">This Month</button>
-                <button type="button" onclick="applyDateFilter('last_month')" class="btn btn-sm rounded-3 <?= ($timeframe_filter === 'last_month') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">Last Month</button>
-              </div>
-            </div>
+          </div>
 
-            <!-- Yearly Filter -->
-            <div class="mb-3">
-              <div class="text-muted fw-semibold small mb-2" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">By Year</div>
-              <div class="d-flex gap-1.5">
-                <button type="button" onclick="applyDateFilter('2026')" class="btn btn-sm rounded-3 flex-fill <?= ($timeframe_filter === '2026' || $timeframe_filter === 'this_year') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">2026</button>
-                <button type="button" onclick="applyDateFilter('2025')" class="btn btn-sm rounded-3 flex-fill <?= ($timeframe_filter === '2025') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">2025</button>
-                <button type="button" onclick="applyDateFilter('2024')" class="btn btn-sm rounded-3 flex-fill <?= ($timeframe_filter === '2024') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">2024</button>
-              </div>
+          <!-- Yearly Filter -->
+          <div class="mb-3">
+            <div class="text-muted fw-semibold small mb-2" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">By Year</div>
+            <div class="d-flex gap-1.5">
+              <button type="button" onclick="applyDateFilter('2026')" class="btn btn-sm rounded-3 flex-fill <?= ($timeframe_filter === '2026' || $timeframe_filter === 'this_year') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">2026</button>
+              <button type="button" onclick="applyDateFilter('2025')" class="btn btn-sm rounded-3 flex-fill <?= ($timeframe_filter === '2025') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">2025</button>
+              <button type="button" onclick="applyDateFilter('2024')" class="btn btn-sm rounded-3 flex-fill <?= ($timeframe_filter === '2024') ? 'btn-primary' : 'btn-light text-dark border' ?>" style="font-size: 0.78rem;">2024</button>
             </div>
+          </div>
 
-            <!-- Custom Date Range -->
-            <div class="pt-2 border-top">
-              <div class="text-muted fw-semibold small mb-2" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Custom Range</div>
-              <div class="row g-1.5 mb-2">
-                <div class="col-6">
-                  <input type="date" id="customDateFrom" class="form-control form-control-sm rounded-2" style="font-size: 0.75rem;" value="<?= htmlspecialchars($_GET['date_from'] ?? '') ?>" placeholder="From">
-                </div>
-                <div class="col-6">
-                  <input type="date" id="customDateTo" class="form-control form-control-sm rounded-2" style="font-size: 0.75rem;" value="<?= htmlspecialchars($_GET['date_to'] ?? '') ?>" placeholder="To">
-                </div>
+          <!-- Custom Date Range -->
+          <div class="pt-2 border-top">
+            <div class="text-muted fw-semibold small mb-2" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Custom Range</div>
+            <div class="row g-1.5 mb-2">
+              <div class="col-6">
+                <input type="date" id="customDateFrom" class="form-control form-control-sm rounded-2" style="font-size: 0.75rem;" value="<?= htmlspecialchars($_GET['date_from'] ?? '') ?>" placeholder="From">
               </div>
-              <button type="button" onclick="applyCustomDateRange()" class="btn btn-primary btn-sm rounded-3 w-100 fw-semibold" style="font-size: 0.8rem;">
-                <i class="bi bi-check2 me-1"></i> Apply Range
-              </button>
+              <div class="col-6">
+                <input type="date" id="customDateTo" class="form-control form-control-sm rounded-2" style="font-size: 0.75rem;" value="<?= htmlspecialchars($_GET['date_to'] ?? '') ?>" placeholder="To">
+              </div>
             </div>
+            <button type="button" onclick="applyCustomDateRange()" class="btn btn-primary btn-sm rounded-3 w-100 fw-semibold" style="font-size: 0.8rem;">
+              <i class="bi bi-check2 me-1"></i> Apply Range
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Action / Record Count (Far Right) -->
-      <div class="col-12 col-md d-flex align-items-center justify-content-end gap-2 ms-auto text-end">
+      <div class="d-flex align-items-center justify-content-end gap-2 ms-auto text-end" style="flex-shrink: 0;">
         <?php if (!empty($search) || !empty($category_filter) || $has_active_date): ?>
           <a href="staff_dashboard.php?section=policyResearchSection<?= !empty($status_filter) ? '&status=' . urlencode($status_filter) : '' ?>" 
-             class="btn btn-outline-danger btn-sm rounded-3 text-nowrap d-inline-flex align-items-center gap-1 shadow-2xs" title="Reset all filters">
+             class="btn btn-outline-danger btn-sm rounded-3 text-nowrap d-inline-flex align-items-center gap-1 shadow-2xs" title="Reset all filters" style="height: 38px;">
             <i class="bi bi-x-circle"></i> Reset
           </a>
         <?php endif; ?>
@@ -190,29 +450,29 @@
     </script>
 
     <!-- Policy Table -->
-    <div class="table-responsive">
+    <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
+        <thead class="policy-table-thead">
           <tr>
-            <th>Doc No. &amp; Title</th>
-            <th>Category</th>
-            <th>Author</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Actions</th>
+            <th class="py-3 px-3 text-uppercase">Title</th>
+            <th class="py-3 px-3 text-uppercase">Category</th>
+            <th class="py-3 px-3 text-uppercase">Prepared By</th>
+            <th class="py-3 px-3 text-uppercase">Status</th>
+            <th class="py-3 px-3 text-uppercase">Date</th>
+            <th class="py-3 px-3 text-center text-uppercase">Actions</th>
           </tr>
         </thead>
         <tbody id="policyTableBody">
           <?php if (!empty($policies)): ?>
             <?php foreach ($policies as $policy): ?>
               <tr>
-                <td>
+                <td class="py-3 px-3">
                   <div class="fw-bold text-dark"><?= htmlspecialchars($policy['title']) ?></div>
                   <small class="text-muted"><?= htmlspecialchars($policy['description'] ?? '') ?></small>
                 </td>
-                <td><span class="badge bg-primary"><?= htmlspecialchars($policy['category']) ?></span></td>
-                <td><?= htmlspecialchars($policy['author']) ?></td>
-                <td>
+                <td class="py-3 px-3"><?= renderPolicyCategoryBadge($policy['category'] ?? '') ?></td>
+                <td class="py-3 px-3"><?= htmlspecialchars($policy['author']) ?></td>
+                <td class="py-3 px-3">
                   <?php
                   $statusVal = trim($policy['status'] ?? 'Draft');
                   $statusLower = strtolower($statusVal);
@@ -233,7 +493,12 @@
                   ?>
                   <span class="badge <?= $statusClass ?>"><?= htmlspecialchars($statusVal) ?></span>
                 </td>
-                <td><?= htmlspecialchars($policy['publication_date'] ?? 'N/A') ?></td>
+                <td class="py-3 px-3">
+                  <div class="report-date-cell">
+                    <i class="bi bi-calendar3"></i>
+                    <span class="report-date-text"><?= htmlspecialchars($policy['publication_date'] ?? 'N/A') ?></span>
+                  </div>
+                </td>
                 <td>
                   <div class="action-btn-group d-flex align-items-center gap-1.5">
                     <?php if (!empty($policy['id'])): ?>
@@ -258,11 +523,6 @@
                       <i class="bi bi-stars"></i>
                     </button>
 
-                    <!-- Edit Policy Button -->
-                    <button class="btn btn-policy-action btn-policy-action-edit" title="Edit Policy Details"
-                      onclick='openEditPolicyModal(<?= json_encode($policy) ?>)'>
-                      <i class="bi bi-pencil-square"></i>
-                    </button>
 
                     <?php if (($policy['status'] ?? '') === 'Archived'): ?>
                       <form method="POST" action="staff_dashboard.php" class="d-inline"

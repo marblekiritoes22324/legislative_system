@@ -55,6 +55,7 @@
         if (sectionId === 'systemLogsSection' && typeof renderAuditLogsTable === 'function') renderAuditLogsTable();
         if (sectionId === 'dataCollectionSection' && typeof window.renderResearchCategoryChart === 'function') setTimeout(window.renderResearchCategoryChart, 50);
         if (sectionId === 'reportGenerationSection' && typeof window.renderRecentGeneratedReportsTable === 'function') setTimeout(window.renderRecentGeneratedReportsTable, 50);
+        if (sectionId === 'reportGenerationSection' && typeof window.renderReportPolicyPagination === 'function') setTimeout(window.renderReportPolicyPagination, 50);
         if (sectionId === 'dataVisualizationSection' && typeof window.loadAnalyticsSection === 'function') setTimeout(window.loadAnalyticsSection, 50);
       } catch (e) { }
     }
