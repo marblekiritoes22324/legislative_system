@@ -810,15 +810,15 @@ include __DIR__ . '/includes/header.php';
         <i class="bi bi-activity text-primary me-1"></i> Live Activity Feed
       </span>
     </div>
-    <div class="table-responsive">
+    <div class="table-responsive border rounded-4 overflow-hidden mb-0 shadow-2xs">
       <table class="table activities-table align-middle mb-0">
-        <thead>
+        <thead class="policy-table-thead">
           <tr>
-            <th>Date &amp; Time</th>
-            <th>Activity</th>
-            <th>Module</th>
-            <th>Status</th>
-            <th>Performed By</th>
+            <th class="py-3 px-3 text-uppercase">Date &amp; Time</th>
+            <th class="py-3 px-3 text-uppercase">Activity</th>
+            <th class="py-3 px-3 text-uppercase">Module</th>
+            <th class="py-3 px-3 text-uppercase">Status</th>
+            <th class="py-3 px-3 text-uppercase">Performed By</th>
           </tr>
         </thead>
         <tbody id="dashboardActivityTable">

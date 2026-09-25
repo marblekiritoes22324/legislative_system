@@ -805,7 +805,7 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
   <!-- Bootstrap 5.3 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <!-- System Custom CSS -->
   <link rel="stylesheet" href="../assets/css/Manila City Hall.css?v=<?= time() ?>">
   <link rel="stylesheet" href="../assets/css/Admin.css?v=<?= time() ?>">
@@ -1065,43 +1065,43 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
         <a class="nav-link <?= $active_section === 'adminDashboardSection' ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="javascript:void(0);" data-target="adminDashboardSection"
           onclick="showSection('adminDashboardSection'); return false;" title="Dashboard">
-          <i class="bi bi-speedometer2 me-2"></i><span class="nav-text">Dashboard</span>
+          <i class="bi bi-grid me-2"></i><span class="nav-text">Dashboard</span>
         </a>
 
         <div class="sidebar-section-label mt-3">LEGISLATIVE</div>
         <a class="nav-link <?= $active_section === 'policyResearchSection' ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="javascript:void(0);" data-target="policyResearchSection"
           onclick="showSection('policyResearchSection'); return false;" title="Policy Research">
-          <i class="bi bi-file-earmark-text me-2"></i><span class="nav-text">Policy Research</span>
+          <i class="bi bi-book me-2"></i><span class="nav-text">Policy Research</span>
         </a>
         <a class="nav-link <?= $active_section === 'dataCollectionSection' ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="javascript:void(0);" data-target="dataCollectionSection"
           onclick="showSection('dataCollectionSection'); return false;" title="Data Collection">
-          <i class="bi bi-database-fill-gear me-2"></i><span class="nav-text">Data Collection</span>
-        </a>
-        <a class="nav-link <?= $active_section === 'impactAssessmentSection' ? 'active' : '' ?> py-2.5 px-3 rounded-3"
-          href="javascript:void(0);" data-target="impactAssessmentSection"
-          onclick="showSection('impactAssessmentSection'); return false;" title="Evaluation">
-          <i class="bi bi-bar-chart-line me-2"></i><span class="nav-text">Evaluation</span>
+          <i class="bi bi-database me-2"></i><span class="nav-text">Data Collection</span>
         </a>
         <a class="nav-link <?= $active_section === 'comparativeAnalysisSection' ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="javascript:void(0);" data-target="comparativeAnalysisSection"
           onclick="showSection('comparativeAnalysisSection'); return false;" title="Benchmarks & Comparison">
-          <i class="bi bi-layout-sidebar-inset-reverse me-2"></i><span class="nav-text">Benchmarks & Comparison</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.15em" height="1.15em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2" style="display:inline-block; vertical-align:-0.18em;"><circle cx="10.5" cy="13.5" r="7.5"/><circle cx="10.5" cy="13.5" r="3.5"/><line x1="10.5" y1="13.5" x2="20" y2="4"/><polyline points="15.5 4 20 4 20 8.5"/></svg><span class="nav-text">Benchmarks & Comparison</span>
+        </a>
+        <a class="nav-link <?= $active_section === 'impactAssessmentSection' ? 'active' : '' ?> py-2.5 px-3 rounded-3"
+          href="javascript:void(0);" data-target="impactAssessmentSection"
+          onclick="showSection('impactAssessmentSection'); return false;" title="Evaluation">
+          <i class="bi bi-graph-up-arrow me-2"></i><span class="nav-text">Evaluation</span>
         </a>
 
         <div class="sidebar-section-label mt-3">REPORTING</div>
         <a class="nav-link <?= $active_section === 'reportGenerationSection' ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="javascript:void(0);" data-target="reportGenerationSection"
           onclick="showSection('reportGenerationSection'); return false;" title="Reports">
-          <i class="bi bi-journal-text me-2"></i><span class="nav-text">Reports</span>
+          <i class="bi bi-file-earmark-text me-2"></i><span class="nav-text">Reports</span>
         </a>
 
         <div class="sidebar-section-label mt-3">ADMINISTRATION</div>
         <a class="nav-link <?= $active_section === 'systemLogsSection' ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="javascript:void(0);" data-target="systemLogsSection"
           onclick="showSection('systemLogsSection'); return false;" title="Audit Logs">
-          <i class="bi bi-terminal-fill me-2"></i><span class="nav-text">Audit Logs</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.1em" height="1.1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="me-2" style="display:inline-block; vertical-align:-0.15em;"><path d="M4 6h16"/><path d="M4 12h7"/><path d="M4 18h4"/><circle cx="15.5" cy="15.5" r="3.5"/><path d="M18 18l3 3"/></svg><span class="nav-text">Audit Logs</span>
         </a>
         <a class="nav-link <?= $active_section === 'activeUsersSection' ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="javascript:void(0);" data-target="activeUsersSection"
@@ -1488,15 +1488,15 @@ $active_section = $_GET['section'] ?? (isset($_POST['action']) ? 'policyResearch
               <a href="#" onclick="showSection('systemLogsSection');return false;"
                 class="text-primary small text-decoration-none fw-semibold">View all activities</a>
             </div>
-            <div class="table-responsive">
+            <div class="table-responsive border rounded-4 overflow-hidden mb-0 shadow-2xs">
               <table class="table activities-table align-middle mb-0">
-                <thead>
+                <thead class="policy-table-thead">
                   <tr>
-                    <th>Date &amp; Time</th>
-                    <th>Activity</th>
-                    <th>Status</th>
-                    <th>Role</th>
-                    <th>Performed By</th>
+                    <th class="py-3 px-3 text-uppercase">Date &amp; Time</th>
+                    <th class="py-3 px-3 text-uppercase">Activity</th>
+                    <th class="py-3 px-3 text-uppercase">Status</th>
+                    <th class="py-3 px-3 text-uppercase">Role</th>
+                    <th class="py-3 px-3 text-uppercase">Performed By</th>
                   </tr>
                 </thead>
                 <tbody id="dashboardActivityTable">

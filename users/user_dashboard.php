@@ -616,7 +616,7 @@ if (!empty($conn)) {
   <!-- Bootstrap 5.3 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <!-- System Custom CSS -->
   <link rel="stylesheet" href="../assets/css/Manila City Hall.css?v=<?= time() ?>">
   <link rel="stylesheet" href="../assets/css/Admin.css?v=<?= time() ?>">
@@ -892,30 +892,30 @@ if (!empty($conn)) {
         <a class="nav-link <?= ($active_section === 'userDashboardSection') ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="#" data-target="userDashboardSection" onclick="showSection('userDashboardSection');return false;"
           title="Dashboard">
-          <i class="bi bi-speedometer2 me-2"></i><span class="nav-text">Dashboard</span>
+          <i class="bi bi-grid me-2"></i><span class="nav-text">Dashboard</span>
         </a>
 
         <div class="sidebar-section-label mt-3">LEGISLATIVE</div>
         <a class="nav-link <?= ($active_section === 'policyLibrarySection') ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="#" data-target="policyLibrarySection" onclick="showSection('policyLibrarySection');return false;"
           title="Policy Research">
-          <i class="bi bi-journal-bookmark-fill me-2"></i><span class="nav-text">Policy Research</span>
-        </a>
-        <a class="nav-link <?= ($active_section === 'policyImpactSection') ? 'active' : '' ?> py-2.5 px-3 rounded-3"
-          href="#" data-target="policyImpactSection" onclick="showSection('policyImpactSection');return false;"
-          title="Evaluation">
-          <i class="bi bi-bar-chart-line-fill me-2"></i><span class="nav-text">Evaluation</span>
+          <i class="bi bi-book me-2"></i><span class="nav-text">Policy Research</span>
         </a>
         <a class="nav-link <?= ($active_section === 'policyComparisonSection') ? 'active' : '' ?> py-2.5 px-3 rounded-3"
           href="#" data-target="policyComparisonSection" onclick="showSection('policyComparisonSection');return false;"
           title="Benchmarks & Comparison">
-          <i class="bi bi-layout-split me-2"></i><span class="nav-text">Benchmarks & Comparison</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.15em" height="1.15em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2" style="display:inline-block; vertical-align:-0.18em;"><circle cx="10.5" cy="13.5" r="7.5"/><circle cx="10.5" cy="13.5" r="3.5"/><line x1="10.5" y1="13.5" x2="20" y2="4"/><polyline points="15.5 4 20 4 20 8.5"/></svg><span class="nav-text">Benchmarks & Comparison</span>
+        </a>
+        <a class="nav-link <?= ($active_section === 'policyImpactSection') ? 'active' : '' ?> py-2.5 px-3 rounded-3"
+          href="#" data-target="policyImpactSection" onclick="showSection('policyImpactSection');return false;"
+          title="Evaluation">
+          <i class="bi bi-graph-up-arrow me-2"></i><span class="nav-text">Evaluation</span>
         </a>
 
         <div class="sidebar-section-label mt-3">REPORTING</div>
         <a class="nav-link <?= ($active_section === 'reportsSection') ? 'active' : '' ?> py-2.5 px-3 rounded-3" href="#"
           data-target="reportsSection" onclick="showSection('reportsSection');return false;" title="Reports">
-          <i class="bi bi-file-earmark-text-fill me-2"></i><span class="nav-text">Reports</span>
+          <i class="bi bi-file-earmark-text me-2"></i><span class="nav-text">Reports</span>
         </a>
       </nav>
     </aside>

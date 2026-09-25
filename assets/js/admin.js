@@ -2318,13 +2318,17 @@ function updateEvaluationRowStatus(policyId, newStatus, analysisSnippet) {
   const badge = document.getElementById('eval-status-badge-' + policyId);
   if (badge) {
     badge.textContent = normalizedStatus;
-    let badgeStyle = 'background: rgba(107, 114, 128, 0.12); color: #4b5563; border: 1px solid rgba(107, 114, 128, 0.25);';
-    if (normalizedStatus === 'Approved') {
-      badgeStyle = 'background: rgba(22, 163, 74, 0.12); color: #15803d; border: 1px solid rgba(22, 163, 74, 0.25);';
-    } else if (normalizedStatus === 'Needs Revision') {
-      badgeStyle = 'background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-weight: 700;';
+    badge.style.cssText = '';
+    badge.className = 'badge policy-status-badge';
+    if (normalizedStatus === 'Approved' || normalizedStatus === 'Completed' || normalizedStatus === 'Published') {
+      badge.classList.add('bg-success', 'text-white');
+    } else if (normalizedStatus === 'Needs Revision' || normalizedStatus === 'Rejected' || normalizedStatus === 'Archived') {
+      badge.classList.add('bg-danger', 'text-white');
+    } else if (normalizedStatus === 'Draft') {
+      badge.classList.add('bg-warning', 'text-dark');
+    } else {
+      badge.classList.add('bg-secondary', 'text-white');
     }
-    badge.style.cssText = 'display:inline-block; padding: 5px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.3px; cursor: default; transition: all 0.25s ease; ' + badgeStyle;
   }
 
   if (analysisSnippet) {

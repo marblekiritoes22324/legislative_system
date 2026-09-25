@@ -104,20 +104,20 @@ if (!function_exists('renderDataCollectionCategoryBadge')) {
   .category-badge-pill {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 3px 9px;
+    gap: 6.5px;
+    padding: 5px 13px;
     border-radius: 9999px;
-    font-size: 0.75rem;
+    font-size: 0.83rem;
     font-weight: 600;
     white-space: nowrap;
     letter-spacing: -0.01em;
-    line-height: 1.3;
+    line-height: 1.35;
     transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   }
 
   .category-badge-pill i {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     flex-shrink: 0;
   }
 
@@ -127,22 +127,37 @@ if (!function_exists('renderDataCollectionCategoryBadge')) {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
   }
 
+  /* Status Badge with balanced padding & crisp typography */
+  .policy-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5.5px 13px !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+    border-radius: 9999px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: all 0.18s ease;
+  }
+
   /* Option 1: Civic Slate Metadata Chip (Structured, Neutral, High-End) */
   .report-date-cell,
   .report-date-badge {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    font-size: 0.81rem;
+    gap: 8px;
+    font-size: 0.86rem;
     color: #334155;
-    font-weight: 500;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     letter-spacing: -0.01em;
     background: #F8FAFC !important;
     border: 1px solid #E2E8F0 !important;
-    border-radius: 6px;
-    padding: 3.5px 9.5px !important;
+    border-radius: 7px;
+    padding: 5px 11px !important;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
     transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -150,8 +165,8 @@ if (!function_exists('renderDataCollectionCategoryBadge')) {
   .report-date-cell i,
   .report-date-badge i {
     color: #0B2E59 !important;
-    opacity: 0.78;
-    font-size: 0.8rem;
+    opacity: 0.82;
+    font-size: 0.88rem;
     transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
   }
 
@@ -381,8 +396,8 @@ if (!function_exists('renderDataCollectionCategoryBadge')) {
                   </div>
                 </td>
                 <td class="py-3">
-                  <span class="badge rounded-pill fw-bold px-3 py-1.5 shadow-2xs"
-                    style="background-color: <?= $badgeBg ?> !important; color: <?= $badgeText ?> !important; font-size: 0.78rem;">
+                  <span class="badge policy-status-badge"
+                    style="background-color: <?= $badgeBg ?> !important; color: <?= $badgeText ?> !important;">
                     <?= htmlspecialchars($status) ?>
                   </span>
                 </td>
@@ -390,19 +405,19 @@ if (!function_exists('renderDataCollectionCategoryBadge')) {
                   <?php if (!empty($rp['id'])): ?>
                     <a href="../backend/view_policy_document.php?id=<?= (int) $rp['id'] ?>" target="_blank"
                       class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                      style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;">
+                      style="font-size: 0.84rem; background-color: #eff6ff; border-color: #bfdbfe !important;">
                       <i class="bi bi-eye-fill text-primary"></i> View
                     </a>
                   <?php elseif (!empty($rp['file_path'])): ?>
                     <a href="../assets/uploads/policies/<?= htmlspecialchars($rp['file_path']) ?>" target="_blank"
                       class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                      style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;">
+                      style="font-size: 0.84rem; background-color: #eff6ff; border-color: #bfdbfe !important;">
                       <i class="bi bi-eye-fill text-primary"></i> View
                     </a>
                   <?php else: ?>
                     <button
                       class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                      style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
+                      style="font-size: 0.84rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
                       onclick="showSection('policyResearchSection')">
                       <i class="bi bi-eye-fill text-primary"></i> View
                     </button>
@@ -433,22 +448,21 @@ if (!function_exists('renderDataCollectionCategoryBadge')) {
               <td class="py-3 text-secondary fw-medium"><i
                   class="bi bi-building me-1.5 text-muted opacity-75"></i>Environmental Management Office</td>
               <td class="py-3">
-                <span class="d-inline-flex align-items-center gap-1.5 px-2.5 py-1 rounded-3 border"
-                  style="background: #F8FAFC; border-color: #E2E8F0 !important; color: #334155; font-size: 0.81rem; font-weight: 500;">
-                  <i class="bi bi-calendar-event text-primary" style="font-size: 0.82rem;"></i>
-                  <span>Aug. 3, 2026</span>
-                </span>
+                <div class="report-date-cell">
+                  <i class="bi bi-calendar3"></i>
+                  <span class="report-date-text">Aug 03, 2026</span>
+                </div>
               </td>
               <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs"
-                  style="background-color: #198754 !important; font-size: 0.78rem;">
+                <span class="badge policy-status-badge"
+                  style="background-color: #198754 !important; color: #ffffff !important;">
                   Completed
                 </span>
               </td>
               <td class="py-3 text-center">
                 <button
                   class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
+                  style="font-size: 0.84rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
                   onclick="showSection('policyResearchSection')">
                   <i class="bi bi-eye-fill text-primary"></i> View
                 </button>
@@ -475,18 +489,22 @@ if (!function_exists('renderDataCollectionCategoryBadge')) {
               </td>
               <td class="py-3 text-secondary fw-medium"><i class="bi bi-building me-1.5 text-muted opacity-75"></i>City
                 Planning Office</td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>Aug.
-                2, 2026</td>
               <td class="py-3">
-                <span class="badge rounded-pill text-dark fw-bold px-3 py-1.5 shadow-2xs"
-                  style="background-color: #ffc107 !important; color: #000000 !important; font-size: 0.78rem;">
+                <div class="report-date-cell">
+                  <i class="bi bi-calendar3"></i>
+                  <span class="report-date-text">Aug 02, 2026</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <span class="badge policy-status-badge"
+                  style="background-color: #ffc107 !important; color: #000000 !important;">
                   Draft
                 </span>
               </td>
               <td class="py-3 text-center">
                 <button
                   class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
+                  style="font-size: 0.84rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
                   onclick="showSection('policyResearchSection')">
                   <i class="bi bi-eye-fill text-primary"></i> View
                 </button>
@@ -513,18 +531,22 @@ if (!function_exists('renderDataCollectionCategoryBadge')) {
               </td>
               <td class="py-3 text-secondary fw-medium"><i
                   class="bi bi-building me-1.5 text-muted opacity-75"></i>Engineering Office</td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>Aug.
-                1, 2026</td>
               <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs"
-                  style="background-color: #198754 !important; font-size: 0.78rem;">
+                <div class="report-date-cell">
+                  <i class="bi bi-calendar3"></i>
+                  <span class="report-date-text">Aug 01, 2026</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <span class="badge policy-status-badge"
+                  style="background-color: #198754 !important; color: #ffffff !important;">
                   Completed
                 </span>
               </td>
               <td class="py-3 text-center">
                 <button
                   class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
+                  style="font-size: 0.84rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
                   onclick="showSection('policyResearchSection')">
                   <i class="bi bi-eye-fill text-primary"></i> View
                 </button>
@@ -551,18 +573,22 @@ if (!function_exists('renderDataCollectionCategoryBadge')) {
               </td>
               <td class="py-3 text-secondary fw-medium"><i class="bi bi-building me-1.5 text-muted opacity-75"></i>Health
                 Department</td>
-              <td class="py-3 text-secondary fw-medium"><i class="bi bi-calendar3 me-1.5 text-muted opacity-75"></i>Jul.
-                31, 2026</td>
               <td class="py-3">
-                <span class="badge rounded-pill text-white fw-bold px-3 py-1.5 shadow-2xs"
-                  style="background-color: #198754 !important; font-size: 0.78rem;">
+                <div class="report-date-cell">
+                  <i class="bi bi-calendar3"></i>
+                  <span class="report-date-text">Jul 31, 2026</span>
+                </div>
+              </td>
+              <td class="py-3">
+                <span class="badge policy-status-badge"
+                  style="background-color: #198754 !important; color: #ffffff !important;">
                   Completed
                 </span>
               </td>
               <td class="py-3 text-center">
                 <button
                   class="btn btn-sm btn-light border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-1.5 fw-semibold text-primary shadow-2xs"
-                  style="font-size: 0.8rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
+                  style="font-size: 0.84rem; background-color: #eff6ff; border-color: #bfdbfe !important;"
                   onclick="showSection('policyResearchSection')">
                   <i class="bi bi-eye-fill text-primary"></i> View
                 </button>

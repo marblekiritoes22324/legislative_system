@@ -188,16 +188,19 @@ foreach ($directory_users as $du) {
         box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
     }
 
-    /* Crisp Bold Fonts & Larger Typography */
+    /* Crisp Bold Fonts & Deep Manila Navy Table Header */
     .user-table-head th {
-        background: #F8FAFC !important;
-        color: #0F172A !important;
-        font-size: 0.84rem !important;
-        font-weight: 700 !important;
+        background-color: #0B2E59 !important;
+        color: #FFFFFF !important;
+        font-size: 0.82rem !important;
+        font-weight: 800 !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.5px !important;
-        padding-top: 12px !important;
-        padding-bottom: 12px !important;
+        letter-spacing: 0.05em !important;
+        padding-top: 13px !important;
+        padding-bottom: 13px !important;
+        border-bottom: 2.5px solid #082242 !important;
+        border-top: none !important;
+        vertical-align: middle !important;
     }
 
     .user-row-num {
@@ -714,10 +717,12 @@ foreach ($directory_users as $du) {
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-0 px-4 py-3">
-                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4"
+                    <button type="button" id="provUserCancelBtn" class="btn btn-outline-secondary rounded-3 px-4"
                         data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary rounded-3 px-4 fw-semibold"
-                        style="background: #0B1B3D; border-color: #0B1B3D;">Provision Account</button>
+                    <button type="submit" id="provUserSubmitBtn" class="btn btn-primary rounded-3 px-4 fw-semibold d-inline-flex align-items-center justify-content-center"
+                        style="background: #0B1B3D; border-color: #0B1B3D; min-width: 175px;">
+                        <span id="provUserBtnText">Provision Account</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -730,17 +735,39 @@ foreach ($directory_users as $du) {
     function handleProvisionUserSubmit(e) {
         if (e) e.preventDefault();
 
-        var name = document.getElementById('provFullName').value.trim();
-        var username = document.getElementById('provUsername').value.trim();
-        var role = document.getElementById('provRole').value;
-        var dept = document.getElementById('provDepartment') ? document.getElementById('provDepartment').value.trim() : 'Staff';
-        var email = document.getElementById('provEmail').value.trim();
-        var password = document.getElementById('provPassword').value.trim();
+        var nameInput = document.getElementById('provFullName');
+        var usernameInput = document.getElementById('provUsername');
+        var roleInput = document.getElementById('provRole');
+        var deptInput = document.getElementById('provDepartment');
+        var emailInput = document.getElementById('provEmail');
+        var passwordInput = document.getElementById('provPassword');
+
+        var submitBtn = document.getElementById('provUserSubmitBtn');
+        var cancelBtn = document.getElementById('provUserCancelBtn');
+
+        var name = nameInput ? nameInput.value.trim() : '';
+        var username = usernameInput ? usernameInput.value.trim() : '';
+        var role = roleInput ? roleInput.value : 'Staff';
+        var dept = deptInput ? deptInput.value.trim() : 'Staff';
+        var email = emailInput ? emailInput.value.trim() : '';
+        var password = passwordInput ? passwordInput.value.trim() : '';
 
         if (!name || !username || !email || !password) {
             alert('Please fill out all required fields.');
             return false;
         }
+
+        // 1. Enter Loading Animation State (disables inputs and buttons, shows spinner for 2-3s)
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2 text-warning" role="status" aria-hidden="true" style="width: 1.05rem; height: 1.05rem; border-width: 2.2px;"></span> Provisioning Account...';
+        }
+        if (cancelBtn) cancelBtn.disabled = true;
+        if (nameInput) nameInput.disabled = true;
+        if (usernameInput) usernameInput.disabled = true;
+        if (roleInput) roleInput.disabled = true;
+        if (emailInput) emailInput.disabled = true;
+        if (passwordInput) passwordInput.disabled = true;
 
         var formData = new FormData();
         formData.append('action', 'provision_user');
@@ -751,63 +778,112 @@ foreach ($directory_users as $du) {
         formData.append('email', email);
         formData.append('password', password);
 
-        fetch('admin_dashboard.php', {
+        // Minimum ~2.3 seconds loading animation duration
+        var minLoadingDelay = new Promise(function (resolve) {
+            setTimeout(resolve, 2300);
+        });
+
+        var fetchRequest = fetch('admin_dashboard.php', {
             method: 'POST',
             body: formData
-        })
-            .then(function (res) { return res.json(); })
-            .then(function (data) {
+        }).then(function (res) {
+            return res.json();
+        }).catch(function (err) {
+            return { success: false, fallback: true, error: err.message };
+        });
+
+        function resetProvisionModalControls() {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span id="provUserBtnText">Provision Account</span>';
+            }
+            if (cancelBtn) cancelBtn.disabled = false;
+            if (nameInput) nameInput.disabled = false;
+            if (usernameInput) usernameInput.disabled = false;
+            if (roleInput) roleInput.disabled = false;
+            if (emailInput) emailInput.disabled = false;
+            if (passwordInput) passwordInput.disabled = false;
+        }
+
+        Promise.all([fetchRequest, minLoadingDelay])
+            .then(function (results) {
+                var data = results[0];
+
                 if (data && data.success) {
-                    // 1. Sync with localStorage for client-side persistence
-                    var users = [];
-                    try {
-                        users = JSON.parse(localStorage.getItem('legislative_system_users') || '[]');
-                    } catch (err) { users = []; }
+                    // Quick success transition on the button
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="bi bi-check2-circle me-1.5 text-warning fs-6"></i> Account Provisioned!';
+                    }
 
-                    var idx = users.findIndex(u => u && u.username && u.username.toLowerCase() === username.toLowerCase());
-                    if (idx !== -1) {
-                        users[idx] = { name: name, username: username, role: role, department: dept, email: email, status: 'Active' };
-                    } else {
+                    setTimeout(function () {
+                        // 1. Sync with localStorage for client-side persistence
+                        var users = [];
+                        try {
+                            users = JSON.parse(localStorage.getItem('legislative_system_users') || '[]');
+                        } catch (err) { users = []; }
+
+                        var idx = users.findIndex(function (u) {
+                            return u && u.username && u.username.toLowerCase() === username.toLowerCase();
+                        });
+                        if (idx !== -1) {
+                            users[idx] = { name: name, username: username, role: role, department: dept, email: email, status: 'Active' };
+                        } else {
+                            users.push({ name: name, username: username, role: role, department: dept, email: email, status: 'Active' });
+                        }
+                        localStorage.setItem('legislative_system_users', JSON.stringify(users));
+
+                        // 2. Hide modal & reset form
+                        var modalEl = document.getElementById('provisionUserModal');
+                        if (modalEl && typeof bootstrap !== 'undefined') {
+                            var modal = bootstrap.Modal.getInstance(modalEl);
+                            if (modal) modal.hide();
+                        }
+                        var formEl = document.getElementById('provisionUserForm');
+                        if (formEl) formEl.reset();
+                        resetProvisionModalControls();
+
+                        // 3. Show success alert on User Directory page
+                        showProvisionSuccessAlert(data.message || ('Account for "' + name + '" (@' + username + ') was provisioned successfully!'));
+
+                        // 4. Immediately render row & update counters without page refresh
+                        syncLocalStorageUsers();
+                        filterUserDirectory();
+                    }, 400);
+                } else if (data && data.fallback) {
+                    // Fallback save to localStorage if offline/network issue
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="bi bi-check2-circle me-1.5 text-warning fs-6"></i> Account Provisioned!';
+                    }
+
+                    setTimeout(function () {
+                        var users = [];
+                        try {
+                            users = JSON.parse(localStorage.getItem('legislative_system_users') || '[]');
+                        } catch (err) { users = []; }
                         users.push({ name: name, username: username, role: role, department: dept, email: email, status: 'Active' });
-                    }
-                    localStorage.setItem('legislative_system_users', JSON.stringify(users));
+                        localStorage.setItem('legislative_system_users', JSON.stringify(users));
 
-                    // 2. Hide modal & reset form
-                    var modalEl = document.getElementById('provisionUserModal');
-                    if (modalEl && typeof bootstrap !== 'undefined') {
-                        var modal = bootstrap.Modal.getInstance(modalEl);
-                        if (modal) modal.hide();
-                    }
-                    document.getElementById('provisionUserForm').reset();
+                        var modalEl = document.getElementById('provisionUserModal');
+                        if (modalEl && typeof bootstrap !== 'undefined') {
+                            var modal = bootstrap.Modal.getInstance(modalEl);
+                            if (modal) modal.hide();
+                        }
+                        var formEl = document.getElementById('provisionUserForm');
+                        if (formEl) formEl.reset();
+                        resetProvisionModalControls();
 
-                    // 3. Show success alert on User Directory page
-                    showProvisionSuccessAlert(data.message || ('Account for "' + name + '" (@' + username + ') was provisioned successfully!'));
-
-                    // 4. Immediately render row & update counters without page refresh
-                    syncLocalStorageUsers();
-                    filterUserDirectory();
+                        showProvisionSuccessAlert('Account for "' + name + '" (@' + username + ') was provisioned successfully!');
+                        syncLocalStorageUsers();
+                        filterUserDirectory();
+                    }, 400);
                 } else {
+                    resetProvisionModalControls();
                     alert(data.error || 'Failed to provision account. Please check the details and try again.');
                 }
             })
             .catch(function () {
-                // Fallback save to localStorage if offline
-                var users = [];
-                try {
-                    users = JSON.parse(localStorage.getItem('legislative_system_users') || '[]');
-                } catch (err) { users = []; }
-                users.push({ name: name, username: username, role: role, department: dept, email: email, status: 'Active' });
-                localStorage.setItem('legislative_system_users', JSON.stringify(users));
-
-                var modalEl = document.getElementById('provisionUserModal');
-                if (modalEl && typeof bootstrap !== 'undefined') {
-                    var modal = bootstrap.Modal.getInstance(modalEl);
-                    if (modal) modal.hide();
-                }
-                document.getElementById('provisionUserForm').reset();
-                showProvisionSuccessAlert('Account for "' + name + '" (@' + username + ') was provisioned successfully!');
-                syncLocalStorageUsers();
-                filterUserDirectory();
+                resetProvisionModalControls();
+                alert('An error occurred while provisioning the account. Please try again.');
             });
 
         return false;

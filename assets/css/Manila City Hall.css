@@ -131,20 +131,40 @@ body {
 }
 
 .sidebar-nav .nav-link {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
   color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 8px;
-  border-radius: 14px;
-  padding: 12px 14px;
+  margin-bottom: 5px;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 550;
   transition: background 0.2s ease, transform 0.2s ease;
   text-decoration: none;
   white-space: normal;
+  letter-spacing: -0.01em;
 }
 
-.sidebar-nav .nav-link i {
-  min-width: 1.2rem;
-  margin-right: 0.6rem;
+.sidebar-nav .nav-link .nav-text {
+  font-size: 0.95rem;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.sidebar-nav .nav-link i,
+.sidebar-nav .nav-link svg {
+  font-size: 1.25rem;
+  width: 1.25em;
+  height: 1.25em;
+  min-width: 1.35rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
 .sidebar-nav .nav-link:hover,

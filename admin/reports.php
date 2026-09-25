@@ -331,17 +331,17 @@ unset($pol);
     .report-date-badge {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      font-size: 0.81rem;
+      gap: 8px;
+      font-size: 0.86rem;
       color: #334155;
-      font-weight: 500;
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
       letter-spacing: -0.01em;
       background: #F8FAFC !important;
       border: 1px solid #E2E8F0 !important;
-      border-radius: 6px;
-      padding: 3.5px 9.5px !important;
+      border-radius: 7px;
+      padding: 5px 11px !important;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
       transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -349,8 +349,8 @@ unset($pol);
     .report-date-cell i,
     .report-date-badge i {
       color: #0B2E59 !important;
-      opacity: 0.78;
-      font-size: 0.8rem;
+      opacity: 0.82;
+      font-size: 0.88rem;
       transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
     }
 
@@ -387,20 +387,20 @@ unset($pol);
     .category-badge-pill {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 3px 9px;
+      gap: 6.5px;
+      padding: 5px 13px;
       border-radius: 9999px;
-      font-size: 0.75rem;
+      font-size: 0.83rem;
       font-weight: 600;
       white-space: nowrap;
       letter-spacing: -0.01em;
-      line-height: 1.3;
+      line-height: 1.35;
       transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
     }
 
     .category-badge-pill i {
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       flex-shrink: 0;
     }
 
@@ -797,18 +797,38 @@ unset($pol);
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
           <i class="bi bi-clock-history text-primary"></i> 2. Generated Reports &amp; Comparative Analyses
         </h3>
-        <p class="text-muted mb-0 small">Access, browse, and download legislative policy evaluations and cross-city
-          benchmarks.</p>
+        <p class="text-muted mb-0 small">Access, browse, search, and download legislative policy evaluations and cross-city benchmarks.</p>
       </div>
       <div class="d-flex align-items-center gap-2">
-        <div class="btn-group btn-group-sm p-1 bg-light rounded-pill border shadow-2xs" role="group">
-          <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold text-white shadow-sm"
-            id="filterReportAll" style="background:#0B2E59;" onclick="filterReportsTable('All', this)">All</button>
-          <button type="button" class="btn btn-sm rounded-pill px-3 py-1 text-secondary" id="filterReportEval"
-            style="background:transparent;" onclick="filterReportsTable('Evaluation', this)">Evaluations</button>
-          <button type="button" class="btn btn-sm rounded-pill px-3 py-1 text-secondary" id="filterReportBench"
-            style="background:transparent;" onclick="filterReportsTable('Benchmark', this)">Benchmarks</button>
-        </div>
+        <span class="badge border rounded-pill px-3 py-1.5 fw-semibold"
+          style="background: #EFF6FF; color: #0B2E59; border-color: #BFDBFE !important; font-size: 0.8rem;">
+          <i class="bi bi-file-earmark-check text-primary me-1"></i><span id="recentGeneratedReportsTotalBadge">0</span> Reports Available
+        </span>
+      </div>
+    </div>
+
+    <!-- Filter & Live Search Bar for Generated Reports -->
+    <div class="d-flex flex-wrap flex-md-nowrap align-items-center gap-2.5 mb-3">
+      <!-- Search Input -->
+      <div class="policy-search-box flex-grow-1">
+        <i class="bi bi-search policy-search-icon"></i>
+        <input type="text" id="recentReportsSearchInput" class="policy-search-input"
+          placeholder="Search generated reports by file name, policy subject, or date..."
+          aria-label="Search generated reports" oninput="onRecentReportsSearchInput()">
+        <button type="button" class="policy-search-clear" id="recentReportsClearSearchBtn" title="Clear search"
+          style="display: none;" onclick="clearRecentReportsSearch()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <!-- Filter Pills -->
+      <div class="btn-group btn-group-sm p-1 bg-light rounded-pill border shadow-2xs flex-shrink-0" role="group">
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold text-white shadow-sm"
+          id="filterReportAll" style="background:#0B2E59;" onclick="filterReportsTable('All', this)">All</button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1 text-secondary" id="filterReportEval"
+          style="background:transparent;" onclick="filterReportsTable('Evaluation', this)">Evaluations</button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1 text-secondary" id="filterReportBench"
+          style="background:transparent;" onclick="filterReportsTable('Benchmark', this)">Benchmarks</button>
       </div>
     </div>
     <div class="table-responsive border rounded-4 overflow-hidden mb-2">
@@ -861,53 +881,71 @@ unset($pol);
 
   <!-- Official Document Report Viewer Modal -->
   <div class="modal fade" id="reportDocumentViewerModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 840px;">
+    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 880px;">
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden bg-white">
-        <div class="modal-header border-bottom px-4 py-3 bg-light d-flex align-items-center justify-content-between">
-          <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-file-earmark-text-fill text-primary fs-5"></i>
-            <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative
-              Document</h5>
+        <!-- Clean & Executive Header -->
+        <div class="modal-header border-bottom px-4 py-3 bg-white d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2.5">
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+              style="width: 38px; height: 38px; background: rgba(11, 46, 89, 0.08); color: #0B2E59; flex-shrink: 0;">
+              <i class="bi bi-file-earmark-text-fill fs-5"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative Document</h5>
+              <span class="text-muted" style="font-size: 0.76rem;">Official Legislative Services Preview</span>
+            </div>
           </div>
-          <div class="d-flex align-items-center gap-2">
-            <!-- View Original Document Button -->
-            <button type="button"
-              class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
-              id="reportModalViewOriginalBtn" title="Open the original uploaded source document">
-              <i class="bi bi-box-arrow-up-right"></i> View Original
-            </button>
-            <!-- Download PDF -->
-            <button type="button"
-              class="btn btn-sm btn-primary rounded-3 px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
-              id="reportModalDownloadPdfBtn">
-              <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
-            </button>
-            <!-- Download Word -->
-            <button type="button"
-              class="btn btn-sm btn-outline-secondary rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 bg-white shadow-2xs"
-              id="reportModalDownloadDocxBtn">
-              <i class="bi bi-file-earmark-word-fill text-primary"></i> Word (.docx)
-            </button>
-            <!-- Print Button -->
-            <button type="button"
-              class="btn btn-sm text-white rounded-3 px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm"
-              style="background: #0B2E59; border-color: #0B2E59;" id="reportModalPrintBtn" title="Print Document">
-              <i class="bi bi-printer-fill"></i> Print
-            </button>
-            <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-4 p-md-4" style="max-height: 75vh; overflow-y: auto; background:#f8fafc;">
-          <div id="reportViewerModalDocumentBody" class="bg-white p-4 rounded-3 border shadow-sm mx-auto"
-            style="max-width: 740px;">
+        <!-- Document Canvas / Paper Body -->
+        <div class="modal-body p-3 p-md-4" style="max-height: 72vh; overflow-y: auto; background: #f1f5f9;">
+          <div id="reportViewerModalDocumentBody" class="bg-white p-4 p-md-5 rounded-4 border shadow-sm mx-auto"
+            style="max-width: 760px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
             <!-- Rendered document will be injected here -->
           </div>
         </div>
-        <div class="modal-footer border-top px-4 py-2.5 bg-light d-flex align-items-center justify-content-between">
-          <span class="text-muted small"><i class="bi bi-shield-check text-success me-1"></i> Official City Council of
-            Manila Legislative Document</span>
-          <button type="button" class="btn btn-sm btn-secondary rounded-3 px-3.5 py-1.5 fw-medium"
-            data-bs-dismiss="modal">Close</button>
+        <!-- Clean Bottom Actions Footer -->
+        <div class="modal-footer border-top px-4 py-2.5 bg-white d-flex flex-wrap align-items-center justify-content-between" style="gap: 10px;">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1 d-inline-flex align-items-center gap-1.5 fw-semibold" style="font-size: 0.76rem;">
+              <i class="bi bi-shield-check"></i> Official Document
+            </span>
+            <span class="text-muted small fw-medium d-none d-sm-inline" style="font-size: 0.78rem;">City Council of Manila</span>
+          </div>
+          <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+            <!-- View Original Document Button -->
+            <button type="button"
+              class="btn btn-sm text-white fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
+              style="background: #0284c7; border: 1px solid #0284c7; font-size: 0.82rem; padding: 5px 13px; border-radius: 6px;"
+              id="reportModalViewOriginalBtn" title="Open the original uploaded source document">
+              <i class="bi bi-box-arrow-up-right" style="font-size: 0.85rem;"></i>
+              <span>View Original</span>
+            </button>
+            <!-- Download Word -->
+            <button type="button"
+              class="btn btn-sm text-white fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
+              style="background: #2b579a; border: 1px solid #2b579a; font-size: 0.82rem; padding: 5px 13px; border-radius: 6px;"
+              id="reportModalDownloadDocxBtn" title="Download Word Document">
+              <i class="bi bi-file-earmark-word-fill" style="font-size: 0.85rem;"></i>
+              <span>Word (.docx)</span>
+            </button>
+            <!-- Download PDF (Red) -->
+            <button type="button"
+              class="btn btn-sm text-white fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
+              style="background: #dc2626; border: 1px solid #dc2626; font-size: 0.82rem; padding: 5px 13px; border-radius: 6px;"
+              id="reportModalDownloadPdfBtn" title="Download PDF Document">
+              <i class="bi bi-file-earmark-pdf-fill" style="font-size: 0.85rem;"></i>
+              <span>Download PDF</span>
+            </button>
+            <!-- Print Button (Balanced Compact Size) -->
+            <button type="button"
+              class="btn btn-sm text-white fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
+              style="background: #0B2E59; border: 1px solid #0B2E59; font-size: 0.82rem; padding: 5px 14px; border-radius: 6px;"
+              id="reportModalPrintBtn" title="Print Document">
+              <i class="bi bi-printer-fill" style="font-size: 0.85rem;"></i>
+              <span>Print</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1167,65 +1205,65 @@ unset($pol);
     var evalRes = formatEvaluationResult(rep.risk);
 
     return '' +
-      '<div style="max-width:720px; margin:0 auto; background:#ffffff; padding:15px; font-family:\'Segoe UI\', Arial, sans-serif; color:#0f172a; text-align:left;">' +
-      '  <div style="text-align:center; margin-bottom:18px;">' +
-      '    <img src="' + logoUrl + '" width="65" height="65" style="width:65px; height:65px; object-fit:contain; margin-bottom:8px;" alt="Manila Seal">' +
-      '    <h1 style="color:#0B2E59; font-weight:800; font-size:1.6rem; letter-spacing:-0.5px; margin:0 0 4px 0;">LUNGSOD NG MAYNILA</h1>' +
-      '    <div style="color:#475569; font-weight:600; font-size:0.88rem; margin-bottom:14px;">City of Manila — Legislative Services</div>' +
-      '    <div style="margin-bottom:6px;">' +
-      '      <span style="background:#0B2E59; color:#ffffff; padding:6px 16px; font-weight:700; text-transform:uppercase; letter-spacing:1px; font-size:0.82rem; border-radius:4px; display:inline-block;">Official Legislative Evaluation &amp; Impact Report</span>' +
+      '<div style="max-width:740px; margin:0 auto; background:#ffffff; padding:20px; font-family:\'Segoe UI\', Arial, sans-serif; color:#0f172a; text-align:left;">' +
+      '  <div style="text-align:center; margin-bottom:20px;">' +
+      '    <img src="' + logoUrl + '" width="68" height="68" style="width:68px; height:68px; object-fit:contain; margin-bottom:10px;" alt="Manila Seal">' +
+      '    <h1 style="color:#0B2E59; font-weight:800; font-size:1.65rem; letter-spacing:-0.5px; margin:0 0 4px 0;">LUNGSOD NG MAYNILA</h1>' +
+      '    <div style="color:#475569; font-weight:600; font-size:0.9rem; margin-bottom:14px;">City of Manila — Legislative Services</div>' +
+      '    <div style="margin-bottom:8px;">' +
+      '      <span style="background:#0B2E59; color:#ffffff; padding:7px 20px; font-weight:700; text-transform:uppercase; letter-spacing:1px; font-size:0.82rem; border-radius:6px; display:inline-block; box-shadow: 0 2px 4px rgba(11,46,89,0.2);">Official Legislative Evaluation &amp; Impact Report</span>' +
       '    </div>' +
-      '    <div style="color:#64748b; font-size:0.78rem; margin-top:6px;">Date Generated: ' + nowStr + '</div>' +
+      '    <div style="color:#64748b; font-size:0.80rem; margin-top:8px;">Date Generated: ' + nowStr + '</div>' +
       '  </div>' +
-      '  <div style="border-bottom:2px solid #0B2E59; margin-bottom:20px;"></div>' +
+      '  <div style="border-bottom:2.5px solid #0B2E59; margin-bottom:24px;"></div>' +
 
-      '  <table width="100%" style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:0.88rem;">' +
+      '  <table width="100%" style="width:100%; border-collapse:collapse; margin-bottom:24px; font-size:0.90rem; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">' +
       '    <tbody>' +
       '      <tr>' +
-      '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Policy Title</th>' +
-      '        <td style="padding:12px 16px; border:1px solid #cbd5e1; font-weight:700; color:#0f172a; font-size:0.92rem;">' + esc(rep.title || rep.policy_title) + '</td>' +
+      '        <th width="180" style="padding:13px 18px; border:1px solid #e2e8f0; background-color:#f8fafc; font-weight:700; width:180px; text-align:left; color:#334155;">Policy Title</th>' +
+      '        <td style="padding:13px 18px; border:1px solid #e2e8f0; font-weight:700; color:#0f172a; font-size:0.94rem;">' + esc(rep.title || rep.policy_title) + '</td>' +
       '      </tr>' +
       '      <tr>' +
-      '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Category</th>' +
-      '        <td style="padding:12px 16px; border:1px solid #cbd5e1; color:#1e293b;">' + esc(rep.category || 'General Legislation') + '</td>' +
+      '        <th width="180" style="padding:13px 18px; border:1px solid #e2e8f0; background-color:#f8fafc; font-weight:700; width:180px; text-align:left; color:#334155;">Category</th>' +
+      '        <td style="padding:13px 18px; border:1px solid #e2e8f0; color:#1e293b; font-weight:500;">' + esc(rep.category || 'General Legislation') + '</td>' +
       '      </tr>' +
       '      <tr>' +
-      '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Original Document</th>' +
-      '        <td style="padding:12px 16px; border:1px solid #cbd5e1; color:#1e293b;">' +
+      '        <th width="180" style="padding:13px 18px; border:1px solid #e2e8f0; background-color:#f8fafc; font-weight:700; width:180px; text-align:left; color:#334155;">Original Document</th>' +
+      '        <td style="padding:13px 18px; border:1px solid #e2e8f0; color:#1e293b;">' +
       ((rep.id || rep.policy_id || (rep.file_path && rep.file_path.trim() !== '')) ?
-        ('<a href="' + ((rep.id || rep.policy_id) ? ('../backend/view_policy_document.php?id=' + encodeURIComponent(rep.id || rep.policy_id)) : ('../assets/uploads/policies/' + encodeURIComponent(rep.file_path))) + '" target="_blank" style="color:#0d6efd; font-weight:600; text-decoration:underline; display:inline-flex; align-items:center; gap:5px;"><i class="bi bi-box-arrow-up-right"></i> ' + esc(rep.file_path || 'View Full Document') + ' (View Original Document)</a>') :
+        ('<a href="' + ((rep.id || rep.policy_id) ? ('../backend/view_policy_document.php?id=' + encodeURIComponent(rep.id || rep.policy_id)) : ('../assets/uploads/policies/' + encodeURIComponent(rep.file_path))) + '" target="_blank" style="color:#0284c7; font-weight:600; text-decoration:underline; display:inline-flex; align-items:center; gap:6px;"><i class="bi bi-box-arrow-up-right"></i> ' + esc(rep.file_path || 'View Full Document') + ' (View Original Document)</a>') :
         ('<span style="color:#64748b; font-style:italic;"><i class="bi bi-archive me-1"></i> Official Manila City Legislative Record (Digital Archive)</span>')
       ) +
       '        </td>' +
       '      </tr>' +
       '      <tr>' +
-      '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">AI Executive Summary</th>' +
-      '        <td style="padding:12px 16px; border:1px solid #cbd5e1; color:#1e293b; line-height:1.65;">' + esc(rep.summary) + '</td>' +
+      '        <th width="180" style="padding:13px 18px; border:1px solid #e2e8f0; background-color:#f8fafc; font-weight:700; width:180px; text-align:left; color:#334155;">AI Executive Summary</th>' +
+      '        <td style="padding:13px 18px; border:1px solid #e2e8f0; color:#1e293b; line-height:1.7;">' + esc(rep.summary) + '</td>' +
       '      </tr>' +
       '      <tr>' +
-      '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Evaluation Result</th>' +
-      '        <td style="padding:12px 16px; border:1px solid #cbd5e1;">' +
-      '          <span style="background:' + evalRes.bg + '; color:' + evalRes.color + '; border:1px solid ' + evalRes.border + '; padding:4px 12px; border-radius:4px; font-weight:700; font-size:0.82rem; display:inline-block;">' + esc(evalRes.text) + '</span>' +
+      '        <th width="180" style="padding:13px 18px; border:1px solid #e2e8f0; background-color:#f8fafc; font-weight:700; width:180px; text-align:left; color:#334155;">Evaluation Result</th>' +
+      '        <td style="padding:13px 18px; border:1px solid #e2e8f0;">' +
+      '          <span style="background:' + evalRes.bg + '; color:' + evalRes.color + '; border:1px solid ' + evalRes.border + '; padding:5px 14px; border-radius:6px; font-weight:700; font-size:0.84rem; display:inline-block;">' + esc(evalRes.text) + '</span>' +
       '        </td>' +
       '      </tr>' +
       '      <tr>' +
-      '        <th width="170" style="padding:12px 16px; border:1px solid #cbd5e1; background-color:#f8fafc; font-weight:700; width:170px; text-align:left; color:#334155;">Recommendation</th>' +
-      '        <td style="padding:12px 16px; border:1px solid #cbd5e1; color:#1e293b; line-height:1.65;">' + esc(rep.recommendation) + '</td>' +
+      '        <th width="180" style="padding:13px 18px; border:1px solid #e2e8f0; background-color:#f8fafc; font-weight:700; width:180px; text-align:left; color:#334155;">Recommendation</th>' +
+      '        <td style="padding:13px 18px; border:1px solid #e2e8f0; color:#1e293b; line-height:1.7;">' + esc(rep.recommendation) + '</td>' +
       '      </tr>' +
       '    </tbody>' +
       '  </table>' +
 
-      '  <table width="100%" style="width:100%; border-collapse:collapse; margin-top:35px; margin-bottom:25px; font-size:0.85rem; border:none;">' +
+      '  <table width="100%" style="width:100%; border-collapse:collapse; margin-top:35px; margin-bottom:25px; font-size:0.86rem; border:none;">' +
       '    <tr>' +
       '      <td width="50%" style="width:50%; border:none; padding:0; vertical-align:top; text-align:left;">' +
-      '        <div style="color:#64748b; font-size:0.78rem;">Prepared &amp; Evaluated By:</div>' +
-      '        <div style="font-weight:700; color:#0f172a; margin-top:22px; font-size:0.9rem;">Legislative Research Office</div>' +
-      '        <div style="color:#64748b; font-size:0.78rem;">City Council of Manila</div>' +
+      '        <div style="color:#64748b; font-size:0.80rem;">Prepared &amp; Evaluated By:</div>' +
+      '        <div style="font-weight:700; color:#0f172a; margin-top:22px; font-size:0.92rem;">Legislative Research Office</div>' +
+      '        <div style="color:#64748b; font-size:0.80rem;">City Council of Manila</div>' +
       '      </td>' +
       '      <td width="50%" style="width:50%; border:none; padding:0; text-align:right; vertical-align:top;">' +
-      '        <div style="color:#64748b; font-size:0.78rem;">Approved By:</div>' +
-      '        <div style="font-weight:700; color:#0f172a; margin-top:22px; font-size:0.9rem;">Administrator</div>' +
-      '        <div style="color:#64748b; font-size:0.78rem;">Legislative Information System</div>' +
+      '        <div style="color:#64748b; font-size:0.80rem;">Approved By:</div>' +
+      '        <div style="font-weight:700; color:#0f172a; margin-top:22px; font-size:0.92rem;">Administrator</div>' +
+      '        <div style="color:#64748b; font-size:0.80rem;">Legislative Information System</div>' +
       '      </td>' +
       '    </tr>' +
       '  </table>' +
@@ -1337,8 +1375,32 @@ unset($pol);
   // --- Dynamic Recent Generated Reports Storage & Table Management ---
   var ADMIN_RECENT_REPORTS_KEY = 'legislative_admin_recent_reports_v4';
   var currentReportFilter = 'All';
+  var _recentReportsSearchQuery = '';
   var _recentReportsCurrentPage = 1;
   var _recentReportsPageSize = 10;
+
+  function onRecentReportsSearchInput() {
+    var input = document.getElementById('recentReportsSearchInput');
+    var clearBtn = document.getElementById('recentReportsClearSearchBtn');
+    _recentReportsSearchQuery = input ? input.value.trim().toLowerCase() : '';
+    if (clearBtn) {
+      clearBtn.style.display = _recentReportsSearchQuery.length > 0 ? 'inline-flex' : 'none';
+    }
+    _recentReportsCurrentPage = 1;
+    renderRecentGeneratedReportsTable();
+  }
+  window.onRecentReportsSearchInput = onRecentReportsSearchInput;
+
+  function clearRecentReportsSearch() {
+    var input = document.getElementById('recentReportsSearchInput');
+    var clearBtn = document.getElementById('recentReportsClearSearchBtn');
+    if (input) input.value = '';
+    if (clearBtn) clearBtn.style.display = 'none';
+    _recentReportsSearchQuery = '';
+    _recentReportsCurrentPage = 1;
+    renderRecentGeneratedReportsTable();
+  }
+  window.clearRecentReportsSearch = clearRecentReportsSearch;
 
   function filterReportsTable(filterType, btnEl) {
     currentReportFilter = filterType;
@@ -1505,8 +1567,12 @@ unset($pol);
     if (!tbody) return;
 
     var allList = loadRecentGeneratedReports();
+    var totalBadge = document.getElementById('recentGeneratedReportsTotalBadge');
+    if (totalBadge) totalBadge.textContent = allList.length;
+
     var list = allList;
 
+    // 1. Filter by report category / tab
     if (currentReportFilter === 'Evaluation') {
       list = allList.filter(function (r) { return !r.report_type || r.report_type.indexOf('Evaluation') !== -1; });
     } else if (currentReportFilter === 'Benchmark') {
@@ -1515,8 +1581,22 @@ unset($pol);
       list = allList.filter(function (r) { return r.report_type && (r.report_type.indexOf('Version') !== -1); });
     }
 
+    // 2. Filter by live search query
+    if (_recentReportsSearchQuery) {
+      var q = _recentReportsSearchQuery;
+      list = list.filter(function (r) {
+        var name = (r.report_name || '').toLowerCase();
+        var title = (r.policy_title || '').toLowerCase();
+        var type = (r.report_type || '').toLowerCase();
+        var date = (r.date_generated || '').toLowerCase();
+        var format = (r.format || '').toLowerCase();
+        return name.indexOf(q) !== -1 || title.indexOf(q) !== -1 || type.indexOf(q) !== -1 || date.indexOf(q) !== -1 || format.indexOf(q) !== -1;
+      });
+    }
+
     if (!list || list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4"><i class="bi bi-info-circle me-1"></i> No matching reports found for this filter.</td></tr>';
+      var msg = _recentReportsSearchQuery ? ('No generated reports found matching "' + esc(_recentReportsSearchQuery) + '".') : 'No matching reports found for this filter.';
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4"><i class="bi bi-search me-1"></i> ' + msg + '</td></tr>';
       if (countEl) countEl.textContent = 'Showing 0 records';
       if (paginationContainer) paginationContainer.style.display = 'none';
       return;

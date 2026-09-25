@@ -141,27 +141,31 @@ if (empty($audit_logs)) {
 ?>
 
 <style>
-  /* Audit Logs Premium Styling */
+  /* Audit Logs Premium Styling - Deep Manila Navy Header */
   .audit-table-head th {
-    background: #F8FAFC !important;
-    color: #334155 !important;
+    background-color: #0B2E59 !important;
+    color: #FFFFFF !important;
     font-size: 0.82rem !important;
-    font-weight: 600 !important;
+    font-weight: 800 !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
+    letter-spacing: 0.05em !important;
     padding-top: 14px !important;
     padding-bottom: 14px !important;
     padding-left: 16px !important;
     padding-right: 16px !important;
-    border-bottom: 1px solid #E2E8F0 !important;
+    border-bottom: 2.5px solid #082242 !important;
+    border-top: none !important;
+    vertical-align: middle !important;
   }
 
   .audit-log-row {
     transition: background 0.15s ease;
   }
+
   .audit-log-row:hover {
     background-color: #F8FAFC !important;
   }
+
   .audit-log-row td {
     padding-top: 13px !important;
     padding-bottom: 13px !important;
@@ -312,7 +316,8 @@ if (empty($audit_logs)) {
   }
 </style>
 
-<section id="systemLogsSection" class="content-section <?= ($active_section ?? 'adminDashboardSection') !== 'systemLogsSection' ? 'd-none' : '' ?>">
+<section id="systemLogsSection"
+  class="content-section <?= ($active_section ?? 'adminDashboardSection') !== 'systemLogsSection' ? 'd-none' : '' ?>">
   <!-- Top Header Banner -->
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
     <div>
@@ -371,13 +376,14 @@ if (empty($audit_logs)) {
             $num = $index + 1;
             $dt = htmlspecialchars($log['date_time'] ?? ($log['created_at'] ?? 'May 14, 2026 10:15 AM'));
             $user = htmlspecialchars($log['user'] ?? ($log['user_name'] ?? 'Admin'));
-            if ($user === 'System Administrator' || $user === 'Administration') $user = 'Admin';
-            
+            if ($user === 'System Administrator' || $user === 'Administration')
+              $user = 'Admin';
+
             // Resolve Role
-            $role = function_exists('resolve_audit_role') 
-              ? resolve_audit_role($conn ?? null, $user, $log['role'] ?? null) 
+            $role = function_exists('resolve_audit_role')
+              ? resolve_audit_role($conn ?? null, $user, $log['role'] ?? null)
               : ($log['role'] ?? 'Admin');
-            
+
             $role_class = 'role-badge-admin';
             $role_icon = 'bi-shield-lock-fill';
             if ($role === 'Staff') {
@@ -419,8 +425,10 @@ if (empty($audit_logs)) {
               <td class="text-center audit-num"><?= $num ?></td>
               <td class="audit-datetime"><?= $dt ?></td>
               <td class="audit-user"><?= $user ?></td>
-              <td><span class="badge <?= $role_class ?> rounded-pill"><i class="bi <?= $role_icon ?> me-1"></i><?= $role ?></span></td>
-              <td><span class="badge <?= $mod_class ?> rounded-pill"><i class="bi <?= $mod_icon ?> me-1"></i> <?= $module ?></span></td>
+              <td><span class="badge <?= $role_class ?> rounded-pill"><i
+                    class="bi <?= $role_icon ?> me-1"></i><?= $role ?></span></td>
+              <td><span class="badge <?= $mod_class ?> rounded-pill"><i class="bi <?= $mod_icon ?> me-1"></i>
+                  <?= $module ?></span></td>
               <td class="audit-activity"><?= $activity ?></td>
             </tr>
           <?php endforeach; ?>

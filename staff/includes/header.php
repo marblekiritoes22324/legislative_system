@@ -51,7 +51,7 @@
     window.showSection = showSection;
   </script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/Manila City Hall.css?v=<?= time() ?>">
   <link rel="stylesheet" href="../assets/css/staff.css?v=<?= time() ?>">
   <style>
@@ -184,7 +184,7 @@
         <div class="sidebar-section-label">MAIN</div>
         <?php
         $main_nav = [
-          ['target' => 'staffDashboardSection', 'icon' => 'bi-speedometer2', 'label' => 'Dashboard'],
+          ['target' => 'staffDashboardSection', 'icon' => 'bi-grid', 'label' => 'Dashboard'],
         ];
         foreach ($main_nav as $item):
           $is_active = (($active_section ?? 'staffDashboardSection') === $item['target']) ? 'active' : '';
@@ -199,10 +199,10 @@
         <div class="sidebar-section-label mt-3">LEGISLATIVE</div>
         <?php
         $leg_nav = [
-          ['target' => 'policyResearchSection', 'icon' => 'bi-journal-bookmark-fill', 'label' => 'Policy Research'],
-          ['target' => 'dataCollectionSection', 'icon' => 'bi-database-fill-gear', 'label' => 'Data Collection'],
-          ['target' => 'impactAssessmentSection', 'icon' => 'bi-bar-chart-line', 'label' => 'Evaluation'],
-          ['target' => 'comparativeAnalysisSection', 'icon' => 'bi-layout-sidebar-inset-reverse', 'label' => 'Benchmarks & Comparison'],
+          ['target' => 'policyResearchSection', 'icon' => 'bi-book', 'label' => 'Policy Research'],
+          ['target' => 'dataCollectionSection', 'icon' => 'bi-database', 'label' => 'Data Collection'],
+          ['target' => 'comparativeAnalysisSection', 'icon' => 'svg-target-arrow', 'label' => 'Benchmarks & Comparison'],
+          ['target' => 'impactAssessmentSection', 'icon' => 'bi-graph-up-arrow', 'label' => 'Evaluation'],
         ];
         foreach ($leg_nav as $item):
           $is_active = (($active_section ?? '') === $item['target']) ? 'active' : '';
@@ -210,14 +210,19 @@
           <a class="nav-link py-2 px-3 rounded-3 <?= $is_active ?>" href="javascript:void(0);"
             data-target="<?= $item['target'] ?>" onclick="showSection('<?= $item['target'] ?>'); return false;"
             title="<?= htmlspecialchars($item['label']) ?>">
-            <i class="<?= $item['icon'] ?> me-2"></i><span class="nav-text"><?= $item['label'] ?></span>
+            <?php if ($item['icon'] === 'svg-target-arrow'): ?>
+              <svg xmlns="http://www.w3.org/2000/svg" width="1.15em" height="1.15em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2" style="display:inline-block; vertical-align:-0.18em;"><circle cx="10.5" cy="13.5" r="7.5"/><circle cx="10.5" cy="13.5" r="3.5"/><line x1="10.5" y1="13.5" x2="20" y2="4"/><polyline points="15.5 4 20 4 20 8.5"/></svg>
+            <?php else: ?>
+              <i class="<?= $item['icon'] ?> me-2"></i>
+            <?php endif; ?>
+            <span class="nav-text"><?= $item['label'] ?></span>
           </a>
         <?php endforeach; ?>
 
         <div class="sidebar-section-label mt-3">REPORTING</div>
         <?php
         $report_nav = [
-          ['target' => 'reportGenerationSection', 'icon' => 'bi-journal-text', 'label' => 'Reports'],
+          ['target' => 'reportGenerationSection', 'icon' => 'bi-file-earmark-text', 'label' => 'Reports'],
         ];
         foreach ($report_nav as $item):
           $is_active = (($active_section ?? '') === $item['target']) ? 'active' : '';

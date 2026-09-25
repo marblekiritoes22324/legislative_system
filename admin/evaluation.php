@@ -15,6 +15,43 @@ if (!isset($evaluations) || !is_array($evaluations)) {
     border-top: none !important;
     vertical-align: middle !important;
   }
+
+  /* Refined Status Badges - Sized for Clear Legibility and Solid Rich Colors (Matches Policy Records) */
+  .policy-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5.5px 14px !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    border-radius: 9999px !important;
+    letter-spacing: 0.02em !important;
+    line-height: 1.25;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Refined Action Button - Larger and More Legible */
+  .btn-eval-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #ffffff !important;
+    border: none;
+    padding: 7px 15px !important;
+    border-radius: 8px !important;
+    font-size: 0.84rem !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(124, 58, 237, 0.25);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .btn-eval-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(124, 58, 237, 0.35);
+  }
 </style>
 
 <section id="impactAssessmentSection"
@@ -98,6 +135,21 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                 $status = 'Draft';
               }
 
+              // Status color mapping matching Policy Records
+              $statusLower = strtolower($status);
+              $statusClass = 'bg-secondary text-white';
+              if ($statusLower === 'approved' || $statusLower === 'completed' || $statusLower === 'published') {
+                $statusClass = 'bg-success text-white';
+              } elseif ($statusLower === 'draft') {
+                $statusClass = 'bg-warning text-dark';
+              } elseif ($statusLower === 'needs revision' || $statusLower === 'rejected' || $statusLower === 'archived') {
+                $statusClass = 'bg-danger text-white';
+              } elseif ($statusLower === 'under review' || $statusLower === 'in progress') {
+                $statusClass = 'bg-info text-dark';
+              } elseif ($statusLower === 'pending' || $statusLower === 'pending approval') {
+                $statusClass = 'bg-warning text-dark';
+              }
+
               $ai_analysis = !empty($notes_data['ai_analysis']) ? $notes_data['ai_analysis'] : ($has_evaluation
                 ? 'Evidence-based impact analysis confirms alignment with statutory governance and municipal operational criteria.'
                 : 'Awaiting evaluation. Click "Evaluate Policy" to generate evidence-based assessment.');
@@ -151,16 +203,6 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                 'draftingQuality' => $notes_data['drafting_quality'] ?? '',
                 'proceduralCompliance' => $notes_data['procedural_compliance'] ?? '',
               ];
-
-              // Read-only Status Pill Badge Styling (3 STATES: Draft, Approved, Needs Revision)
-              $badge_style = 'background: rgba(107, 114, 128, 0.12); color: #4b5563; border: 1px solid rgba(107, 114, 128, 0.25);';
-              if ($status === 'Approved') {
-                $badge_style = 'background: rgba(22, 163, 74, 0.12); color: #15803d; border: 1px solid rgba(22, 163, 74, 0.25);';
-              } elseif ($status === 'Needs Revision') {
-                $badge_style = 'background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-weight: 700;';
-              } else {
-                $badge_style = 'background: rgba(107, 114, 128, 0.12); color: #4b5563; border: 1px solid rgba(107, 114, 128, 0.25);';
-              }
               ?>
               <tr id="eval-row-<?= (int) $eval['policy_id'] ?>" data-policy-id="<?= (int) $eval['policy_id'] ?>">
                 <td class="px-3 py-3 fw-bold text-dark" style="vertical-align: middle;">
@@ -176,7 +218,7 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                 </td>
                 <td class="px-3 py-3 text-center" style="vertical-align: middle;">
                   <span id="eval-status-badge-<?= (int) $eval['policy_id'] ?>"
-                    style="display:inline-block; padding: 5px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.3px; <?= $badge_style ?> cursor: default;">
+                    class="badge <?= $statusClass ?> policy-status-badge">
                     <?= htmlspecialchars($status) ?>
                   </span>
                 </td>
@@ -184,10 +226,7 @@ if (!isset($evaluations) || !is_array($evaluations)) {
                   <div class="d-flex flex-wrap align-items-center justify-content-center gap-1.5">
                     <button id="eval-view-btn-<?= (int) $eval['policy_id'] ?>"
                       onclick='openEvaluationModal(<?= htmlspecialchars(json_encode($evaluation_data), ENT_QUOTES, "UTF-8") ?>)'
-                      class="btn btn-sm text-white"
-                      style="display:inline-flex; align-items:center; justify-content:center; gap:5px; background:linear-gradient(135deg,#4f46e5,#7c3aed); border:none; padding:5px 12px; border-radius:7px; font-size:0.78rem; font-weight:600; cursor:pointer; box-shadow:0 2px 5px rgba(124,58,237,0.25); transition:all 0.2s;"
-                      onmouseover="this.style.transform='translateY(-1px)';"
-                      onmouseout="this.style.transform='translateY(0)';"
+                      class="btn btn-sm btn-eval-action"
                       title="View Evaluation Report">
                       <i class="bi bi-bar-chart-line-fill"></i> View Evaluation
                     </button>

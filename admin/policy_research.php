@@ -95,30 +95,61 @@
     }
     ?>
     <style>
-      /* Refined Civic Category Badges (Light Background + Dark Text) - Compact & Sleek */
+      /* Refined Civic Category Badges (Light Background + Dark Text) - Comfortable & Clear */
       .category-badge-pill {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        padding: 3px 9px;
+        gap: 6.5px;
+        padding: 5px 13px;
         border-radius: 9999px;
-        font-size: 0.75rem;
+        font-size: 0.83rem;
         font-weight: 600;
         white-space: nowrap;
         letter-spacing: -0.01em;
-        line-height: 1.3;
+        line-height: 1.35;
         transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
       }
 
       .category-badge-pill i {
-        font-size: 0.75rem;
+        font-size: 0.85rem;
         flex-shrink: 0;
       }
 
       tr:hover .category-badge-pill {
         transform: translateY(-1px);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+      }
+
+      /* Refined Status Badges - Comfortable & Clear */
+      .policy-status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5.5px 13px !important;
+        font-size: 0.82rem !important;
+        font-weight: 700 !important;
+        border-radius: 9999px !important;
+        letter-spacing: 0.02em !important;
+        line-height: 1.25;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+
+      /* Refined Action Buttons - Sized for Clear Legibility and Easy Interaction */
+      .action-btn-group {
+        gap: 7px !important;
+      }
+
+      .btn-policy-action {
+        width: 39px !important;
+        height: 39px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 9px !important;
+        font-size: 1.12rem !important;
+        transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
       }
 
       /* Clean Minimalist Toolbar Controls */
@@ -237,29 +268,29 @@
         font-size: 0.72rem !important;
       }
 
-      /* Option 1: Civic Slate Metadata Chip */
+      /* Option 1: Civic Slate Metadata Chip - Comfortable & Clear */
       .report-date-cell {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        font-size: 0.81rem;
+        gap: 8px;
+        font-size: 0.86rem;
         color: #334155;
-        font-weight: 500;
+        font-weight: 600;
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
         letter-spacing: -0.01em;
         background: #F8FAFC !important;
         border: 1px solid #E2E8F0 !important;
-        border-radius: 6px;
-        padding: 3.5px 9.5px !important;
+        border-radius: 7px;
+        padding: 5px 11px !important;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
         transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .report-date-cell i {
         color: #0B2E59 !important;
-        opacity: 0.78;
-        font-size: 0.8rem;
+        opacity: 0.85;
+        font-size: 0.88rem;
         transition: color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
       }
 
@@ -490,7 +521,7 @@
                     $statusClass = 'bg-warning text-dark';
                   }
                   ?>
-                  <span class="badge <?= $statusClass ?>"><?= htmlspecialchars($statusVal) ?></span>
+                  <span class="badge <?= $statusClass ?> policy-status-badge"><?= htmlspecialchars($statusVal) ?></span>
                 </td>
                 <td class="py-3 px-3">
                   <div class="report-date-cell">

@@ -203,6 +203,45 @@ body.dark-mode .topbar .header-dropdown-btn i.bi-chevron-down {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Enhanced Sidebar Navigation Item & Icon Typography */
+.sidebar .sidebar-nav .nav-link {
+  font-size: 0.95rem !important;
+  font-weight: 550 !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 10px 14px !important;
+  margin-bottom: 5px !important;
+  border-radius: 10px !important;
+  letter-spacing: -0.01em !important;
+}
+
+.sidebar .sidebar-nav .nav-link .nav-text {
+  font-size: 0.95rem !important;
+  font-weight: 550 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.35 !important;
+}
+
+.sidebar .sidebar-nav .nav-link i,
+.sidebar .sidebar-nav .nav-link svg {
+  font-size: 1.25rem !important;
+  width: 1.25em !important;
+  height: 1.25em !important;
+  min-width: 1.35rem !important;
+  margin-right: 0.75rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+}
+
+.sidebar .sidebar-section-label {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.3px !important;
+}
+
 /* ── Collapsed Sidebar State Rules ── */
 @media (min-width: 992px) {
 
@@ -1174,22 +1213,22 @@ body.dark-mode .admin-profile-btn:hover {
 }
 
 .activities-table thead th {
-  background-color: #F8FAFC !important;
-  color: #64748B !important;
-  font-size: 0.76rem !important;
-  font-weight: 700 !important;
+  background-color: #0B2E59 !important;
+  color: #FFFFFF !important;
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   padding: 0.85rem 1rem !important;
   border-top: none !important;
-  border-bottom: 1px solid #E2E8F0 !important;
+  border-bottom: 2.5px solid #082242 !important;
   white-space: nowrap;
 }
 
 body.dark-mode .activities-table thead th {
-  background-color: #1E293B !important;
-  color: #94A3B8 !important;
-  border-bottom-color: #334155 !important;
+  background-color: #0B2E59 !important;
+  color: #FFFFFF !important;
+  border-bottom: 2.5px solid #082242 !important;
 }
 
 .activities-table tbody tr {
@@ -1470,15 +1509,15 @@ body.dark-mode .quick-action-label {
 
 /* Premium Action Buttons for Policy Records Table */
 .btn-policy-action {
-  width: 36px !important;
-  height: 36px !important;
+  width: 39px !important;
+  height: 39px !important;
   padding: 0 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border-radius: 10px !important;
+  border-radius: 9px !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  font-size: 1.02rem !important;
+  font-size: 1.12rem !important;
 }
 
 /* View Document Button (Soft Sky Blue Glass) */
