@@ -189,12 +189,9 @@ ksort($grouped_local_policies);
 
       <!-- Manila Policy / Ordinance (Proposed / Local) -->
       <div class="col-12 col-lg-5">
-        <div class="d-flex align-items-center justify-content-between mb-1.5">
-          <label for="crossCityPolicyA" class="form-label fw-semibold small mb-0 text-dark">
-            <i class="bi bi-building text-primary me-1.5"></i>Manila Proposed Policy Baseline
-          </label>
-          <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5" style="font-size:0.7rem;">City of Manila</span>
-        </div>
+        <label for="crossCityPolicyA" class="form-label fw-semibold small mb-1.5 text-dark d-block">
+          <i class="bi bi-building text-primary me-1.5"></i>Manila Proposed Policy Baseline
+        </label>
         <div class="input-group shadow-2xs">
           <span class="input-group-text bg-white border-end-0 rounded-start-3" style="border-left:3px solid #1d4ed8;">
             <i class="bi bi-file-earmark-text text-primary"></i>
@@ -222,12 +219,9 @@ ksort($grouped_local_policies);
 
       <!-- External City Benchmark Ordinance -->
       <div class="col-12 col-lg-5">
-        <div class="d-flex justify-content-between align-items-center mb-1.5">
-          <label for="crossCityPolicyB" class="form-label fw-semibold small mb-0 text-dark">
-            <i class="bi bi-geo-alt-fill text-success me-1.5"></i>Peer City Enacted Benchmark
-          </label>
-          <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 py-0.5" style="font-size:0.7rem;">External LGU Ordinance</span>
-        </div>
+        <label for="crossCityPolicyB" class="form-label fw-semibold small mb-1.5 text-dark d-block">
+          <i class="bi bi-geo-alt-fill text-success me-1.5"></i>Peer City Enacted Benchmark
+        </label>
         <div class="input-group shadow-2xs">
           <span class="input-group-text bg-white border-end-0 rounded-start-3" style="border-left:3px solid #15803d;">
             <i class="bi bi-patch-check-fill text-success"></i>
