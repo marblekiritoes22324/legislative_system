@@ -152,24 +152,6 @@ foreach ($completed_policies as $p) {
         </div>
       </div>
 
-      <!-- Mode Switcher Tabs -->
-      <div class="d-flex align-items-center gap-1.5 p-1 bg-light rounded-pill border shadow-2xs">
-        <button type="button" id="toggleCompareCrossCityBtn"
-          class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold text-white shadow-sm"
-          style="background:#0B2E59;" onclick="switchComparisonMode('cross_city')">
-          <i class="bi bi-globe-americas me-1 text-info"></i> Cross-City Benchmarking
-        </button>
-        <button type="button" id="toggleComparePoliciesBtn"
-          class="btn btn-sm rounded-pill px-3 py-1.5 fw-semibold text-secondary"
-          style="background:transparent;" onclick="switchComparisonMode('policies')">
-          <i class="bi bi-buildings me-1"></i> Manila vs Manila
-        </button>
-        <button type="button" id="toggleCompareVersionsBtn"
-          class="btn btn-sm rounded-pill px-3 py-1.5 fw-semibold text-secondary"
-          style="background:transparent;" onclick="switchComparisonMode('versions')">
-          <i class="bi bi-clock-history me-1 text-primary"></i> Version Evolution
-        </button>
-      </div>
     </div>
 
     <!-- Mode 2: Cross-City Ordinance Benchmarking (CLEAN & BALANCED) -->
