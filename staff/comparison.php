@@ -120,17 +120,22 @@ foreach ($all_policies as $p) {
   }
 }
 
-// Split into Local Manila policies vs External LGU Benchmarks
+// Split into Local Manila policies vs External LGU Benchmarks and group by Category
 $local_policies = [];
 $external_policies = [];
+$grouped_local_policies = [];
+
 foreach ($completed_policies as $p) {
   $c = strtolower($p['city_origin'] ?? 'city of manila');
   if (strpos($c, 'manila') !== false) {
     $local_policies[] = $p;
+    $cat = !empty($p['category']) ? trim($p['category']) : 'General Legislation';
+    $grouped_local_policies[$cat][] = $p;
   } else {
     $external_policies[] = $p;
   }
 }
+ksort($grouped_local_policies);
 ?>
 <section id="comparativeAnalysisSection"
   class="content-section <?= ($active_section ?? 'staffDashboardSection') !== 'comparativeAnalysisSection' ? 'd-none' : '' ?>">
@@ -146,12 +151,10 @@ foreach ($completed_policies as $p) {
           <h2 class="h4 fw-bold text-dark mb-1">Benchmarking &amp; Comparative Analysis</h2>
           <!-- BUILD:v2026-09-19-STAFF-CROSS-CITY -->
           <p class="text-muted mb-0 small" id="staffComparisonSubtitle">
-            Benchmark City of Manila proposed policies against similar enacted ordinances from peer Metro Manila cities
-            (Quezon City, Makati, Pasig) or compare local policies.
+            Benchmark City of Manila proposed policies against similar enacted ordinances from peer Metro Manila cities (Quezon City, Makati, Pasig) to identify best practices, fiscal impacts, and policy gaps.
           </p>
         </div>
       </div>
-
     </div>
 
     <!-- Mode 1: Cross-City Ordinance Benchmarking (CLEAN & BALANCED) -->
@@ -163,7 +166,16 @@ foreach ($completed_policies as $p) {
           <label for="crossCityPolicyA" class="form-label fw-semibold small mb-0 text-dark">
             <i class="bi bi-building text-primary me-1.5"></i>Manila Proposed Policy Baseline
           </label>
-          <span class="badge rounded-pill bg-light text-secondary border px-2 py-0.5" style="font-size:0.7rem;">City of Manila</span>
+          <!-- Quick Category Filter Pills -->
+          <div class="d-flex align-items-center gap-1 overflow-auto" id="manilaCategoryFilterPills" style="max-width: 270px; scrollbar-width: none;">
+            <button type="button" class="btn btn-xs rounded-pill px-2 py-0.5 fw-bold btn-primary text-white filter-cat-btn" data-cat="all" onclick="filterManilaPoliciesByCategory('all', this)" style="font-size:0.7rem;">All</button>
+            <?php foreach (array_keys($grouped_local_policies) as $catName): ?>
+              <?php
+              $shortCat = strlen($catName) > 13 ? substr($catName, 0, 11) . '..' : $catName;
+              ?>
+              <button type="button" class="btn btn-xs rounded-pill px-2 py-0.5 fw-semibold btn-outline-secondary filter-cat-btn" data-cat="<?= htmlspecialchars($catName) ?>" onclick="filterManilaPoliciesByCategory(<?= json_encode($catName) ?>, this)" title="<?= htmlspecialchars($catName) ?>" style="font-size:0.7rem; white-space:nowrap;"><?= htmlspecialchars($shortCat) ?></button>
+            <?php endforeach; ?>
+          </div>
         </div>
         <div class="input-group shadow-2xs">
           <span class="input-group-text bg-white border-end-0 rounded-start-3" style="border-left:3px solid #1d4ed8;">
@@ -175,11 +187,15 @@ foreach ($completed_policies as $p) {
               <option value="" disabled selected>— No Manila Approved Policies Available —</option>
             <?php else: ?>
               <option value="">— Select Manila Policy to Benchmark —</option>
-              <?php foreach ($local_policies as $p): ?>
-                <option value="<?= (int) $p['id'] ?>" data-category="<?= htmlspecialchars($p['category']) ?>"
-                  data-title="<?= htmlspecialchars($p['title']) ?>" <?= ($p === reset($local_policies)) ? 'selected' : '' ?>>
-                  [Manila] <?= htmlspecialchars($p['title']) ?>
-                </option>
+              <?php foreach ($grouped_local_policies as $catName => $pList): ?>
+                <optgroup label="📂 <?= htmlspecialchars($catName) ?>" data-category="<?= htmlspecialchars($catName) ?>">
+                  <?php foreach ($pList as $p): ?>
+                    <option value="<?= (int) $p['id'] ?>" data-category="<?= htmlspecialchars($p['category'] ?? $catName) ?>"
+                      data-title="<?= htmlspecialchars($p['title']) ?>" <?= ($p === reset($local_policies)) ? 'selected' : '' ?>>
+                      [<?= htmlspecialchars($catName) ?>] <?= htmlspecialchars($p['title']) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </optgroup>
               <?php endforeach; ?>
             <?php endif; ?>
           </select>
@@ -230,7 +246,7 @@ foreach ($completed_policies as $p) {
                 <optgroup label="🏙️ <?= htmlspecialchars($cityName) ?> (Enacted Legislation)"
                   data-city="<?= htmlspecialchars($cityName) ?>">
                   <?php foreach ($bList as $eb): ?>
-                    <option value="ext_<?= (int) $eb['id'] ?>" data-city="<?= htmlspecialchars($eb['city_name']) ?>"
+                    <option value="ext_<?= (int) $eb['id'] ?>" data-city="<?= htmlspecialchars($eb['city_name']) ?>" data-category="<?= htmlspecialchars($eb['policy_area'] ?? '') ?>"
                       <?= ($eb === reset($external_benchmarks)) ? 'selected' : '' ?>>
                       [<?= htmlspecialchars($eb['city_name']) ?>] <?= htmlspecialchars($eb['ordinance_number']) ?>:
                       <?= htmlspecialchars($eb['ordinance_title']) ?>
@@ -493,6 +509,39 @@ foreach ($completed_policies as $p) {
       if (resultEl) {
         resultEl.innerHTML = renderEmptyComparisonPlaceholder();
         resultEl.classList.remove('d-none');
+      }
+    };
+
+    window.filterManilaPoliciesByCategory = function (catName, btnEl) {
+      var sel = document.getElementById('crossCityPolicyA');
+      if (!sel) return;
+
+      var btns = document.querySelectorAll('#manilaCategoryFilterPills .filter-cat-btn');
+      btns.forEach(function (b) {
+        b.className = 'btn btn-xs rounded-pill px-2 py-0.5 fw-semibold btn-outline-secondary filter-cat-btn';
+      });
+      if (btnEl) {
+        btnEl.className = 'btn btn-xs rounded-pill px-2 py-0.5 fw-bold btn-primary text-white filter-cat-btn';
+      }
+
+      var optgroups = sel.querySelectorAll('optgroup');
+      var firstVisibleOption = null;
+
+      optgroups.forEach(function (og) {
+        var ogCat = (og.getAttribute('data-category') || '').toLowerCase();
+        var match = (catName === 'all' || ogCat === catName.toLowerCase());
+        og.style.display = match ? '' : 'none';
+        var opts = og.querySelectorAll('option');
+        opts.forEach(function (opt) {
+          opt.style.display = match ? '' : 'none';
+          if (match && !firstVisibleOption) firstVisibleOption = opt;
+        });
+      });
+
+      var curSelected = sel.options[sel.selectedIndex];
+      if (curSelected && curSelected.style.display === 'none' && firstVisibleOption) {
+        sel.value = firstVisibleOption.value;
+        if (window.autoSuggestCrossCityBenchmark) window.autoSuggestCrossCityBenchmark();
       }
     };
 
