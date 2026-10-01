@@ -314,6 +314,23 @@ ksort($grouped_local_policies);
           </p>
         </div>
       </div>
+      <!-- Dual AI Engine Selector & Live Status -->
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <div class="input-group input-group-sm shadow-2xs rounded-3 overflow-hidden" style="border: 1px solid #cbd5e1; max-width: 270px;">
+          <label class="input-group-text bg-light text-dark fw-bold border-0" for="aiEngineSelector" style="font-size: 0.76rem;">
+            <i class="bi bi-cpu-fill text-primary me-1"></i> AI Engine:
+          </label>
+          <select class="form-select form-select-sm border-0 bg-white fw-semibold text-dark shadow-none" id="aiEngineSelector" onchange="setAIEnginePreference(this.value)" style="font-size: 0.78rem; cursor: pointer;">
+            <option value="auto">🔄 Auto (Ollama &rarr; Gemini)</option>
+            <option value="ollama">🦙 Ollama Local (Llama 3.2)</option>
+            <option value="gemini">✨ Google Gemini (Cloud)</option>
+          </select>
+        </div>
+        <span id="aiEngineStatusBadge" class="badge rounded-pill bg-light text-secondary border px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-2xs" style="font-size: 0.74rem;">
+          <span class="spinner-border spinner-border-sm text-primary" style="width: 0.6rem; height: 0.6rem;" role="status"></span>
+          <span>Checking AI Engine...</span>
+        </span>
+      </div>
     </div>
 
     <!-- Filter Row (Category & Peer City Scope without background box) -->
@@ -1724,10 +1741,10 @@ ksort($grouped_local_policies);
 
       // ── ASSEMBLE EXECUTIVE HIERARCHY:
       // 1. Alignment Scorecard (execCard)
-      // 2. 3-Card AI Executive Comparison Insights (insightsCard)
-      // 3. AI Amendment Result Area (aiAmendmentResultArea)
-      // 4. Detailed Comparison Table (tableHtml)
-      var html = execCard + insightsCard + '<div id="aiAmendmentResultArea" class="mt-4 d-none"></div>' + tableHtml;
+      // 2. Detailed Comparison Table (tableHtml)
+      // 3. 3-Card AI Executive Comparison Insights (insightsCard)
+      // 4. AI Amendment Result Area (aiAmendmentResultArea)
+      var html = execCard + tableHtml + insightsCard + '<div id="aiAmendmentResultArea" class="mt-4 d-none"></div>';
 
       // Store comparison context for dynamic AI amendment generation
       window.currentComparisonContext = {
@@ -1943,7 +1960,75 @@ ksort($grouped_local_policies);
       resultEl.classList.remove('d-none');
     };
 
-    // ── DYNAMIC AI POLICY GAP & AMENDMENT GENERATOR ───────────────
+    // ── DUAL AI ENGINE CONFIGURATION & DETECTION ──────────────────
+    var OLLAMA_BASE_URL = 'http://localhost:11434';
+    var OLLAMA_MODEL = 'llama3.2';
+    var GEMINI_FALLBACK_MODEL = (typeof GEMINI_MODEL !== 'undefined' && GEMINI_MODEL) ? GEMINI_MODEL : 'gemini-1.5-flash';
+
+    window.getAIEnginePreference = function () {
+      return localStorage.getItem('legislative_ai_engine') || 'auto';
+    };
+
+    window.setAIEnginePreference = function (val) {
+      localStorage.setItem('legislative_ai_engine', val);
+      updateAIEngineUI();
+      checkLocalOllamaHealth();
+    };
+
+    window.checkLocalOllamaHealth = async function () {
+      var statusBadge = document.getElementById('aiEngineStatusBadge');
+      var selector = document.getElementById('aiEngineSelector');
+      var pref = window.getAIEnginePreference();
+      if (selector) selector.value = pref;
+
+      if (!statusBadge) return;
+
+      var isOllamaOnline = false;
+      try {
+        var ctrl = new AbortController();
+        var timer = setTimeout(function () { ctrl.abort(); }, 2000);
+        var res = await fetch(OLLAMA_BASE_URL + '/api/tags', { method: 'GET', signal: ctrl.signal });
+        clearTimeout(timer);
+        if (res.ok) {
+          var data = await res.json();
+          if (data && data.models && data.models.length > 0) {
+            isOllamaOnline = true;
+          }
+        }
+      } catch (e) {
+        isOllamaOnline = false;
+      }
+
+      window.isOllamaAvailable = isOllamaOnline;
+
+      if (pref === 'ollama') {
+        if (isOllamaOnline) {
+          statusBadge.className = 'badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-2xs';
+          statusBadge.innerHTML = '<i class="bi bi-hdd-network-fill"></i> <span>🦙 Ollama Local Ready (Llama 3.2)</span>';
+        } else {
+          statusBadge.className = 'badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-2xs';
+          statusBadge.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> <span>🦙 Ollama Offline</span>';
+        }
+      } else if (pref === 'gemini') {
+        statusBadge.className = 'badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-2xs';
+        statusBadge.innerHTML = '<i class="bi bi-stars"></i> <span>✨ Gemini Cloud Ready</span>';
+      } else { // auto
+        if (isOllamaOnline) {
+          statusBadge.className = 'badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-2xs';
+          statusBadge.innerHTML = '<i class="bi bi-hdd-network-fill"></i> <span>🟢 🦙 Ollama Ready (Auto)</span>';
+        } else {
+          statusBadge.className = 'badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-2xs';
+          statusBadge.innerHTML = '<i class="bi bi-stars"></i> <span>✨ Gemini Cloud (Auto)</span>';
+        }
+      }
+    };
+
+    function updateAIEngineUI() {
+      var selector = document.getElementById('aiEngineSelector');
+      if (selector) selector.value = window.getAIEnginePreference();
+    }
+
+    // ── DUAL-ENGINE AI POLICY GAP & AMENDMENT GENERATOR ───────────
     window.generateAIAmendmentLanguage = async function () {
       var ctx = window.currentComparisonContext;
       if (!ctx || !ctx.a || !ctx.b) {
@@ -1960,17 +2045,27 @@ ksort($grouped_local_policies);
       container.classList.remove('d-none');
       container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-      // 1. Render Pulsing Placeholder Loading Skeleton (Non-streaming)
+      var pref = window.getAIEnginePreference();
+      var loadingTitle = 'AI Dual-Engine is analyzing statutory gaps &amp; drafting municipal amendment clause...';
+      var loadingSubtitle = 'Synthesizing benchmark provisions from <strong>' + esc(b.title) + '</strong> (' + esc(b.city_name || b.city_origin || 'Peer City') + ') to address draft gaps in <strong>' + esc(a.title) + '</strong> using Philippine ordinance drafting conventions.';
+
+      if (pref === 'ollama') {
+        loadingTitle = '🦙 Ollama Local (Llama 3.2) is analyzing statutory gaps &amp; drafting offline clause...';
+      } else if (pref === 'gemini') {
+        loadingTitle = '✨ Google Gemini Cloud is analyzing statutory gaps &amp; drafting municipal clause...';
+      }
+
+      // 1. Render Pulsing Placeholder Loading Skeleton
       container.innerHTML = '<div class="card border-0 rounded-4 shadow-sm p-4 bg-white placeholder-glow" style="border: 2px dashed #93c5fd !important; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">' +
         '<div class="d-flex align-items-center gap-2.5 mb-3">' +
         '<div class="spinner-border text-primary" style="width: 1.3rem; height: 1.3rem;" role="status">' +
         '<span class="visually-hidden">Loading...</span>' +
         '</div>' +
         '<h6 class="fw-bold text-primary mb-0" style="font-size: 0.95rem;">' +
-        '<i class="bi bi-stars text-warning me-1"></i> Gemini AI is analyzing statutory gaps &amp; drafting municipal amendment clause...' +
+        '<i class="bi bi-stars text-warning me-1"></i> ' + loadingTitle +
         '</h6>' +
         '</div>' +
-        '<p class="text-muted small mb-3">Synthesizing benchmark provisions from <strong>' + esc(b.title) + '</strong> (' + esc(b.city_name || b.city_origin || 'Peer City') + ') to address draft gaps in <strong>' + esc(a.title) + '</strong> using Philippine ordinance drafting conventions.</p>' +
+        '<p class="text-muted small mb-3">' + loadingSubtitle + '</p>' +
         '<div class="placeholder col-12 mb-2 rounded" style="height: 16px; background-color: #cbd5e1;"></div>' +
         '<div class="placeholder col-10 mb-2 rounded" style="height: 16px; background-color: #cbd5e1;"></div>' +
         '<div class="placeholder col-8 mb-3 rounded" style="height: 16px; background-color: #cbd5e1;"></div>' +
@@ -1979,75 +2074,141 @@ ksort($grouped_local_policies);
 
       // Check if amendment clause was already pre-generated during benchmarking comparison
       if (window.preGeneratedAIAmendment) {
-        await new Promise(function (resolve) { setTimeout(resolve, 550); });
-        renderAIAmendmentLanguageBox(window.preGeneratedAIAmendment, a, b, gap);
+        await new Promise(function (resolve) { setTimeout(resolve, 450); });
+        renderAIAmendmentLanguageBox(window.preGeneratedAIAmendment, a, b, gap, {
+          id: 'pregen',
+          badgeText: 'Harmonized Municipal Clause',
+          badgeClass: 'bg-primary bg-opacity-10 text-primary border-primary border-opacity-25',
+          icon: 'bi-shield-check',
+          note: 'Pre-synthesized legislative alignment clause.'
+        });
         return;
       }
 
-      var apiKey = (typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY && GEMINI_API_KEY !== 'PLACEHOLDER_KEY' && !GEMINI_API_KEY.includes('YOUR_'))
-        ? GEMINI_API_KEY
-        : (window.GEMINI_API_KEY || localStorage.getItem('gemini_api_key') || '');
-      var model = (typeof GEMINI_MODEL !== 'undefined' && GEMINI_MODEL) ? GEMINI_MODEL : 'gemini-1.5-flash';
+      var promptText = 'Role: Senior Legislative Drafting Legal Consultant assisting the City Council of Manila (Sangguniang Panlungsod ng Maynila), Philippines.\n\n' +
+        'CONTEXT:\n' +
+        'Policy A (City of Manila Proposed Ordinance):\n' +
+        'Title: ' + a.title + '\n' +
+        'Provisions: ' + (a.key_provisions || a.description || 'General municipal policy proposal') + '\n\n' +
+        'Policy B (Enacted Benchmark from ' + (b.city_name || b.city_origin || 'Peer City') + '):\n' +
+        'Title: ' + b.title + '\n' +
+        'Enacted Provisions: ' + (b.key_provisions || b.description || 'Enacted municipal code') + '\n\n' +
+        'IDENTIFIED STATUTORY GAP / DIRECTIVE:\n' +
+        gap + '\n\n' +
+        'TASK:\n' +
+        'Draft a short, formal, suggested amendment clause (in Philippine municipal ordinance legislative style) that could address the identified gap.\n\n' +
+        'DRAFTING CONSTRAINTS:\n' +
+        '1. Format as: "SECTION ___. [Title] — [Operative text]".\n' +
+        '2. Cite relevant national statutory authority (e.g. RA 7160 Local Government Code, RA 9003, or other applicable Philippine laws).\n' +
+        '3. Specify the appropriate Manila City department (e.g., Manila Traffic and Parking Bureau - MTPB, Department of Public Services - DPS, or Manila Health Department - MHD).\n' +
+        '4. Output ONLY the drafted statutory clause with Section heading and operative text. Do not include conversational filler or code block markdown.';
 
       var draftedClause = '';
+      var engineUsed = null;
 
-      if (apiKey) {
-        var controller = new AbortController();
-        var timeoutId = setTimeout(function () { controller.abort(); }, 16000);
-
-        var promptText = 'Role: Senior Legislative Drafting Legal Consultant assisting the City Council of Manila (Sangguniang Panlungsod ng Maynila), Philippines.\n\n' +
-          'CONTEXT:\n' +
-          'Policy A (City of Manila Proposed Ordinance):\n' +
-          'Title: ' + a.title + '\n' +
-          'Provisions: ' + (a.key_provisions || a.description || 'General municipal policy proposal') + '\n\n' +
-          'Policy B (Enacted Benchmark from ' + (b.city_name || b.city_origin || 'Peer City') + '):\n' +
-          'Title: ' + b.title + '\n' +
-          'Enacted Provisions: ' + (b.key_provisions || b.description || 'Enacted municipal code') + '\n\n' +
-          'IDENTIFIED STATUTORY GAP / DIRECTIVE:\n' +
-          gap + '\n\n' +
-          'TASK:\n' +
-          'Draft a short, formal, suggested amendment clause (in Philippine municipal ordinance legislative style) that could address the identified gap.\n\n' +
-          'DRAFTING CONSTRAINTS:\n' +
-          '1. Format as: "SECTION ___. [Title] — [Operative text]".\n' +
-          '2. Cite relevant national statutory authority (e.g. RA 7160 Local Government Code, RA 9003, or other applicable Philippine laws).\n' +
-          '3. Specify the appropriate Manila City department (e.g., Manila Traffic and Parking Bureau - MTPB, Department of Public Services - DPS, or Manila Health Department - MHD).\n' +
-          '4. Output ONLY the drafted statutory clause with Section heading and operative text. Do not include conversational filler or code block markdown.';
-
+      // ── ATTEMPT 1: OLLAMA LOCAL (Llama 3.2 - Offline First)
+      if (pref === 'ollama' || pref === 'auto') {
         try {
-          var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(apiKey), {
+          var ollamaCtrl = new AbortController();
+          var ollamaTimeout = setTimeout(function () { ollamaCtrl.abort(); }, 30000);
+
+          var ollamaRes = await fetch(OLLAMA_BASE_URL + '/api/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            signal: controller.signal,
+            signal: ollamaCtrl.signal,
             body: JSON.stringify({
-              contents: [{ parts: [{ text: promptText }] }],
-              generationConfig: {
+              model: OLLAMA_MODEL,
+              prompt: promptText,
+              stream: false,
+              options: {
                 temperature: 0.3,
-                maxOutputTokens: 600
+                num_predict: 600
               }
             })
           });
-          clearTimeout(timeoutId);
+          clearTimeout(ollamaTimeout);
 
-          if (response.ok) {
-            var data = await response.json();
-            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
-              draftedClause = data.candidates[0].content.parts[0].text.trim();
+          if (ollamaRes.ok) {
+            var oData = await ollamaRes.json();
+            if (oData && oData.response && oData.response.trim().length > 20) {
+              draftedClause = oData.response.trim();
               if (draftedClause.startsWith('```')) {
                 draftedClause = draftedClause.replace(/```[a-z]*\n?|```/gi, '').trim();
               }
+              engineUsed = {
+                id: 'ollama',
+                badgeText: '🦙 Ollama Local (Llama 3.2 Offline)',
+                badgeClass: 'bg-success bg-opacity-10 text-success border-success border-opacity-25',
+                icon: 'bi-hdd-network-fill',
+                note: 'Generated locally via Ollama Llama 3.2 — zero cloud latency, runs 100% offline.'
+              };
             }
           }
-        } catch (err) {
-          clearTimeout(timeoutId);
-          console.warn('Gemini API call skipped or timed out, generating contextual legislative clause:', err);
+        } catch (oErr) {
+          console.warn('Ollama local generation bypassed or timed out:', oErr);
         }
       }
 
-      if (!draftedClause) {
-        draftedClause = generateContextualLegislativeDraft(a, b, gap);
+      // ── ATTEMPT 2: GOOGLE GEMINI CLOUD (If preferred or auto fallback)
+      if (!draftedClause && (pref === 'gemini' || pref === 'auto')) {
+        var apiKey = (typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY && GEMINI_API_KEY !== 'PLACEHOLDER_KEY' && !GEMINI_API_KEY.includes('YOUR_'))
+          ? GEMINI_API_KEY
+          : (window.GEMINI_API_KEY || localStorage.getItem('gemini_api_key') || '');
+
+        if (apiKey) {
+          try {
+            var geminiCtrl = new AbortController();
+            var geminiTimeout = setTimeout(function () { geminiCtrl.abort(); }, 16000);
+
+            var geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(GEMINI_FALLBACK_MODEL) + ':generateContent?key=' + encodeURIComponent(apiKey), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              signal: geminiCtrl.signal,
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }],
+                generationConfig: {
+                  temperature: 0.3,
+                  maxOutputTokens: 600
+                }
+              })
+            });
+            clearTimeout(geminiTimeout);
+
+            if (geminiRes.ok) {
+              var gData = await geminiRes.json();
+              if (gData.candidates && gData.candidates[0] && gData.candidates[0].content && gData.candidates[0].content.parts[0]) {
+                draftedClause = gData.candidates[0].content.parts[0].text.trim();
+                if (draftedClause.startsWith('```')) {
+                  draftedClause = draftedClause.replace(/```[a-z]*\n?|```/gi, '').trim();
+                }
+                engineUsed = {
+                  id: 'gemini',
+                  badgeText: '✨ Google Gemini (gemini-1.5-flash Cloud)',
+                  badgeClass: 'bg-primary bg-opacity-10 text-primary border-primary border-opacity-25',
+                  icon: 'bi-cloud-check-fill',
+                  note: 'Generated via Google Gemini Cloud intelligence engine.'
+                };
+              }
+            }
+          } catch (gErr) {
+            console.warn('Gemini cloud generation bypassed or timed out:', gErr);
+          }
+        }
       }
 
-      renderAIAmendmentLanguageBox(draftedClause, a, b, gap);
+      // ── ATTEMPT 3: STATUTORY BASELINE TEMPLATE ENGINE (Deterministic Fallback)
+      if (!draftedClause) {
+        draftedClause = generateContextualLegislativeDraft(a, b, gap);
+        engineUsed = {
+          id: 'statutory',
+          badgeText: '🏛️ Manila Statutory Baseline Rule Engine',
+          badgeClass: 'bg-secondary bg-opacity-10 text-secondary border-secondary border-opacity-25',
+          icon: 'bi-shield-check',
+          note: 'Generated using statutory alignment rules under Philippine Local Government Code (RA 7160).'
+        };
+      }
+
+      renderAIAmendmentLanguageBox(draftedClause, a, b, gap, engineUsed);
     };
 
     function generateContextualLegislativeDraft(a, b, gap) {
@@ -2076,9 +2237,16 @@ ksort($grouped_local_policies);
         '(b) Oversight and Periodic Review. — An annual legislative monitoring audit shall be submitted to the Sangguniang Panlungsod Committee on Rules and Laws to evaluate operational efficacy, fiscal compliance, and community welfare impact under Republic Act No. 7160.';
     }
 
-    function renderAIAmendmentLanguageBox(clause, a, b, gap) {
+    function renderAIAmendmentLanguageBox(clause, a, b, gap, engineInfo) {
       var container = document.getElementById('aiAmendmentResultArea');
       if (!container) return;
+
+      var engine = engineInfo || {
+        badgeText: 'Harmonized Municipal Clause',
+        badgeClass: 'bg-primary bg-opacity-10 text-primary border-primary border-opacity-25',
+        icon: 'bi-shield-check',
+        note: 'AI legislative drafting suggestion.'
+      };
 
       var html = '<div class="card border-0 rounded-4 shadow-sm p-4 bg-white" style="border: 1px solid #bfdbfe !important; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);">' +
         '<div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 mb-3 pb-3 border-bottom">' +
@@ -2089,8 +2257,8 @@ ksort($grouped_local_policies);
         '<div>' +
         '<div class="d-flex align-items-center gap-2 flex-wrap">' +
         '<h5 class="fw-bold text-dark mb-0" style="font-size:1.05rem;">AI-Suggested Draft Language (For Review)</h5>' +
-        '<span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1" style="font-size:0.72rem;">' +
-        '<i class="bi bi-shield-check me-1"></i> Harmonized Municipal Clause' +
+        '<span class="badge rounded-pill ' + engine.badgeClass + ' border px-2.5 py-1" style="font-size:0.72rem;">' +
+        '<i class="bi ' + engine.icon + ' me-1"></i> ' + esc(engine.badgeText) +
         '</span>' +
         '</div>' +
         '<span class="text-muted small">Generated based on cross-city benchmarking with <strong>' + esc(b.city_name || b.city_origin || 'Peer City Benchmark') + '</strong></span>' +
@@ -2121,7 +2289,8 @@ ksort($grouped_local_policies);
         '<div class="alert alert-warning border-0 rounded-3 p-2.5 mb-0 d-flex align-items-start gap-2.5 shadow-2xs" style="background:#fffbeb; color:#92400e; font-size:0.78rem; line-height:1.5;">' +
         '<i class="bi bi-exclamation-triangle-fill fs-6 flex-shrink-0 text-warning mt-0.5"></i>' +
         '<div>' +
-        'This is an AI-generated drafting aid, not legal advice. All suggested language must be reviewed and finalized by legislative staff and legal counsel before formal proposal.' +
+        'This is an AI-generated drafting aid, not legal advice. All suggested language must be reviewed and finalized by legislative staff and legal counsel before formal proposal. ' +
+        '<span class="text-muted fst-italic">(' + esc(engine.note) + ')</span>' +
         '</div>' +
         '</div>' +
         '</div>';
@@ -2154,5 +2323,10 @@ ksort($grouped_local_policies);
       initialResultEl.innerHTML = renderEmptyComparisonPlaceholder();
       initialResultEl.classList.remove('d-none');
     }
+
+    // Auto-detect local Ollama & AI engine on page load
+    setTimeout(function () {
+      checkLocalOllamaHealth();
+    }, 200);
   })();
 </script>
