@@ -138,6 +138,164 @@ foreach ($completed_policies as $p) {
 ksort($grouped_local_policies);
 
 ?>
+<style>
+  /* Rich & Vibrant Filter Button Palette */
+  .filter-cat-btn, .filter-city-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.76rem !important;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 50rem !important;
+    padding: 0.28rem 0.75rem !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .filter-cat-btn:hover, .filter-city-btn:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  
+  /* Category Button Colors */
+  .cat-btn-all {
+    background-color: #f1f5f9;
+    color: #334155;
+    border: 1.5px solid #cbd5e1 !important;
+  }
+  .cat-btn-all.active {
+    background: linear-gradient(135deg, #0B2E59 0%, #1e40af 100%) !important;
+    color: #ffffff !important;
+    border-color: #0B2E59 !important;
+    box-shadow: 0 2px 8px rgba(11, 46, 89, 0.35) !important;
+  }
+  
+  .cat-btn-infra {
+    background-color: #ecfdf5;
+    color: #047857;
+    border: 1.5px solid #a7f3d0 !important;
+  }
+  .cat-btn-infra:hover {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  .cat-btn-infra.active {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    color: #ffffff !important;
+    border-color: #047857 !important;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35) !important;
+  }
+  
+  .cat-btn-social {
+    background-color: #fdf2f8;
+    color: #be185d;
+    border: 1.5px solid #fbcfe8 !important;
+  }
+  .cat-btn-social:hover {
+    background-color: #fce7f3;
+    color: #9d174d;
+  }
+  .cat-btn-social.active {
+    background: linear-gradient(135deg, #db2777 0%, #be185d 100%) !important;
+    color: #ffffff !important;
+    border-color: #be185d !important;
+    box-shadow: 0 2px 8px rgba(219, 39, 119, 0.35) !important;
+  }
+
+  .cat-btn-health {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border: 1.5px solid #bfdbfe !important;
+  }
+  .cat-btn-health:hover {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  .cat-btn-health.active {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: #ffffff !important;
+    border-color: #1d4ed8 !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35) !important;
+  }
+
+  .cat-btn-default {
+    background-color: #fefce8;
+    color: #a16207;
+    border: 1.5px solid #fef08a !important;
+  }
+  .cat-btn-default:hover {
+    background-color: #fef9c3;
+    color: #854d0e;
+  }
+  .cat-btn-default.active {
+    background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%) !important;
+    color: #ffffff !important;
+    border-color: #a16207 !important;
+    box-shadow: 0 2px 8px rgba(202, 138, 4, 0.35) !important;
+  }
+
+  /* Peer City Button Colors */
+  .city-btn-all {
+    background-color: #f1f5f9;
+    color: #334155;
+    border: 1.5px solid #cbd5e1 !important;
+  }
+  .city-btn-all.active {
+    background: linear-gradient(135deg, #0B2E59 0%, #1e40af 100%) !important;
+    color: #ffffff !important;
+    border-color: #0B2E59 !important;
+    box-shadow: 0 2px 8px rgba(11, 46, 89, 0.35) !important;
+  }
+
+  .city-btn-qc {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border: 1.5px solid #bfdbfe !important;
+  }
+  .city-btn-qc:hover {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  .city-btn-qc.active {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: #ffffff !important;
+    border-color: #1d4ed8 !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35) !important;
+  }
+
+  .city-btn-makati {
+    background-color: #f0fdf4;
+    color: #15803d;
+    border: 1.5px solid #bbf7d0 !important;
+  }
+  .city-btn-makati:hover {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+  .city-btn-makati.active {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+    color: #ffffff !important;
+    border-color: #15803d !important;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35) !important;
+  }
+
+  .city-btn-pasig {
+    background-color: #faf5ff;
+    color: #7e22ce;
+    border: 1.5px solid #e9d5ff !important;
+  }
+  .city-btn-pasig:hover {
+    background-color: #f3e8ff;
+    color: #6b21a8;
+  }
+  .city-btn-pasig.active {
+    background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%) !important;
+    color: #ffffff !important;
+    border-color: #7e22ce !important;
+    box-shadow: 0 2px 8px rgba(147, 51, 234, 0.35) !important;
+  }
+</style>
+
 <section id="comparativeAnalysisSection"
   class="content-section <?= ($active_section ?? 'adminDashboardSection') !== 'comparativeAnalysisSection' ? 'd-none' : '' ?>">
   <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
@@ -167,9 +325,28 @@ ksort($grouped_local_policies);
         <span class="small fw-bold text-dark d-flex align-items-center me-1" style="font-size:0.8rem;">
           <i class="bi bi-funnel-fill text-primary me-1"></i>Category:
         </span>
-        <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-bold btn-primary text-white filter-cat-btn" data-cat="all" onclick="filterManilaPoliciesByCategory('all', this)" style="font-size:0.75rem;">All</button>
+        <button type="button" class="btn filter-cat-btn cat-btn-all active" data-cat="all" onclick="filterManilaPoliciesByCategory('all', this)">
+          <i class="bi bi-grid-fill"></i> All
+        </button>
         <?php foreach (array_keys($grouped_local_policies) as $catName): ?>
-          <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-semibold btn-outline-secondary filter-cat-btn" data-cat="<?= htmlspecialchars($catName) ?>" onclick="filterManilaPoliciesByCategory(<?= json_encode($catName) ?>, this)" style="font-size:0.75rem; white-space:nowrap;"><?= htmlspecialchars($catName) ?></button>
+          <?php
+          $catLower = strtolower($catName);
+          $btnClass = 'cat-btn-default';
+          $iconClass = 'bi-tag-fill';
+          if (strpos($catLower, 'infra') !== false || strpos($catLower, 'traffic') !== false || strpos($catLower, 'environ') !== false) {
+            $btnClass = 'cat-btn-infra';
+            $iconClass = 'bi-cone-striped';
+          } elseif (strpos($catLower, 'welfare') !== false || strpos($catLower, 'social') !== false || strpos($catLower, 'community') !== false) {
+            $btnClass = 'cat-btn-social';
+            $iconClass = 'bi-people-fill';
+          } elseif (strpos($catLower, 'health') !== false || strpos($catLower, 'sanit') !== false) {
+            $btnClass = 'cat-btn-health';
+            $iconClass = 'bi-heart-pulse-fill';
+          }
+          ?>
+          <button type="button" class="btn filter-cat-btn <?= $btnClass ?>" data-cat="<?= htmlspecialchars($catName) ?>" onclick="filterManilaPoliciesByCategory(<?= json_encode($catName) ?>, this)" style="white-space:nowrap;">
+            <i class="bi <?= $iconClass ?>"></i> <?= htmlspecialchars($catName) ?>
+          </button>
         <?php endforeach; ?>
       </div>
 
@@ -178,10 +355,18 @@ ksort($grouped_local_policies);
         <span class="small fw-bold text-dark d-flex align-items-center me-1" style="font-size:0.8rem;">
           <i class="bi bi-geo-alt-fill text-success me-1"></i>Peer City:
         </span>
-        <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-bold btn-primary text-white filter-city-btn" data-city="all" onclick="filterCrossCityBenchmark('all', this)" style="font-size:0.75rem;">All Cities</button>
-        <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-semibold btn-outline-secondary filter-city-btn" data-city="Quezon City" onclick="filterCrossCityBenchmark('Quezon City', this)" style="font-size:0.75rem;">Quezon City</button>
-        <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-semibold btn-outline-secondary filter-city-btn" data-city="City of Makati" onclick="filterCrossCityBenchmark('City of Makati', this)" style="font-size:0.75rem;">Makati</button>
-        <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-semibold btn-outline-secondary filter-city-btn" data-city="Pasig City" onclick="filterCrossCityBenchmark('Pasig City', this)" style="font-size:0.75rem;">Pasig</button>
+        <button type="button" class="btn filter-city-btn city-btn-all active" data-city="all" onclick="filterCrossCityBenchmark('all', this)">
+          <i class="bi bi-buildings-fill"></i> All Cities
+        </button>
+        <button type="button" class="btn filter-city-btn city-btn-qc" data-city="Quezon City" onclick="filterCrossCityBenchmark('Quezon City', this)">
+          <i class="bi bi-geo-alt-fill"></i> Quezon City
+        </button>
+        <button type="button" class="btn filter-city-btn city-btn-makati" data-city="City of Makati" onclick="filterCrossCityBenchmark('City of Makati', this)">
+          <i class="bi bi-geo-alt-fill"></i> Makati
+        </button>
+        <button type="button" class="btn filter-city-btn city-btn-pasig" data-city="Pasig City" onclick="filterCrossCityBenchmark('Pasig City', this)">
+          <i class="bi bi-geo-alt-fill"></i> Pasig
+        </button>
       </div>
 
     </div>
@@ -526,10 +711,10 @@ ksort($grouped_local_policies);
 
       var btns = document.querySelectorAll('#manilaCategoryFilterPills .filter-cat-btn');
       btns.forEach(function (b) {
-        b.className = 'btn btn-xs rounded-pill px-2 py-0.5 fw-semibold btn-outline-secondary filter-cat-btn';
+        b.classList.remove('active');
       });
       if (btnEl) {
-        btnEl.className = 'btn btn-xs rounded-pill px-2 py-0.5 fw-bold btn-primary text-white filter-cat-btn';
+        btnEl.classList.add('active');
       }
 
       var optgroups = sel.querySelectorAll('optgroup');
@@ -560,10 +745,10 @@ ksort($grouped_local_policies);
       // Update button styling
       var btns = document.querySelectorAll('#crossCityFilterPills .filter-city-btn');
       btns.forEach(function (b) {
-        b.className = 'btn btn-xs rounded-pill px-2 py-0.5 fw-semibold btn-outline-secondary filter-city-btn';
+        b.classList.remove('active');
       });
       if (btnEl) {
-        btnEl.className = 'btn btn-xs rounded-pill px-2 py-0.5 fw-bold btn-primary text-white filter-city-btn';
+        btnEl.classList.add('active');
       }
 
       var optgroups = sel.querySelectorAll('optgroup');
