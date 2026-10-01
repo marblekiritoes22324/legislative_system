@@ -37,12 +37,23 @@ if (!isset($conn) || !$conn) {
 echo "<div class='log'>";
 echo "[INFO] Connected successfully to database: <strong>" . htmlspecialchars($database ?? 'legislative_management_db') . "</strong><br>";
 
-$dump_file = __DIR__ . '/../legistlative_database';
-if (!file_exists($dump_file)) {
-    $dump_file = __DIR__ . '/../legistlative_database.backup.sql';
+$dump_candidates = [
+    __DIR__ . '/../database/sync_live_database.sql',
+    __DIR__ . '/../database/legistlative_database',
+    __DIR__ . '/../database/legistlative_database.backup.sql',
+    __DIR__ . '/../legistlative_database',
+    __DIR__ . '/../legistlative_database.backup.sql'
+];
+
+$dump_file = null;
+foreach ($dump_candidates as $candidate) {
+    if (file_exists($candidate)) {
+        $dump_file = $candidate;
+        break;
+    }
 }
 
-if (!file_exists($dump_file)) {
+if (!$dump_file || !file_exists($dump_file)) {
     echo "<p class='error'>❌ SQL dump file not found on server.</p>";
 } else {
     echo "[INFO] Reading database dump (" . number_format(filesize($dump_file) / 1024, 2) . " KB)...<br>";

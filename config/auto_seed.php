@@ -134,11 +134,23 @@ try {
     $chk_u_cnt = @mysqli_query($conn, "SELECT COUNT(*) FROM user_directory");
     $u_cnt = ($chk_u_cnt) ? (int)mysqli_fetch_row($chk_u_cnt)[0] : 0;
     if ($u_cnt < 8) {
-        $dump_file = __DIR__ . '/../legistlative_database';
-        if (!file_exists($dump_file)) {
-            $dump_file = __DIR__ . '/../legistlative_database.backup.sql';
+        $dump_candidates = [
+            __DIR__ . '/../database/sync_live_database.sql',
+            __DIR__ . '/../database/legistlative_database',
+            __DIR__ . '/../database/legistlative_database.backup.sql',
+            __DIR__ . '/../legistlative_database',
+            __DIR__ . '/../legistlative_database.backup.sql'
+        ];
+
+        $dump_file = null;
+        foreach ($dump_candidates as $candidate) {
+            if (file_exists($candidate)) {
+                $dump_file = $candidate;
+                break;
+            }
         }
-        if (file_exists($dump_file)) {
+
+        if ($dump_file && file_exists($dump_file)) {
             $sql_content = file_get_contents($dump_file);
             if (!empty($sql_content)) {
                 // Disable foreign keys and strict checks for bulk import

@@ -881,14 +881,15 @@ window.downloadAiReport = function () {
 
 function executeUserAiPdfDownload(contentEl, logoSvg, fileName) {
     const container = document.createElement('div');
-    container.style.position = 'fixed';
+    container.style.position = 'absolute';
     container.style.top = '0';
     container.style.left = '0';
     container.style.width = '750px';
     container.style.background = '#ffffff';
-    container.style.opacity = '0.01';
+    container.style.color = '#000000';
+    container.style.opacity = '1';
     container.style.pointerEvents = 'none';
-    container.style.zIndex = '-9999';
+    container.style.zIndex = '-99999';
     container.style.padding = '35px';
     container.style.boxSizing = 'border-box';
     container.style.fontFamily = "'Times New Roman', Times, serif";

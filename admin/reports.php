@@ -449,143 +449,141 @@ unset($pol);
     <!-- Filter Bar: Live Search, Category & Date Filters -->
     <div class="d-flex flex-wrap flex-md-nowrap align-items-center gap-2.5 mb-3">
 
-        <!-- Search Input -->
-        <div class="policy-search-box flex-grow-1">
-          <i class="bi bi-search policy-search-icon"></i>
-          <input type="text" id="reportPolicySearchInput" class="policy-search-input"
-            placeholder="Search policies by title, number or author..." aria-label="Search policies"
-            oninput="onReportPolicyFilterChange()">
-          <button type="button" class="policy-search-clear" id="reportPolicyClearSearchBtn" title="Clear search"
-            style="display: none;" onclick="clearReportPolicySearch()">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
+      <!-- Search Input -->
+      <div class="policy-search-box flex-grow-1">
+        <i class="bi bi-search policy-search-icon"></i>
+        <input type="text" id="reportPolicySearchInput" class="policy-search-input"
+          placeholder="Search policies by title, number or author..." aria-label="Search policies"
+          oninput="onReportPolicyFilterChange()">
+        <button type="button" class="policy-search-clear" id="reportPolicyClearSearchBtn" title="Clear search"
+          style="display: none;" onclick="clearReportPolicySearch()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
 
-        <!-- All Categories Dropdown -->
-        <div class="policy-category-wrapper">
-          <select id="reportPolicyCategorySelect" class="form-select policy-category-select"
-            aria-label="Filter by category" onchange="onReportPolicyFilterChange()">
-            <option value="">All Categories</option>
-            <option value="Health and Sanitation">Health and Sanitation</option>
-            <option value="Civil Registry and Public Services">Civil Registry and Public Services</option>
-            <option value="Education and Employment">Education and Employment</option>
-            <option value="Social Welfare and Community Affairs">Social Welfare and Community Affairs</option>
-            <option value="Infrastructure, Traffic and Environment">Infrastructure, Traffic and Environment</option>
-            <option value="Other">Other</option>
-            <?php
-            $standardCats = [
-              'health and sanitation',
-              'civil registry and public services',
-              'education and employment',
-              'social welfare and community affairs',
-              'infrastructure, traffic and environment',
-              'other'
-            ];
-            $extraCats = [];
-            foreach ($report_policies as $p) {
-              $catName = trim($p['category'] ?? '');
-              if ($catName !== '' && !in_array(strtolower($catName), $standardCats) && !in_array($catName, $extraCats)) {
-                $extraCats[] = $catName;
-              }
+      <!-- All Categories Dropdown -->
+      <div class="policy-category-wrapper">
+        <select id="reportPolicyCategorySelect" class="form-select policy-category-select"
+          aria-label="Filter by category" onchange="onReportPolicyFilterChange()">
+          <option value="">All Categories</option>
+          <option value="Health and Sanitation">Health and Sanitation</option>
+          <option value="Civil Registry and Public Services">Civil Registry and Public Services</option>
+          <option value="Education and Employment">Education and Employment</option>
+          <option value="Social Welfare and Community Affairs">Social Welfare and Community Affairs</option>
+          <option value="Infrastructure, Traffic and Environment">Infrastructure, Traffic and Environment</option>
+          <option value="Other">Other</option>
+          <?php
+          $standardCats = [
+            'health and sanitation',
+            'civil registry and public services',
+            'education and employment',
+            'social welfare and community affairs',
+            'infrastructure, traffic and environment',
+            'other'
+          ];
+          $extraCats = [];
+          foreach ($report_policies as $p) {
+            $catName = trim($p['category'] ?? '');
+            if ($catName !== '' && !in_array(strtolower($catName), $standardCats) && !in_array($catName, $extraCats)) {
+              $extraCats[] = $catName;
             }
-            foreach ($extraCats as $ec):
-              ?>
-              <option value="<?= htmlspecialchars($ec) ?>"><?= htmlspecialchars($ec) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
+          }
+          foreach ($extraCats as $ec):
+            ?>
+            <option value="<?= htmlspecialchars($ec) ?>"><?= htmlspecialchars($ec) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
 
-        <!-- Date Filter Dropdown -->
-        <div class="dropdown position-relative" id="reportDateFilterInputGroup" style="flex-shrink: 0;">
-          <button class="btn policy-date-filter-btn" type="button" id="reportDateFilterDropdownBtn"
-            onclick="toggleReportDateDropdown(event)">
-            <span class="d-inline-flex align-items-center gap-2">
-              <i class="bi bi-calendar3" id="reportDateFilterIcon"></i>
-              <span id="reportDateFilterLabel">Filter Date</span>
-              <span class="badge bg-primary rounded-pill px-2 py-0.5" id="reportDateFilterActiveBadge"
-                style="font-size: 0.68rem; display: none;">Active</span>
-            </span>
-            <i class="bi bi-chevron-down policy-chevron"></i>
-          </button>
+      <!-- Date Filter Dropdown -->
+      <div class="dropdown position-relative" id="reportDateFilterInputGroup" style="flex-shrink: 0;">
+        <button class="btn policy-date-filter-btn" type="button" id="reportDateFilterDropdownBtn"
+          onclick="toggleReportDateDropdown(event)">
+          <span class="d-inline-flex align-items-center gap-2">
+            <i class="bi bi-calendar3" id="reportDateFilterIcon"></i>
+            <span id="reportDateFilterLabel">Filter Date</span>
+            <span class="badge bg-primary rounded-pill px-2 py-0.5" id="reportDateFilterActiveBadge"
+              style="font-size: 0.68rem; display: none;">Active</span>
+          </span>
+          <i class="bi bi-chevron-down policy-chevron"></i>
+        </button>
 
-          <div class="dropdown-menu dropdown-menu-end shadow-lg border rounded-4 p-3"
-            id="reportDateFilterDropdownMenu"
-            style="width: 320px; z-index: 1060; position: absolute; right: 0; top: 100%; margin-top: 6px; display: none;"
-            aria-labelledby="reportDateFilterDropdownBtn">
-            <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom">
-              <span class="fw-bold small text-dark"><i class="bi bi-calendar3 me-1.5 text-primary"></i>Filter by
-                Date</span>
-              <a href="javascript:void(0);" id="reportDateResetLink"
-                onclick="applyReportDateFilter('', 'Filter Date');"
-                class="text-danger small text-decoration-none fw-semibold" style="display: none;">Reset</a>
-            </div>
+        <div class="dropdown-menu dropdown-menu-end shadow-lg border rounded-4 p-3" id="reportDateFilterDropdownMenu"
+          style="width: 320px; z-index: 1060; position: absolute; right: 0; top: 100%; margin-top: 6px; display: none;"
+          aria-labelledby="reportDateFilterDropdownBtn">
+          <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom">
+            <span class="fw-bold small text-dark"><i class="bi bi-calendar3 me-1.5 text-primary"></i>Filter by
+              Date</span>
+            <a href="javascript:void(0);" id="reportDateResetLink" onclick="applyReportDateFilter('', 'Filter Date');"
+              class="text-danger small text-decoration-none fw-semibold" style="display: none;">Reset</a>
+          </div>
 
-            <!-- Quick Presets -->
-            <div class="mb-3">
-              <div class="text-muted fw-semibold small mb-2"
-                style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Quick Presets</div>
-              <div class="d-flex flex-wrap gap-1.5" id="reportDatePresetGroup">
-                <button type="button" onclick="applyReportDateFilter('', 'All Dates')"
-                  class="btn btn-sm rounded-3 btn-primary text-white date-preset-btn" data-type=""
-                  style="font-size: 0.78rem;">All Dates</button>
-                <button type="button" onclick="applyReportDateFilter('today', 'Today')"
-                  class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="today"
-                  style="font-size: 0.78rem;">Today</button>
-                <button type="button" onclick="applyReportDateFilter('last_7_days', 'Last 7 Days')"
-                  class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="last_7_days"
-                  style="font-size: 0.78rem;">Last 7 Days</button>
-                <button type="button" onclick="applyReportDateFilter('last_30_days', 'Last 30 Days')"
-                  class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="last_30_days"
-                  style="font-size: 0.78rem;">Last 30 Days</button>
-                <button type="button" onclick="applyReportDateFilter('this_month', 'This Month')"
-                  class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="this_month"
-                  style="font-size: 0.78rem;">This Month</button>
-                <button type="button" onclick="applyReportDateFilter('last_month', 'Last Month')"
-                  class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="last_month"
-                  style="font-size: 0.78rem;">Last Month</button>
-              </div>
-            </div>
-
-            <!-- By Year -->
-            <div class="mb-3">
-              <div class="text-muted fw-semibold small mb-2"
-                style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">By Year</div>
-              <div class="d-flex gap-1.5" id="reportDateYearGroup">
-                <button type="button" onclick="applyReportDateFilter('2026', '2026')"
-                  class="btn btn-sm rounded-3 flex-fill btn-light text-dark border date-preset-btn" data-type="2026"
-                  style="font-size: 0.78rem;">2026</button>
-                <button type="button" onclick="applyReportDateFilter('2025', '2025')"
-                  class="btn btn-sm rounded-3 flex-fill btn-light text-dark border date-preset-btn" data-type="2025"
-                  style="font-size: 0.78rem;">2025</button>
-                <button type="button" onclick="applyReportDateFilter('2024', '2024')"
-                  class="btn btn-sm rounded-3 flex-fill btn-light text-dark border date-preset-btn" data-type="2024"
-                  style="font-size: 0.78rem;">2024</button>
-              </div>
-            </div>
-
-            <!-- Custom Range -->
-            <div class="pt-2 border-top">
-              <div class="text-muted fw-semibold small mb-2"
-                style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Custom Range</div>
-              <div class="row g-1.5 mb-2">
-                <div class="col-6">
-                  <input type="date" id="reportCustomDateFrom" class="form-control form-control-sm rounded-2"
-                    style="font-size: 0.75rem;" placeholder="From">
-                </div>
-                <div class="col-6">
-                  <input type="date" id="reportCustomDateTo" class="form-control form-control-sm rounded-2"
-                    style="font-size: 0.75rem;" placeholder="To">
-                </div>
-              </div>
-              <button type="button" onclick="applyReportCustomDateRange()"
-                class="btn btn-primary btn-sm rounded-3 w-100 fw-semibold" style="font-size: 0.8rem;">
-                <i class="bi bi-check2 me-1"></i> Apply Range
-              </button>
+          <!-- Quick Presets -->
+          <div class="mb-3">
+            <div class="text-muted fw-semibold small mb-2"
+              style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Quick Presets</div>
+            <div class="d-flex flex-wrap gap-1.5" id="reportDatePresetGroup">
+              <button type="button" onclick="applyReportDateFilter('', 'All Dates')"
+                class="btn btn-sm rounded-3 btn-primary text-white date-preset-btn" data-type=""
+                style="font-size: 0.78rem;">All Dates</button>
+              <button type="button" onclick="applyReportDateFilter('today', 'Today')"
+                class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="today"
+                style="font-size: 0.78rem;">Today</button>
+              <button type="button" onclick="applyReportDateFilter('last_7_days', 'Last 7 Days')"
+                class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="last_7_days"
+                style="font-size: 0.78rem;">Last 7 Days</button>
+              <button type="button" onclick="applyReportDateFilter('last_30_days', 'Last 30 Days')"
+                class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="last_30_days"
+                style="font-size: 0.78rem;">Last 30 Days</button>
+              <button type="button" onclick="applyReportDateFilter('this_month', 'This Month')"
+                class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="this_month"
+                style="font-size: 0.78rem;">This Month</button>
+              <button type="button" onclick="applyReportDateFilter('last_month', 'Last Month')"
+                class="btn btn-sm rounded-3 btn-light text-dark border date-preset-btn" data-type="last_month"
+                style="font-size: 0.78rem;">Last Month</button>
             </div>
           </div>
-        </div>
 
+          <!-- By Year -->
+          <div class="mb-3">
+            <div class="text-muted fw-semibold small mb-2"
+              style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">By Year</div>
+            <div class="d-flex gap-1.5" id="reportDateYearGroup">
+              <button type="button" onclick="applyReportDateFilter('2026', '2026')"
+                class="btn btn-sm rounded-3 flex-fill btn-light text-dark border date-preset-btn" data-type="2026"
+                style="font-size: 0.78rem;">2026</button>
+              <button type="button" onclick="applyReportDateFilter('2025', '2025')"
+                class="btn btn-sm rounded-3 flex-fill btn-light text-dark border date-preset-btn" data-type="2025"
+                style="font-size: 0.78rem;">2025</button>
+              <button type="button" onclick="applyReportDateFilter('2024', '2024')"
+                class="btn btn-sm rounded-3 flex-fill btn-light text-dark border date-preset-btn" data-type="2024"
+                style="font-size: 0.78rem;">2024</button>
+            </div>
+          </div>
+
+          <!-- Custom Range -->
+          <div class="pt-2 border-top">
+            <div class="text-muted fw-semibold small mb-2"
+              style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;">Custom Range</div>
+            <div class="row g-1.5 mb-2">
+              <div class="col-6">
+                <input type="date" id="reportCustomDateFrom" class="form-control form-control-sm rounded-2"
+                  style="font-size: 0.75rem;" placeholder="From">
+              </div>
+              <div class="col-6">
+                <input type="date" id="reportCustomDateTo" class="form-control form-control-sm rounded-2"
+                  style="font-size: 0.75rem;" placeholder="To">
+              </div>
+            </div>
+            <button type="button" onclick="applyReportCustomDateRange()"
+              class="btn btn-primary btn-sm rounded-3 w-100 fw-semibold" style="font-size: 0.8rem;">
+              <i class="bi bi-check2 me-1"></i> Apply Range
+            </button>
+          </div>
+        </div>
       </div>
+
+    </div>
 
     <div class="table-responsive border rounded-4 overflow-hidden mb-3">
       <table class="table table-hover align-middle mb-0" style="font-size:0.88rem;">
@@ -797,12 +795,14 @@ unset($pol);
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
           <i class="bi bi-clock-history text-primary"></i> 2. Generated Reports &amp; Comparative Analyses
         </h3>
-        <p class="text-muted mb-0 small">Access, browse, search, and download legislative policy evaluations and cross-city benchmarks.</p>
+        <p class="text-muted mb-0 small">Access, browse, search, and download legislative policy evaluations and
+          cross-city benchmarks.</p>
       </div>
       <div class="d-flex align-items-center gap-2">
         <span class="badge border rounded-pill px-3 py-1.5 fw-semibold"
           style="background: #EFF6FF; color: #0B2E59; border-color: #BFDBFE !important; font-size: 0.8rem;">
-          <i class="bi bi-file-earmark-check text-primary me-1"></i><span id="recentGeneratedReportsTotalBadge">0</span> Reports Available
+          <i class="bi bi-file-earmark-check text-primary me-1"></i><span id="recentGeneratedReportsTotalBadge">0</span>
+          Reports Available
         </span>
       </div>
     </div>
@@ -881,7 +881,7 @@ unset($pol);
 
   <!-- Official Document Report Viewer Modal -->
   <div class="modal fade" id="reportDocumentViewerModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 880px;">
+    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 960px;">
       <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden bg-white">
         <!-- Clean & Executive Header -->
         <div class="modal-header border-bottom px-4 py-3 bg-white d-flex align-items-center justify-content-between">
@@ -891,7 +891,8 @@ unset($pol);
               <i class="bi bi-file-earmark-text-fill fs-5"></i>
             </div>
             <div>
-              <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative Document</h5>
+              <h5 class="modal-title fw-bold text-dark mb-0 fs-6" id="reportViewerModalTitle">Official Legislative
+                Document</h5>
               <span class="text-muted" style="font-size: 0.76rem;">Official Legislative Services Preview</span>
             </div>
           </div>
@@ -904,45 +905,53 @@ unset($pol);
             <!-- Rendered document will be injected here -->
           </div>
         </div>
-        <!-- Clean Bottom Actions Footer -->
-        <div class="modal-footer border-top px-4 py-2.5 bg-white d-flex flex-wrap align-items-center justify-content-between" style="gap: 10px;">
-          <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1 d-inline-flex align-items-center gap-1.5 fw-semibold" style="font-size: 0.76rem;">
-              <i class="bi bi-shield-check"></i> Official Document
-            </span>
-            <span class="text-muted small fw-medium d-none d-sm-inline" style="font-size: 0.78rem;">City Council of Manila</span>
+        <!-- Clean & Premium Bottom Actions Footer -->
+        <div
+          class="modal-footer border-top px-4 py-2.5 bg-white d-flex align-items-center justify-content-between flex-nowrap"
+          style="gap: 16px;">
+          <div class="d-flex align-items-center flex-shrink-0">
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill shadow-2xs"
+              style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; font-size: 0.82rem; font-weight: 600;">
+              <span class="d-inline-flex align-items-center justify-content-center rounded-circle text-white shadow-2xs"
+                style="width: 20px; height: 20px; background: linear-gradient(135deg, #10b981, #059669); font-size: 0.7rem;">
+                <i class="bi bi-shield-check"></i>
+              </span>
+              <span style="color: #065f46; letter-spacing: 0.2px;">Official Document</span>
+              <span style="display:inline-block; width: 4px; height: 4px; border-radius: 50%; background: #10b981; opacity: 0.7;"></span>
+              <span class="d-none d-sm-inline" style="font-weight: 500; color: #047857; font-size: 0.8rem;">City Council of Manila</span>
+            </div>
           </div>
-          <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+          <div class="d-flex align-items-center justify-content-end flex-nowrap ms-auto" style="gap: 8px;">
             <!-- View Original Document Button -->
             <button type="button"
-              class="btn btn-sm text-white fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
-              style="background: #0284c7; border: 1px solid #0284c7; font-size: 0.82rem; padding: 5px 13px; border-radius: 6px;"
+              class="btn text-white fw-semibold d-inline-flex align-items-center gap-2 shadow-sm flex-shrink-0"
+              style="background: #0284c7; border: 1px solid #0284c7; font-size: 0.88rem; padding: 7px 16px; border-radius: 10px; transition: all 0.2s ease-in-out;"
               id="reportModalViewOriginalBtn" title="Open the original uploaded source document">
-              <i class="bi bi-box-arrow-up-right" style="font-size: 0.85rem;"></i>
+              <i class="bi bi-box-arrow-up-right" style="font-size: 0.9rem;"></i>
               <span>View Original</span>
             </button>
             <!-- Download Word -->
             <button type="button"
-              class="btn btn-sm text-white fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
-              style="background: #2b579a; border: 1px solid #2b579a; font-size: 0.82rem; padding: 5px 13px; border-radius: 6px;"
+              class="btn text-white fw-semibold d-inline-flex align-items-center gap-2 shadow-sm flex-shrink-0"
+              style="background: #2b579a; border: 1px solid #2b579a; font-size: 0.88rem; padding: 7px 16px; border-radius: 10px; transition: all 0.2s ease-in-out;"
               id="reportModalDownloadDocxBtn" title="Download Word Document">
-              <i class="bi bi-file-earmark-word-fill" style="font-size: 0.85rem;"></i>
+              <i class="bi bi-file-earmark-word-fill" style="font-size: 0.95rem;"></i>
               <span>Word (.docx)</span>
             </button>
             <!-- Download PDF (Red) -->
             <button type="button"
-              class="btn btn-sm text-white fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
-              style="background: #dc2626; border: 1px solid #dc2626; font-size: 0.82rem; padding: 5px 13px; border-radius: 6px;"
+              class="btn text-white fw-semibold d-inline-flex align-items-center gap-2 shadow-sm flex-shrink-0"
+              style="background: #dc2626; border: 1px solid #dc2626; font-size: 0.88rem; padding: 7px 16px; border-radius: 10px; transition: all 0.2s ease-in-out;"
               id="reportModalDownloadPdfBtn" title="Download PDF Document">
-              <i class="bi bi-file-earmark-pdf-fill" style="font-size: 0.85rem;"></i>
+              <i class="bi bi-file-earmark-pdf-fill" style="font-size: 0.95rem;"></i>
               <span>Download PDF</span>
             </button>
             <!-- Print Button (Balanced Compact Size) -->
             <button type="button"
-              class="btn btn-sm text-white fw-semibold d-inline-flex align-items-center gap-1.5 shadow-2xs"
-              style="background: #0B2E59; border: 1px solid #0B2E59; font-size: 0.82rem; padding: 5px 14px; border-radius: 6px;"
+              class="btn text-white fw-semibold d-inline-flex align-items-center gap-2 shadow-sm flex-shrink-0"
+              style="background: #0B2E59; border: 1px solid #0B2E59; font-size: 0.88rem; padding: 7px 16px; border-radius: 10px; transition: all 0.2s ease-in-out;"
               id="reportModalPrintBtn" title="Print Document">
-              <i class="bi bi-printer-fill" style="font-size: 0.85rem;"></i>
+              <i class="bi bi-printer-fill" style="font-size: 0.95rem;"></i>
               <span>Print</span>
             </button>
           </div>
@@ -2148,6 +2157,9 @@ unset($pol);
 
     var pdfBtn = document.getElementById('reportModalDownloadPdfBtn');
     if (pdfBtn) {
+      pdfBtn.innerHTML = '<i class="bi bi-file-earmark-pdf-fill" style="font-size: 0.95rem;"></i><span>Download PDF</span>';
+      pdfBtn.disabled = false;
+      pdfBtn.classList.remove('disabled');
       pdfBtn.onclick = function () {
         saveReportAsPDF(_activeModalFileName, _activeModalReport);
       };
@@ -2176,37 +2188,101 @@ unset($pol);
   }
 
   function saveReportAsPDF(fileName, rep) {
+    var targetReport = rep || _activeModalReport || _selectedReport;
     var logoUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/admin/')) + '/assets/images/manilacityhall.svg';
-    var htmlContent = buildSharedReportTemplate(rep, logoUrl);
-
-    if (typeof html2pdf !== 'undefined') {
-      var container = document.createElement('div');
-      container.innerHTML = htmlContent;
-      container.style.position = 'fixed';
-      container.style.left = '-9999px';
-      container.style.top = '0';
-      container.style.width = '750px';
-      container.style.background = '#ffffff';
-      container.style.padding = '20px';
-      document.body.appendChild(container);
-
-      var opt = {
-        margin: 0.4,
-        filename: fileName.endsWith('.pdf') ? fileName : fileName + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-
-      html2pdf().set(opt).from(container).save().then(function () {
-        if (container && container.parentNode) container.parentNode.removeChild(container);
-      }).catch(function (err) {
-        if (container && container.parentNode) container.parentNode.removeChild(container);
-        printSelectedReport(rep);
-      });
-    } else {
-      printSelectedReport(rep);
+    var targetFileName = fileName || _activeModalFileName || 'Policy_Report.pdf';
+    if (!targetFileName.toLowerCase().endsWith('.pdf')) {
+      targetFileName += '.pdf';
     }
+
+    var pdfBtn = document.getElementById('reportModalDownloadPdfBtn');
+    var originalBtnHtml = '<i class="bi bi-file-earmark-pdf-fill" style="font-size: 0.95rem;"></i><span>Download PDF</span>';
+    if (pdfBtn) {
+      pdfBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1.5" role="status" style="width:0.9rem;height:0.9rem;border-width:0.15em;" aria-hidden="true"></span><span>Generating...</span>';
+      pdfBtn.disabled = true;
+      pdfBtn.classList.add('disabled');
+    }
+
+    function finishDownload() {
+      if (pdfBtn) {
+        pdfBtn.innerHTML = originalBtnHtml;
+        pdfBtn.disabled = false;
+        pdfBtn.classList.remove('disabled');
+      }
+    }
+
+    // Force browser to repaint the loading spinner immediately before executing heavy canvas/PDF generation
+    requestAnimationFrame(function () {
+      setTimeout(function () {
+        // 1. Capture directly from the already-rendered report element inside the modal if present
+        var modalBody = document.getElementById('reportViewerModalDocumentBody');
+        var elementToCapture = (modalBody && modalBody.firstElementChild) ? modalBody.firstElementChild : null;
+
+        var container = null;
+        if (!elementToCapture) {
+          container = document.createElement('div');
+          container.id = 'silent-admin-pdf-container';
+          container.style.position = 'fixed';
+          container.style.top = '0';
+          container.style.left = '0';
+          container.style.width = '750px';
+          container.style.maxWidth = '750px';
+          container.style.background = '#ffffff';
+          container.style.color = '#0f172a';
+          container.style.zIndex = '1040';
+          container.style.pointerEvents = 'none';
+          container.style.margin = '0';
+          container.style.padding = '25px';
+          container.style.boxSizing = 'border-box';
+          container.innerHTML = buildSharedReportTemplate(targetReport, logoUrl);
+          document.body.appendChild(container);
+          elementToCapture = container;
+        }
+
+        if (typeof html2pdf !== 'undefined' && elementToCapture) {
+          var opt = {
+            margin: [0.35, 0.35, 0.35, 0.35],
+            filename: targetFileName,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              allowTaint: true,
+              logging: false,
+              scrollY: 0,
+              scrollX: 0
+            },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+          };
+
+          try {
+            html2pdf().set(opt).from(elementToCapture).save().then(function () {
+              if (container && container.parentNode) {
+                container.parentNode.removeChild(container);
+              }
+              finishDownload();
+            }).catch(function (err) {
+              console.warn('html2pdf generation error:', err);
+              if (container && container.parentNode) {
+                container.parentNode.removeChild(container);
+              }
+              finishDownload();
+            });
+          } catch (e) {
+            console.error('html2pdf synchronous exception:', e);
+            if (container && container.parentNode) {
+              container.parentNode.removeChild(container);
+            }
+            finishDownload();
+          }
+        } else {
+          if (container && container.parentNode) {
+            container.parentNode.removeChild(container);
+          }
+          finishDownload();
+        }
+      }, 25);
+    });
   }
 
   function downloadRecentGeneratedReport(index) {
