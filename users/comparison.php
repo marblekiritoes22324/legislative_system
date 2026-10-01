@@ -134,34 +134,6 @@ ksort($u_grouped_local_policies);
           </p>
         </div>
       </div>
-    </div>
-
-    <!-- Dedicated Filter Ribbon (Category Domain & Peer City Scope) -->
-    <div class="p-2.5 px-3 bg-light rounded-3 border mb-3.5 d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-2xs">
-      
-      <!-- Left: Policy Category Filter Pills (Full Text, Never Truncated) -->
-      <div class="d-flex align-items-center gap-1.5 flex-wrap" id="userManilaCategoryFilterPills">
-        <span class="small fw-bold text-dark d-flex align-items-center me-1" style="font-size:0.8rem;">
-          <i class="bi bi-funnel-fill text-primary me-1"></i>Category:
-        </span>
-        <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-bold btn-primary text-white filter-cat-btn" data-cat="all" onclick="filterUserManilaPoliciesByCategory('all', this)" style="font-size:0.75rem;">All</button>
-        <?php foreach (array_keys($u_grouped_local_policies) as $catName): ?>
-          <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-semibold btn-outline-secondary filter-cat-btn" data-cat="<?= htmlspecialchars($catName) ?>" onclick="filterUserManilaPoliciesByCategory(<?= json_encode($catName) ?>, this)" style="font-size:0.75rem; white-space:nowrap;"><?= htmlspecialchars($catName) ?></button>
-        <?php endforeach; ?>
-      </div>
-
-      <!-- Right: Peer City Filter Pills -->
-      <div class="d-flex align-items-center gap-1.5 flex-wrap" id="userCrossCityFilterPills">
-        <span class="small fw-bold text-dark d-flex align-items-center me-1" style="font-size:0.8rem;">
-          <i class="bi bi-geo-alt-fill text-success me-1"></i>Peer City:
-        </span>
-        <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-bold btn-primary text-white filter-city-btn" data-city="all" onclick="filterUserCrossCityBenchmark('all', this)" style="font-size:0.75rem;">All Cities</button>
-        <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-semibold btn-outline-secondary filter-city-btn" data-city="Quezon City" onclick="filterUserCrossCityBenchmark('Quezon City', this)" style="font-size:0.75rem;">Quezon City</button>
-        <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-semibold btn-outline-secondary filter-city-btn" data-city="City of Makati" onclick="filterUserCrossCityBenchmark('City of Makati', this)" style="font-size:0.75rem;">Makati</button>
-        <button type="button" class="btn btn-xs rounded-pill px-2.5 py-1 fw-semibold btn-outline-secondary filter-city-btn" data-city="Pasig City" onclick="filterUserCrossCityBenchmark('Pasig City', this)" style="font-size:0.75rem;">Pasig</button>
-      </div>
-
-    </div>
 
     <!-- Mode 1: Cross-City Ordinance Benchmarking (CLEAN & BALANCED) -->
     <div class="row g-3 align-items-end mb-4" id="crossCityCompareForm">
