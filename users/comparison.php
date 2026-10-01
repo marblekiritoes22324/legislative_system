@@ -835,125 +835,60 @@ ksort($u_grouped_local_policies);
       var isMakati = (c.toLowerCase().indexOf('makati') !== -1);
       var isPasig = (c.toLowerCase().indexOf('pasig') !== -1);
 
-      var authBadge = ' <span class="badge rounded-pill bg-white text-primary border border-primary-subtle shadow-2xs ms-1.5" title="Researched Official LGU Benchmark from Official City Council records" style="font-size:0.7rem; font-weight:600; cursor:help;"><i class="bi bi-patch-check-fill text-primary me-1"></i>Official Researched Data</span>';
+      var authBadge = ' <span class="d-inline-flex align-items-center gap-1 px-2.5 py-1 rounded-pill shadow-sm ms-1.5" style="background: rgba(15, 23, 42, 0.75); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.55); font-size: 0.72rem; font-weight: 700; backdrop-filter: blur(6px); letter-spacing: 0.02em;" title="Researched Official LGU Benchmark from Official City Council records"><i class="bi bi-patch-check-fill text-info me-1"></i>Official Researched Data</span>';
 
       if (isManila) {
-        return '<span class="badge fw-semibold px-2.5 py-1" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-building me-1"></i> City of Manila (Local)</span>';
+        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, rgba(30, 64, 175, 0.85) 0%, rgba(37, 99, 235, 0.75) 100%); color: #ffffff; border: 1.5px solid rgba(147, 197, 253, 0.7); font-size: 0.84rem; font-weight: 700; font-family: Arial, sans-serif; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);">' +
+          '<i class="bi bi-building-fill text-warning fs-6"></i>' +
+          '<span>City of Manila</span>' +
+          '<span class="badge rounded-pill bg-warning text-dark fw-bolder px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.04em;">LOCAL LGU</span>' +
+          '</span>';
       } else if (isQC) {
-        return '<span class="badge fw-semibold px-2.5 py-1" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-pin-map-fill me-1"></i> Quezon City (Enacted Benchmark)</span>' + authBadge;
+        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, rgba(159, 18, 57, 0.85) 0%, rgba(225, 29, 72, 0.75) 100%); color: #ffffff; border: 1.5px solid rgba(253, 164, 175, 0.7); font-size: 0.84rem; font-weight: 700; font-family: Arial, sans-serif; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);">' +
+          '<i class="bi bi-pin-map-fill text-warning fs-6"></i>' +
+          '<span>Quezon City</span>' +
+          '<span class="badge rounded-pill bg-danger text-white fw-bolder px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.04em;">BENCHMARK</span>' +
+          '</span>' + authBadge;
       } else if (isMakati) {
-        return '<span class="badge fw-semibold px-2.5 py-1" style="background:#faf5ff; color:#7e22ce; border:1px solid #e9d5ff; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-shield-check me-1"></i> City of Makati (Enacted Benchmark)</span>' + authBadge;
+        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, rgba(88, 28, 135, 0.85) 0%, rgba(126, 34, 206, 0.75) 100%); color: #ffffff; border: 1.5px solid rgba(216, 180, 254, 0.7); font-size: 0.84rem; font-weight: 700; font-family: Arial, sans-serif; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(126, 34, 206, 0.35);">' +
+          '<i class="bi bi-shield-check text-info fs-6"></i>' +
+          '<span>City of Makati</span>' +
+          '<span class="badge rounded-pill bg-info text-dark fw-bolder px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.04em;">BENCHMARK</span>' +
+          '</span>' + authBadge;
       } else if (isPasig) {
-        return '<span class="badge fw-semibold px-2.5 py-1" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-geo-alt-fill me-1"></i> Pasig City (Enacted Benchmark)</span>' + authBadge;
+        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, rgba(6, 78, 59, 0.85) 0%, rgba(16, 185, 129, 0.75) 100%); color: #ffffff; border: 1.5px solid rgba(110, 231, 183, 0.7); font-size: 0.84rem; font-weight: 700; font-family: Arial, sans-serif; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);">' +
+          '<i class="bi bi-geo-alt-fill text-warning fs-6"></i>' +
+          '<span>Pasig City</span>' +
+          '<span class="badge rounded-pill bg-success text-white fw-bolder px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.04em;">BENCHMARK</span>' +
+          '</span>' + authBadge;
       }
-      return '<span class="badge fw-semibold px-2.5 py-1" style="background:#f8fafc; color:#475569; border:1px solid #cbd5e1; font-size:0.8rem; font-family: Arial, sans-serif;"><i class="bi bi-geo-alt me-1"></i> ' + esc(c) + '</span>' + authBadge;
+      return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(51, 65, 85, 0.75) 100%); color: #ffffff; border: 1.5px solid rgba(203, 213, 225, 0.6); font-size: 0.84rem; font-weight: 700; font-family: Arial, sans-serif; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);">' +
+        '<i class="bi bi-geo-alt-fill text-info fs-6"></i>' +
+        '<span>' + esc(c) + '</span>' +
+        '<span class="badge rounded-pill bg-secondary text-white fw-bolder px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.04em;">BENCHMARK</span>' +
+        '</span>' + authBadge;
     }
 
     function cleanRiskBadge(risk) {
       var r = (risk || 'Low').toLowerCase();
-      var color = '#15803d', bg = '#f0fdf4', border = '#bbf7d0', text = 'Low Risk';
+      var color = '#14532d', bg = '#dcfce7', border = '#86efac', text = 'Low Risk';
       if (r.indexOf('high') !== -1) {
-        color = '#b91c1c'; bg = '#fef2f2'; border = '#fca5a5'; text = 'High Risk';
+        color = '#7f1d1d'; bg = '#fee2e2'; border = '#fca5a5'; text = 'High Risk';
       } else if (r.indexOf('moderate') !== -1 || r.indexOf('medium') !== -1) {
-        color = '#b45309'; bg = '#fffbeb'; border = '#fde68a'; text = 'Medium Risk';
+        color = '#78350f'; bg = '#fef3c7'; border = '#fcd34d'; text = 'Medium Risk';
       }
-      return '<span class="badge fw-semibold" style="background:' + bg + '; color:' + color + '; border:1px solid ' + border + '; font-size:0.8rem; font-family: Arial, sans-serif;">' + esc(risk || text) + '</span>';
-    }
-
-    function getScorePercentage(level, policy, criterionKey) {
-      // 0. Live Gemini AI evaluated criteria score if available
-      if (policy && policy._ai_scores && typeof policy._ai_scores[criterionKey] === 'number') {
-        return Math.min(98, Math.max(25, Math.round(policy._ai_scores[criterionKey])));
-      }
-
-      if (policy) {
-        var direct = 0;
-        if (criterionKey === 'economic' && policy.economic_score) direct = parseFloat(policy.economic_score);
-        else if (criterionKey === 'social' && policy.social_score) direct = parseFloat(policy.social_score);
-        else if (criterionKey === 'env' && (policy.env_score || policy.environmental_score)) direct = parseFloat(policy.env_score || policy.environmental_score);
-        else if (criterionKey === 'legal' && policy.legal_score) direct = parseFloat(policy.legal_score);
-
-        if (direct && direct > 0) {
-          if (direct <= 10) return Math.min(98, Math.max(25, Math.round(direct * 10)));
-          if (direct <= 100) return Math.min(98, Math.max(25, Math.round(direct)));
-        }
-      }
-
-      var l = (level || '').toLowerCase();
-      var isHigh = (l.indexOf('high') !== -1);
-      var isMed = (l.indexOf('med') !== -1 || l.indexOf('mod') !== -1);
-      var base = isHigh ? 89 : (isMed ? 68 : 38);
-
-      if (!policy) return base;
-
-      var cat = (policy.category || '').toLowerCase();
-      var mod = 0;
-
-      if (cat.indexOf('social') !== -1 || cat.indexOf('welfare') !== -1 || cat.indexOf('community') !== -1) {
-        if (criterionKey === 'social') mod += 6;
-        else if (criterionKey === 'legal') mod += 3;
-        else if (criterionKey === 'economic') mod -= 2;
-        else if (criterionKey === 'env') mod -= 4;
-      } else if (cat.indexOf('traffic') !== -1 || cat.indexOf('infra') !== -1 || cat.indexOf('transport') !== -1) {
-        if (criterionKey === 'env') mod += 4;
-        else if (criterionKey === 'legal') mod += 4;
-        else if (criterionKey === 'social') mod += 1;
-        else if (criterionKey === 'economic') mod -= 5;
-      } else if (cat.indexOf('environ') !== -1) {
-        if (criterionKey === 'env') mod += 7;
-        else if (criterionKey === 'legal') mod += 4;
-        else if (criterionKey === 'social') mod += 2;
-        else if (criterionKey === 'economic') mod -= 2;
-      } else if (cat.indexOf('health') !== -1) {
-        if (criterionKey === 'social') mod += 6;
-        else if (criterionKey === 'legal') mod += 4;
-        else if (criterionKey === 'env') mod += 2;
-        else if (criterionKey === 'economic') mod -= 3;
-      } else if (cat.indexOf('revenue') !== -1 || cat.indexOf('finance') !== -1 || cat.indexOf('tax') !== -1 || cat.indexOf('business') !== -1) {
-        if (criterionKey === 'economic') mod += 7;
-        else if (criterionKey === 'legal') mod += 4;
-        else if (criterionKey === 'social') mod += 1;
-        else if (criterionKey === 'env') mod -= 4;
-      }
-
-      var seed = (policy.id || 1) * 31;
-      var titleStr = policy.title || '';
-      for (var ci = 0; ci < Math.min(titleStr.length, 10); ci++) {
-        seed += titleStr.charCodeAt(ci);
-      }
-      var offsetMap = { economic: 3, social: 7, env: 13, legal: 19 };
-      var offset = offsetMap[criterionKey] || 5;
-      var variance = ((seed + offset) % 5) - 2;
-
-      var computed = base + mod + variance;
-
-      if (isHigh) return Math.min(97, Math.max(83, computed));
-      if (isMed) return Math.min(79, Math.max(58, computed));
-      return Math.min(48, Math.max(28, computed));
-    }
-
-    function getScoreColor(levelOrPct) {
-      if (typeof levelOrPct === 'number' || (typeof levelOrPct === 'string' && !isNaN(parseInt(levelOrPct, 10)) && levelOrPct.indexOf('High') === -1 && levelOrPct.indexOf('Low') === -1 && levelOrPct.indexOf('Med') === -1)) {
-        var num = parseInt(levelOrPct, 10);
-        if (num >= 80) return '#16a34a';
-        if (num >= 55) return '#d97706';
-        return '#dc2626';
-      }
-      var l = (levelOrPct || '').toLowerCase();
-      if (l.indexOf('high') !== -1) return '#16a34a';
-      if (l.indexOf('med') !== -1 || l.indexOf('mod') !== -1) return '#d97706';
-      return '#dc2626';
+      return '<span class="badge px-3 py-1.5 rounded-pill fw-bold" style="background:' + bg + '; color:' + color + ' !important; border:1px solid ' + border + '; font-size:0.8rem; font-family: Arial, sans-serif;">' + esc(risk || text) + '</span>';
     }
 
     function cleanLevelBadge(level) {
       var l = (level || 'Low').toLowerCase();
-      var color = '#dc2626', bg = '#fef2f2', border = '#fca5a5', text = 'Low';
+      var color = '#7f1d1d', bg = '#fee2e2', border = '#fca5a5', text = 'Low';
       if (l.indexOf('high') !== -1) {
-        color = '#15803d'; bg = '#f0fdf4'; border = '#bbf7d0'; text = 'High';
+        color = '#14532d'; bg = '#dcfce7'; border = '#86efac'; text = 'High';
       } else if (l.indexOf('med') !== -1 || l.indexOf('mod') !== -1) {
-        color = '#b45309'; bg = '#fffbeb'; border = '#fde68a'; text = 'Medium';
+        color = '#78350f'; bg = '#fef3c7'; border = '#fcd34d'; text = 'Medium';
       }
-      return '<span class="badge fw-semibold me-2" style="background:' + bg + '; color:' + color + '; border:1px solid ' + border + '; font-size:0.78rem; font-family: Arial, sans-serif;">' + text + '</span>';
+      return '<span class="badge fw-bold me-2 px-2.5 py-1 rounded-pill" style="background:' + bg + '; color:' + color + ' !important; border:1px solid ' + border + '; font-size:0.78rem; font-family: Arial, sans-serif;">' + text + '</span>';
     }
 
     function criteriaCell(level, reason, pct) {
@@ -961,18 +896,17 @@ ksort($u_grouped_local_policies);
       var color = getScoreColor(numPct);
       var badge = cleanLevelBadge(level);
 
-      var meter = '<div class="d-inline-flex align-items-center gap-2 mb-1.5">' +
+      var meter = '<div class="d-inline-flex align-items-center gap-2 mb-2">' +
         badge +
-        '<div class="progress" style="width: 70px; height: 6px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;" title="Rating Viability: ' + numPct + '%">' +
+        '<div class="progress" style="width: 75px; height: 7px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;" title="Rating Viability: ' + numPct + '%">' +
         '<div class="progress-bar" role="progressbar" style="width: ' + numPct + '%; background-color: ' + color + ';" aria-valuenow="' + numPct + '" aria-valuemin="0" aria-valuemax="100"></div>' +
         '</div>' +
-        '<span class="fw-bold ms-1" style="font-size:0.75rem; color:' + color + ';">' + numPct + '%</span>' +
+        '<span style="color:' + color + '; font-size:0.78rem; font-weight:800;">' + numPct + '%</span>' +
         '</div>';
 
-      return '<div class="d-flex flex-column">' +
-        meter +
-        '<div class="small text-secondary" style="font-family: Arial, sans-serif; line-height: 1.45; font-size: 0.82rem;">' + esc(reason) + '</div>' +
-        '</div>';
+      if (!reason) return meter;
+      return meter +
+        '<div style="font-family: Arial, Helvetica, sans-serif; color: #000000 !important; font-size: 0.88rem; line-height: 1.6; font-weight: 500;">' + esc(reason) + '</div>';
     }
 
     function getEnhancedPolicyReason(policy, criterionKey) {
@@ -1502,7 +1436,7 @@ ksort($u_grouped_local_policies);
         '</span>' +
         '<span class="text-muted small">| ' + (isCrossCity ? 'Cross-City Comparative Assessment' : 'Local Ordinance Comparative Assessment') + '</span>' +
         '</div>' +
-        '<p class="text-secondary small mb-0" style="line-height:1.55;">' + dynamicAI.verdictNote + '</p>' +
+        '<p class="small mb-0" style="color: #000000 !important; line-height:1.55; font-size: 0.88rem; font-weight: 500;">' + dynamicAI.verdictNote + '</p>' +
         '</div>' +
         '<div class="text-nowrap text-muted small font-monospace">' +
         '<i class="bi bi-shield-check text-primary me-1"></i> RA 7160 Alignment Scorecard' +
@@ -1540,7 +1474,7 @@ ksort($u_grouped_local_policies);
         '<div class="fw-bold text-primary small mb-2 d-flex align-items-center gap-1.5">' +
         '<i class="bi bi-trophy-fill text-primary"></i> Manila Policy Strength' +
         '</div>' +
-        '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
+        '<p class="small mb-0" style="color: #0f172a !important; line-height:1.65; font-size: 0.86rem; font-weight: 500;">' +
         dynamicAI.strengthA +
         '</p>' +
         '</div>' +
@@ -1551,7 +1485,7 @@ ksort($u_grouped_local_policies);
         '<div class="fw-bold text-success small mb-2 d-flex align-items-center gap-1.5">' +
         '<i class="bi bi-lightbulb-fill text-success"></i> Adoptable Best Practice (' + shortCityB + ')' +
         '</div>' +
-        '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
+        '<p class="small mb-0" style="color: #0f172a !important; line-height:1.65; font-size: 0.86rem; font-weight: 500;">' +
         (b.benchmark_insight ? esc(b.benchmark_insight) : dynamicAI.bestPracticeB) +
         '</p>' +
         '</div>' +
@@ -1563,7 +1497,7 @@ ksort($u_grouped_local_policies);
         '<div class="fw-bold text-warning-emphasis small mb-2 d-flex align-items-center gap-1.5">' +
         '<i class="bi bi-bullseye text-warning"></i> Policy Gap &amp; Council Directive' +
         '</div>' +
-        '<p class="text-secondary small mb-3" style="line-height:1.65;">' +
+        '<p class="small mb-3" style="color: #0f172a !important; line-height:1.65; font-size: 0.86rem; font-weight: 500;">' +
         dynamicAI.takeaway +
         '</p>' +
         '</div>' +
@@ -1606,10 +1540,10 @@ ksort($u_grouped_local_policies);
       }
 
       // Enactment Status
-      var aStatusBadge = '<span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning border-opacity-25 px-2.5 py-1" style="font-size:0.78rem;"><i class="bi bi-hourglass-split me-1"></i> Proposed / Under Committee Review' + (a.publication_date ? ' (' + esc(a.publication_date) + ')' : '') + '</span>';
+      var aStatusBadge = '<span class="badge px-3 py-1.5 rounded-pill fw-bold" style="background:#fffbeb; color:#92400e !important; border:1px solid #fde68a; font-size:0.8rem;"><i class="bi bi-hourglass-split me-1 text-warning"></i> Proposed / Under Committee Review' + (a.publication_date ? ' (' + esc(a.publication_date) + ')' : '') + '</span>';
       var bStatusBadge = b.enactment_date
-        ? '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-1" style="font-size:0.78rem;"><i class="bi bi-check-circle-fill me-1"></i> Enacted: ' + esc(b.enactment_date) + '</span>'
-        : '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-1" style="font-size:0.78rem;"><i class="bi bi-check-circle-fill me-1"></i> Enacted Legislation</span>';
+        ? '<span class="badge px-3 py-1.5 rounded-pill fw-bold" style="background:#f0fdf4; color:#14532d !important; border:1px solid #86efac; font-size:0.8rem;"><i class="bi bi-check-circle-fill me-1 text-success"></i> Enacted: ' + esc(b.enactment_date) + '</span>'
+        : '<span class="badge px-3 py-1.5 rounded-pill fw-bold" style="background:#f0fdf4; color:#14532d !important; border:1px solid #86efac; font-size:0.8rem;"><i class="bi bi-check-circle-fill me-1 text-success"></i> Enacted Legislation</span>';
 
       // Format Key Provisions
       var aProvisions = a.key_provisions || a.description || 'Comprehensive municipal ordinance proposal addressing localized service delivery across Manila legislative districts.';
@@ -1624,27 +1558,27 @@ ksort($u_grouped_local_policies);
             var trimmed = l.trim().replace(/^[•\-\*]\s*/, '');
             return trimmed ? '<li class="mb-1">' + esc(trimmed) + '</li>' : '';
           }).filter(Boolean).join('');
-          return '<ul class="mb-0 ps-3 small text-secondary" style="line-height:1.6;">' + items + '</ul>';
+          return '<ul class="mb-0 ps-3" style="color: #000000 !important; font-size: 0.88rem; line-height:1.65; font-weight: 500;">' + items + '</ul>';
         }
-        return '<p class="mb-0 small text-secondary" style="line-height:1.6;">' + esc(text) + '</p>';
+        return '<p class="mb-0" style="color: #000000 !important; font-size: 0.88rem; line-height:1.65; font-weight: 500;">' + esc(text) + '</p>';
       }
 
       // Body Rows
       var rows = [
         {
           label: 'Policy Title',
-          a: '<div class="fw-semibold text-dark" style="font-family: Arial, sans-serif; font-size:0.88rem;">' + esc(a.title) + '</div>',
-          b: '<div class="fw-semibold text-dark" style="font-family: Arial, sans-serif; font-size:0.88rem;">' + esc(b.title) + '</div>' + bSourceBtn
+          a: '<div class="fw-semibold" style="font-family: Arial, sans-serif; color: #000000 !important; font-size:0.92rem; font-weight: 600;">' + esc(a.title) + '</div>',
+          b: '<div class="fw-semibold" style="font-family: Arial, sans-serif; color: #000000 !important; font-size:0.92rem; font-weight: 600;">' + esc(b.title) + '</div>' + bSourceBtn
         },
         {
           label: 'City Jurisdiction',
-          a: '<div class="d-flex align-items-center gap-1.5"><i class="bi bi-building text-primary"></i> <strong class="text-dark">' + esc(a.city_name || a.city_origin || 'City of Manila') + '</strong> <span class="text-muted small">(Local LGU)</span></div>',
-          b: '<div class="d-flex align-items-center gap-1.5"><i class="bi bi-geo-alt-fill text-success"></i> <strong class="text-dark">' + esc(b.city_name || b.city_origin || 'Peer City Benchmark') + '</strong> <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 ms-1" style="font-size:0.68rem;">Enacted Law</span></div>'
+          a: '<div class="d-flex align-items-center gap-1.5" style="color:#000000 !important; font-weight:500;"><i class="bi bi-building text-primary"></i> <strong style="color:#000000 !important;">' + esc(a.city_name || a.city_origin || 'City of Manila') + '</strong> <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 ms-1" style="font-size:0.68rem;">Local LGU</span></div>',
+          b: '<div class="d-flex align-items-center gap-1.5" style="color:#000000 !important; font-weight:500;"><i class="bi bi-geo-alt-fill text-success"></i> <strong style="color:#000000 !important;">' + esc(b.city_name || b.city_origin || 'Peer City Benchmark') + '</strong> <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 ms-1" style="font-size:0.68rem;">Enacted Law</span></div>'
         },
         {
           label: 'Policy Area',
-          a: '<span class="badge bg-light border px-2.5 py-1 text-dark fw-semibold" style="font-size:0.82rem;">' + esc(a.category || 'General') + '</span>',
-          b: '<span class="badge bg-light border px-2.5 py-1 text-dark fw-semibold" style="font-size:0.82rem;">' + esc(b.policy_area || b.category || 'General') + '</span>'
+          a: '<span class="badge px-3 py-1.5 rounded-pill fw-bold" style="background:#f1f5f9; color:#000000 !important; border:1px solid #cbd5e1; font-size:0.82rem;">' + esc(a.category || 'General') + '</span>',
+          b: '<span class="badge px-3 py-1.5 rounded-pill fw-bold" style="background:#f1f5f9; color:#000000 !important; border:1px solid #cbd5e1; font-size:0.82rem;">' + esc(b.policy_area || b.category || 'General') + '</span>'
         },
         {
           label: 'Enactment Status',
@@ -1675,15 +1609,15 @@ ksort($u_grouped_local_policies);
       for (var i = 0; i < rows.length; i++) {
         var r = rows[i];
         tableHtml += '<tr>' +
-          '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">' + r.label + '</td>' +
-          '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' + r.a + '</td>' +
-          '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' + r.b + '</td>' +
+          '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000 !important; font-size:0.85rem;">' + r.label + '</td>' +
+          '<td class="px-3 py-3 bg-white" style="vertical-align:top; color:#000000 !important;">' + r.a + '</td>' +
+          '<td class="px-3 py-3 bg-white" style="vertical-align:top; color:#000000 !important;">' + r.b + '</td>' +
           '</tr>';
       }
 
       // Evaluation Criteria Section Divider
       tableHtml += '<tr>' +
-        '<td colspan="3" class="px-3 py-2.5 bg-light border-top border-bottom fw-bold text-uppercase" style="background:#f1f5f9; font-family: Arial, sans-serif; color:#000000; font-size:0.78rem; letter-spacing:0.8px;">' +
+        '<td colspan="3" class="px-3 py-2.5 bg-light border-top border-bottom fw-bold text-uppercase" style="background:#f1f5f9; font-family: Arial, sans-serif; color:#000000 !important; font-size:0.78rem; letter-spacing:0.8px;">' +
         'Evaluation Criteria &amp; Viability Assessment' +
         '</td>' +
         '</tr>';
@@ -1714,20 +1648,20 @@ ksort($u_grouped_local_policies);
       for (var j = 0; j < evalRows.length; j++) {
         var er = evalRows[j];
         tableHtml += '<tr>' +
-          '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">' + er.label + '</td>' +
-          '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' + er.a + '</td>' +
-          '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' + er.b + '</td>' +
+          '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000 !important; font-size:0.85rem;">' + er.label + '</td>' +
+          '<td class="px-3 py-3 bg-white" style="vertical-align:top; color:#000000 !important;">' + er.a + '</td>' +
+          '<td class="px-3 py-3 bg-white" style="vertical-align:top; color:#000000 !important;">' + er.b + '</td>' +
           '</tr>';
       }
 
       // Recommendation Row
       tableHtml += '<tr>' +
-        '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">Recommendation</td>' +
-        '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' +
-        '<span style="font-family: Arial, Helvetica, sans-serif; color:#000000; font-size:0.88rem; line-height:1.55;">' + esc(a.ai_recommendation || getEnhancedRecommendation(a)) + '</span>' +
+        '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000 !important; font-size:0.85rem;">Recommendation</td>' +
+        '<td class="px-3 py-3 bg-white" style="vertical-align:top; color:#000000 !important;">' +
+        '<div style="font-family: Arial, Helvetica, sans-serif; color:#000000 !important; font-size:0.88rem; line-height:1.6; font-weight:500;">' + esc(a.ai_recommendation || getEnhancedRecommendation(a)) + '</div>' +
         '</td>' +
-        '<td class="px-3 py-3 bg-white" style="vertical-align:top;">' +
-        '<span style="font-family: Arial, Helvetica, sans-serif; color:#000000; font-size:0.88rem; line-height:1.55;">' + esc(b.ai_recommendation || getEnhancedRecommendation(b)) + '</span>' +
+        '<td class="px-3 py-3 bg-white" style="vertical-align:top; color:#000000 !important;">' +
+        '<div style="font-family: Arial, Helvetica, sans-serif; color:#000000 !important; font-size:0.88rem; line-height:1.6; font-weight:500;">' + esc(b.ai_recommendation || getEnhancedRecommendation(b)) + '</div>' +
         '</td>' +
         '</tr>';
 
@@ -1819,36 +1753,36 @@ ksort($u_grouped_local_policies);
           : '<span class="badge rounded-pill bg-light text-muted border px-2 py-0.5 ms-2" style="font-size:0.68rem;"><i class="bi bi-check2 text-success me-1"></i> Unchanged</span>';
 
         return '<tr style="' + rowStyle + '">' +
-          '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">' +
+          '<td class="px-3 py-3 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000 !important; font-size:0.85rem;">' +
           label + (record.has_multiple ? badge : '') +
           '</td>' +
-          '<td class="px-3 py-3" style="vertical-align:top;">' + aVal + '</td>' +
-          '<td class="px-3 py-3" style="vertical-align:top;' + (isDiff ? 'background:#fffbeb;' : '') + '">' + bVal + '</td>' +
+          '<td class="px-3 py-3" style="vertical-align:top; color:#000000 !important;">' + aVal + '</td>' +
+          '<td class="px-3 py-3" style="vertical-align:top; color:#000000 !important;' + (isDiff ? 'background:#fffbeb;' : '') + '">' + bVal + '</td>' +
           '</tr>';
       }
 
       // Policy Meta Rows
       html += '<tr>' +
-        '<td class="px-3 py-2.5 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">Policy Title</td>' +
-        '<td colspan="2" class="px-3 py-2.5 bg-white fw-bold text-dark" style="font-size:0.92rem;">' + esc(record.title) + '</td>' +
+        '<td class="px-3 py-2.5 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000 !important; font-size:0.85rem;">Policy Title</td>' +
+        '<td colspan="2" class="px-3 py-2.5 bg-white fw-bold" style="color:#000000 !important; font-size:0.92rem;">' + esc(record.title) + '</td>' +
         '</tr>';
 
       html += '<tr>' +
-        '<td class="px-3 py-2.5 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">LGU / City Origin</td>' +
+        '<td class="px-3 py-2.5 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000 !important; font-size:0.85rem;">LGU / City Origin</td>' +
         '<td colspan="2" class="px-3 py-2.5 bg-white">' + cleanCityBadge(record.city_origin, record.title) + '</td>' +
         '</tr>';
 
       html += '<tr>' +
-        '<td class="px-3 py-2.5 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">Policy Category</td>' +
+        '<td class="px-3 py-2.5 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000 !important; font-size:0.85rem;">Policy Category</td>' +
         '<td colspan="2" class="px-3 py-2.5 bg-white">' +
-        '<span class="badge bg-light border px-2.5 py-1 text-dark fw-semibold" style="font-size:0.82rem;">' + esc(record.category) + '</span>' +
+        '<span class="badge px-3 py-1.5 rounded-pill fw-bold" style="background:#f1f5f9; color:#000000 !important; border:1px solid #cbd5e1; font-size:0.82rem;">' + esc(record.category) + '</span>' +
         '</td>' +
         '</tr>';
 
       html += '<tr>' +
-        '<td class="px-3 py-2.5 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000; font-size:0.85rem;">Approved By</td>' +
-        '<td class="px-3 py-2.5 bg-white small text-muted"><i class="bi bi-person-check-fill text-success me-1"></i>' + esc(oldest.approved_by || 'System Administrator') + '</td>' +
-        '<td class="px-3 py-2.5 bg-white small text-muted"><i class="bi bi-person-check-fill text-success me-1"></i>' + esc(newest.approved_by || 'System Administrator') + '</td>' +
+        '<td class="px-3 py-2.5 fw-bold" style="background:#f8fafc; font-family: Arial, sans-serif; color:#000000 !important; font-size:0.85rem;">Approved By</td>' +
+        '<td class="px-3 py-2.5 bg-white small" style="color:#000000 !important; font-weight:500;"><i class="bi bi-person-check-fill text-success me-1"></i>' + esc(oldest.approved_by || 'System Administrator') + '</td>' +
+        '<td class="px-3 py-2.5 bg-white small" style="color:#000000 !important; font-weight:500;"><i class="bi bi-person-check-fill text-success me-1"></i>' + esc(newest.approved_by || 'System Administrator') + '</td>' +
         '</tr>';
 
       // Risk Level Row
@@ -1894,8 +1828,8 @@ ksort($u_grouped_local_policies);
       var recDiff = (oldRec !== newRec);
       html += renderDiffRow(
         'Recommendation',
-        '<span style="font-family: Arial, Helvetica, sans-serif; color:#000000; font-size:0.88rem; line-height:1.55;">' + esc(oldRec) + '</span>',
-        '<span style="font-family: Arial, Helvetica, sans-serif; color:#000000; font-size:0.88rem; line-height:1.55;">' + esc(newRec) + '</span>',
+        '<div style="font-family: Arial, Helvetica, sans-serif; color:#000000 !important; font-size:0.88rem; line-height:1.6; font-weight:500;">' + esc(oldRec) + '</div>',
+        '<div style="font-family: Arial, Helvetica, sans-serif; color:#000000 !important; font-size:0.88rem; line-height:1.6; font-weight:500;">' + esc(newRec) + '</div>',
         recDiff
       );
 
@@ -1931,7 +1865,7 @@ ksort($u_grouped_local_policies);
         '<div class="fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">' +
         '<i class="bi bi-arrow-left-right text-primary fs-6"></i> Iterative Criteria Evolution' +
         '</div>' +
-        '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
+        '<p class="small mb-0" style="color: #0f172a !important; line-height:1.65; font-size: 0.86rem; font-weight: 500;">' +
         dynamicVersionAI.summary +
         '</p>' +
         '</div>' +
@@ -1942,7 +1876,7 @@ ksort($u_grouped_local_policies);
         '<div class="fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">' +
         '<i class="bi bi-lightbulb-fill text-warning fs-6"></i> Council Endorsement &amp; Action Plan' +
         '</div>' +
-        '<p class="text-secondary small mb-0" style="line-height:1.65;">' +
+        '<p class="small mb-0" style="color: #0f172a !important; line-height:1.65; font-size: 0.86rem; font-weight: 500;">' +
         dynamicVersionAI.takeaway +
         '</p>' +
         '</div>' +
