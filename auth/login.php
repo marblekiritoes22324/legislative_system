@@ -448,7 +448,7 @@ if (isset($_POST['login'])) {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
   <!-- Shared CSS -->
-  <link rel="stylesheet" href="../assets/css/welcome.css?v=2.0">
+  <link rel="stylesheet" href="../assets/css/welcome.css?v=<?= time() ?>">
 </head>
 
 <body>
