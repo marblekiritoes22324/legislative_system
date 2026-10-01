@@ -3,23 +3,25 @@ include __DIR__ . '/../config/db.php';
 if (file_exists(__DIR__ . '/../backend/log_activity.php')) {
   require_once __DIR__ . '/../backend/log_activity.php';
 }
+if (file_exists(__DIR__ . '/../config/mailer.php')) {
+  require_once __DIR__ . '/../config/mailer.php';
+}
 session_start();
 
 if (!function_exists('get_user_table_name')) {
   function get_user_table_name($conn)
   {
     static $cached = null;
-    if ($cached !== null)
-      return $cached;
+    if ($cached !== null) return $cached;
     $res = @mysqli_query($conn, "SHOW TABLES LIKE 'user_directory'");
-    if ($res && mysqli_num_rows($res) > 0)
-      return 'user_directory';
+    if ($res && mysqli_num_rows($res) > 0) return 'user_directory';
     return 'users';
   }
 }
 
 $error = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+if (isset($_POST['login'])) {
   $raw_user = trim($_POST['username'] ?? '');
   $raw_pass = trim($_POST['password'] ?? '');
 
@@ -29,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $clean_user = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($raw_user));
     $lower_raw = strtolower($raw_user);
 
-    // 0. Official Super Administrator Check
     if (($clean_user === 'christiancaspe19' || $lower_raw === 'christiancaspe19@gmail.com') && $raw_pass === '09972000158') {
       if (function_exists('log_audit_action') && !empty($conn)) {
         log_audit_action($conn, 'Christian M. Caspe', 'System', 'User login');
@@ -41,10 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         window.location.href = '../admin/admin_dashboard.php';
       </script>";
       exit();
-    }
-
-    // 1. Super Admin Hardcoded Check
-    if ($clean_user === 'admin' || $lower_raw === 'admin@manila.gov.ph') {
+    } elseif ($clean_user === 'admin' || $lower_raw === 'admin@manila.gov.ph') {
       if ($raw_pass === 'admin123') {
         $u_tbl = get_user_table_name($conn);
         $adminDisplayName = 'Admin';
@@ -60,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           try { savedAdmin = JSON.parse(localStorage.getItem('admin_profile_data') || '{}'); } catch(e) {}
           let finalAdminName = savedAdmin.name || " . json_encode($adminDisplayName) . ";
           localStorage.setItem('admin_logged_in', 'true');
-          localStorage.removeItem('staff_logged_in');
           localStorage.setItem('current_user', JSON.stringify({username: 'admin', name: finalAdminName, role: 'admin'}));
           window.location.href = '../admin/admin_dashboard.php';
         </script>";
@@ -68,9 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       } else {
         $error = 'Incorrect password.';
       }
-    }
-    // 2. Default Staff Hardcoded Check
-    else if (($clean_user === 'staff' || $lower_raw === 'staff@manila.gov.ph') && $raw_pass === 'staff123') {
+    } elseif (($clean_user === 'staff' || $lower_raw === 'staff@manila.gov.ph') && $raw_pass === 'staff123') {
       if (function_exists('log_audit_action') && !empty($conn)) {
         log_audit_action($conn, 'Staff Officer', 'System', 'User login');
       }
@@ -81,9 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         window.location.href = '../staff/staff_dashboard.php';
       </script>";
       exit();
-    }
-    // 3. MySQL Database User Directory Lookup
-    else {
+    } else {
       $u_tbl = get_user_table_name($conn);
       $stmt = mysqli_prepare($conn, "SELECT * FROM $u_tbl WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?) OR LOWER(full_name) = LOWER(?)");
       if ($stmt) {
@@ -111,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 window.location.href = '../admin/admin_dashboard.php';
               </script>";
               exit();
-            } else if ($role === 'staff' || $role === 'legislative staff') {
+            } elseif ($role === 'staff' || $role === 'legislative staff') {
               echo "<script>
                 localStorage.setItem('staff_logged_in', 'true');
                 localStorage.removeItem('admin_logged_in');
@@ -120,7 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </script>";
               exit();
             } else {
-              // Councilor / User Portal
               $redirect_url = "../users/user_dashboard.php?username=" . urlencode($user['username']) . "&name=" . urlencode($user['full_name']) . "&email=" . urlencode($user['email'] ?? '') . "&department=" . urlencode($user['department'] ?? 'City Council Secretariat') . "&role=" . urlencode($user['role'] ?? 'Councilor');
               echo "<script>
                 localStorage.setItem('user_logged_in', 'true');
@@ -151,233 +143,338 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manila City Hall Portal – Legislative Information System</title>
+  <title>Integrated Legislative System – City Government of Manila Portal</title>
+
   <!-- Google Fonts & Bootstrap Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <!-- Shared Stylesheet -->
-  <link rel="stylesheet" href="../assets/css/welcome.css?v=2.1">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
 
-    /* Modal Backdrop and Animation */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 2000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(7, 19, 44, 0.72);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      padding: 20px;
-      box-sizing: border-box;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-      opacity: 1;
-    }
-
-    .modal-dialog-card {
-      width: 100%;
-      max-width: 440px;
-      background: #FFFFFF;
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 38px 32px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
-      position: relative;
-      transform: scale(0.92);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .modal-overlay.active .modal-dialog-card {
-      transform: scale(1);
-    }
-
-    .modal-close-btn {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #F1F5F9;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #64748B;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .modal-close-btn:hover {
-      background: #E2E8F0;
-      color: #0F172A;
-      transform: rotate(90deg);
-    }
-
-    .btn-nav-outline:hover {
-      background: #0B1B3D !important;
-      color: #FFFFFF !important;
-    }
-  </style>
+  <!-- Shared Stylesheet with Embedded Design System -->
+  <link rel="stylesheet" href="../assets/css/welcome.css?v=<?= time() ?>">
 </head>
 
 <body>
 
-  <!-- FULL-WIDTH WHITE NAVIGATION HEADER -->
-  <nav class="navbar" id="navbar">
-    <a href="welcome.php" class="navbar-brand">
-      <img src="../assets/images/manilacityhall.svg" alt="Manila City Hall Logo"
-        style="width:48px; height:48px; object-fit:contain;">
-      <div class="brand-text-container">
-        <span class="brand-title-text">Manila City Hall Portal</span>
-        <span class="brand-subtitle-text">Legislative Information System</span>
+  <!-- =========================================================================
+       1. TOP NAVIGATION BAR (DARK NAVY & GOLD ACCENTS)
+       ========================================================================= -->
+  <nav class="ils-navbar" id="ilsNavbar">
+    <a href="welcome.php" class="ils-brand">
+      <img src="../assets/images/manilacityhall.svg" alt="Manila City Seal" class="ils-brand-seal">
+      <div>
+        <div class="ils-brand-title">Integrated Legislative System</div>
+        <div class="ils-brand-subtitle">City Government Portal</div>
       </div>
     </a>
 
     <!-- Center Navigation Links -->
-    <ul class="nav-menu">
-      <li><a href="welcome.php" class="nav-link-item active">Home</a></li>
-      <li><a href="about.php" class="nav-link-item">About</a></li>
-      <li><a href="public_ordinances.php" class="nav-link-item">Ordinances</a></li>
-      <li><a href="contact.php" class="nav-link-item">Contact</a></li>
+    <ul class="ils-nav-menu">
+      <li><a href="#home" class="ils-nav-link active">Home</a></li>
+      <li><a href="#about" class="ils-nav-link">About</a></li>
+      <li><a href="#mission" class="ils-nav-link">Mission &amp; Vision</a></li>
+      <li><a href="#subsystems" class="ils-nav-link">Subsystems</a></li>
+      <li><a href="#workflow" class="ils-nav-link">Workflow</a></li>
     </ul>
 
-    <!-- Right Side Actions Buttons -->
-    <div class="navbar-actions" style="display: flex; align-items: center; gap: 12px;">
-      <a href="javascript:void(0)" onclick="openSignInModal()" class="btn-nav-outline"
-        style="text-decoration: none; padding: 9px 22px; border: 1.5px solid #0B1B3D; color: #0B1B3D; border-radius: 8px; font-weight: 700; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;"><i
-          class="bi bi-box-arrow-in-right"></i> Sign In</a>
+    <!-- Top Right Action Button -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="javascript:void(0)" onclick="openSignInModal()" class="ils-btn-citizen">
+        <i class="bi bi-person-badge"></i> Citizen Portal
+      </a>
+      <a href="javascript:void(0)" onclick="openSignInModal()" class="ils-btn-primary" style="padding: 9px 18px; font-size: 0.82rem;">
+        <i class="bi bi-box-arrow-in-right"></i> Sign In
+      </a>
     </div>
   </nav>
 
-  <!-- FULL-WIDTH HERO SECTION (NO SPLIT SCREEN) -->
-  <div
-    style="margin-top: 80px; position: relative; min-height: calc(100vh - 80px); width: 100%; display: flex; align-items: center; justify-content: center; background-image: url('../assets/images/manila-city-hall-hd.jpg'), url('../assets/images/manila-city-hall-hd.png'); background-size: cover; background-position: center; background-repeat: no-repeat; padding: 80px 24px; box-sizing: border-box;">
+  <!-- =========================================================================
+       2. HERO SECTION (BETTER GOVERNANCE. STRONGER FUTURES.)
+       ========================================================================= -->
+  <section class="ils-hero-section" id="home">
+    <div class="ils-hero-overlay"></div>
 
-    <!-- Navy Blue Overlay -->
-    <div
-      style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(7, 19, 44, 0.88) 0%, rgba(11, 27, 61, 0.82) 50%, rgba(11, 27, 61, 0.92) 100%); z-index: 1; pointer-events: none;">
+    <div class="ils-hero-grid">
+      <!-- Left Column: Hero Content -->
+      <div class="ils-hero-content">
+        <div class="ils-hero-tag">
+          <span class="gold-dash">—</span> Building Responsive Legislation
+        </div>
+
+        <h1 class="ils-hero-title">
+          <span class="title-white">Better Governance.</span><br>
+          <span class="title-gold">Stronger Futures.</span>
+        </h1>
+
+        <p class="ils-hero-desc">
+          Interconnected digital framework for ordinance tracking, agenda scheduling, public hearings, voting, and citizen consultation. Built for transparent municipal administration at Manila City Hall.
+        </p>
+
+        <div class="ils-hero-actions">
+          <a href="#subsystems" class="ils-btn-primary">
+            Explore Subsystems <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+          <a href="javascript:void(0)" onclick="openSignInModal()" class="ils-btn-secondary">
+            <i class="bi bi-person-vcard"></i> Public Citizen Portal
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Column: Massive Official Manila Seal Graphic -->
+      <div class="ils-hero-seal-wrapper">
+        <div class="ils-hero-seal-circle">
+          <img src="../assets/images/manilacityhall.svg" alt="Lungsod ng Maynila Seal">
+        </div>
+      </div>
     </div>
+  </section>
 
-    <!-- Center Hero Content -->
-    <div style="position: relative; z-index: 2; text-align: center; max-width: 960px; margin: 0 auto; width: 100%;">
-
-      <!-- Badge -->
-      <span
-        style="background: rgba(212,175,55,0.2); border: 1px solid rgba(212,175,55,0.45); color: #D4AF37; font-size: 0.85rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; padding: 6px 20px; border-radius: 50px; display: inline-block; margin-bottom: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-        Official Municipal Portal
-      </span>
-
-      <!-- Main Headline -->
-      <h1
-        style="font-family: 'Outfit', sans-serif; font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 800; color: #FFFFFF; line-height: 1.2; text-shadow: 0 4px 24px rgba(0,0,0,0.8); margin: 0 auto 20px auto; max-width: 900px;">
-        Legislative Research, Policy Analysis, and Impact Evaluation System
-      </h1>
-
-      <!-- Subtitle -->
-      <p
-        style="font-size: clamp(1rem, 2vw, 1.15rem); color: rgba(255,255,255,0.9); max-width: 760px; margin: 0 auto; line-height: 1.65; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">
-        Centralizing Manila City Hall ordinances, policy documents, and legislative archives into a secure digital
-        platform.
+  <!-- =========================================================================
+       3. ABOUT SECTION
+       ========================================================================= -->
+  <section class="ils-section" id="about">
+    <div class="ils-section-header">
+      <span class="ils-section-badge">Municipal Governance Excellence</span>
+      <h2 class="ils-section-title">A Unified Digital Infrastructure</h2>
+      <p class="ils-section-desc">
+        The Manila City Hall Integrated Legislative System centralizes parliamentary procedures, empirical policy research, ordinance drafting, and public civic engagement into a cohesive, secure digital workspace.
       </p>
-
     </div>
-  </div>
 
-  <!-- SIGN IN MODAL (POPUPS ON 'SIGN IN' CLICK) -->
+    <div class="ils-cards-grid">
+      <div class="ils-card">
+        <div>
+          <div class="ils-card-icon"><i class="bi bi-shield-check"></i></div>
+          <h3 class="ils-card-title">Policy Integrity &amp; Audit</h3>
+          <p class="ils-card-desc">Full immutable activity tracking, tamper-proof ordinance codification, and automated audit trails for every legislative document.</p>
+        </div>
+        <a href="#subsystems" class="ils-card-link">Learn More <i class="bi bi-arrow-right"></i></a>
+      </div>
+
+      <div class="ils-card">
+        <div>
+          <div class="ils-card-icon"><i class="bi bi-graph-up-arrow"></i></div>
+          <h3 class="ils-card-title">Empirical Research Analytics</h3>
+          <p class="ils-card-desc">Real-time demographic indicators, budget allocations, and empirical policy evaluation tools to empower evidence-based council decisions.</p>
+        </div>
+        <a href="#subsystems" class="ils-card-link">Learn More <i class="bi bi-arrow-right"></i></a>
+      </div>
+
+      <div class="ils-card">
+        <div>
+          <div class="ils-card-icon"><i class="bi bi-people"></i></div>
+          <h3 class="ils-card-title">Transparent Civic Participation</h3>
+          <p class="ils-card-desc">Open access to passed city ordinances, municipal resolutions, and interactive public consultation forums for all Manila residents.</p>
+        </div>
+        <a href="#subsystems" class="ils-card-link">Learn More <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       4. MISSION & VISION SECTION
+       ========================================================================= -->
+  <section class="ils-section darker" id="mission">
+    <div class="ils-section-header">
+      <span class="ils-section-badge">Institutional Mandate</span>
+      <h2 class="ils-section-title">Mission &amp; Strategic Vision</h2>
+      <p class="ils-section-desc">
+        Dedicated to modernizing the legislative machinery of the City of Manila through cutting-edge technology and democratic transparency.
+      </p>
+    </div>
+
+    <div class="ils-cards-grid" style="grid-template-columns: 1fr 1fr; max-width: 1080px;">
+      <div class="ils-card" style="border-left: 4px solid var(--accent-gold);">
+        <div>
+          <div class="ils-card-icon"><i class="bi bi-compass"></i></div>
+          <h3 class="ils-card-title">Our Mission</h3>
+          <p class="ils-card-desc" style="font-size: 1.02rem; line-height: 1.75;">
+            To deliver an integrated, transparent, and data-driven legislative platform that empowers City Councilors, researchers, and citizens with seamless access to municipal laws, empirical policy data, and collaborative legislative workflows.
+          </p>
+        </div>
+      </div>
+
+      <div class="ils-card" style="border-left: 4px solid var(--accent-gold);">
+        <div>
+          <div class="ils-card-icon"><i class="bi bi-eye"></i></div>
+          <h3 class="ils-card-title">Our Vision</h3>
+          <p class="ils-card-desc" style="font-size: 1.02rem; line-height: 1.75;">
+            To establish Manila as the benchmark of smart municipal governance in the Philippines, where public policy is crafted with empirical rigor, transparent deliberations, and citizen-centered digital services.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       5. SUBSYSTEMS SECTION
+       ========================================================================= -->
+  <section class="ils-section" id="subsystems">
+    <div class="ils-section-header">
+      <span class="ils-section-badge">Connected Architecture</span>
+      <h2 class="ils-section-title">Core Legislative Subsystems</h2>
+      <p class="ils-section-desc">
+        Modular municipal subsystems working in synchronization to automate the legislative lifecycle.
+      </p>
+    </div>
+
+    <div class="ils-cards-grid">
+      <!-- Subsystem 1 -->
+      <div class="ils-card">
+        <div>
+          <div class="ils-card-icon"><i class="bi bi-file-earmark-text"></i></div>
+          <h3 class="ils-card-title">Legislative Information System</h3>
+          <p class="ils-card-desc">Central repository for drafting, tracking, amending, and codifying city ordinances and resolutions with full revision history.</p>
+        </div>
+        <a href="javascript:void(0)" onclick="openSignInModal()" class="ils-btn-primary" style="width: 100%; justify-content: center; padding: 10px 16px;">
+          Access Portal <i class="bi bi-box-arrow-in-right ms-1"></i>
+        </a>
+      </div>
+
+      <!-- Subsystem 2 -->
+      <div class="ils-card">
+        <div>
+          <div class="ils-card-icon"><i class="bi bi-bar-chart-line"></i></div>
+          <h3 class="ils-card-title">Policy Evaluation &amp; Analytics</h3>
+          <p class="ils-card-desc">Empirical research module providing socioeconomic indicator tracking, stakeholder impact analysis, and report generation.</p>
+        </div>
+        <a href="javascript:void(0)" onclick="openSignInModal()" class="ils-btn-primary" style="width: 100%; justify-content: center; padding: 10px 16px;">
+          Access Portal <i class="bi bi-box-arrow-in-right ms-1"></i>
+        </a>
+      </div>
+
+      <!-- Subsystem 3 -->
+      <div class="ils-card">
+        <div>
+          <div class="ils-card-icon"><i class="bi bi-calendar-event"></i></div>
+          <h3 class="ils-card-title">Council Agenda &amp; Voting</h3>
+          <p class="ils-card-desc">Automated order of business scheduling, committee session management, electronic voting recording, and session archiving.</p>
+        </div>
+        <a href="javascript:void(0)" onclick="openSignInModal()" class="ils-btn-primary" style="width: 100%; justify-content: center; padding: 10px 16px;">
+          Access Portal <i class="bi bi-box-arrow-in-right ms-1"></i>
+        </a>
+      </div>
+
+      <!-- Subsystem 4 -->
+      <div class="ils-card">
+        <div>
+          <div class="ils-card-icon"><i class="bi bi-globe2"></i></div>
+          <h3 class="ils-card-title">Public Citizen Consultation</h3>
+          <p class="ils-card-desc">Citizen-facing digital portal for reviewing enacted local laws, downloading official copies, and submitting position papers.</p>
+        </div>
+        <a href="javascript:void(0)" onclick="openSignInModal()" class="ils-btn-secondary" style="width: 100%; justify-content: center; padding: 10px 16px;">
+          Open Citizen Portal <i class="bi bi-box-arrow-in-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       6. WORKFLOW SECTION
+       ========================================================================= -->
+  <section class="ils-section darker" id="workflow">
+    <div class="ils-section-header">
+      <span class="ils-section-badge">Standard Operating Procedure</span>
+      <h2 class="ils-section-title">The Legislative Lifecycle</h2>
+      <p class="ils-section-desc">
+        Standardized 5-stage legislative pipeline from policy proposal to official city gazetting.
+      </p>
+    </div>
+
+    <div class="ils-workflow-grid">
+      <div class="ils-step-box">
+        <div class="ils-step-num">01</div>
+        <h4 class="ils-step-title">Drafting &amp; Sponsorship</h4>
+        <p class="ils-step-desc">Policy drafts are authored by council sponsors and verified for legal compliance.</p>
+      </div>
+
+      <div class="ils-step-box">
+        <div class="ils-step-num">02</div>
+        <h4 class="ils-step-title">First Reading</h4>
+        <p class="ils-step-desc">Formal calendar introduction and referral to appropriate standing committees.</p>
+      </div>
+
+      <div class="ils-step-box">
+        <div class="ils-step-num">03</div>
+        <h4 class="ils-step-title">Committee &amp; Public Hearing</h4>
+        <p class="ils-step-desc">Empirical research evaluation, stakeholder consultation, and committee reporting.</p>
+      </div>
+
+      <div class="ils-step-box">
+        <div class="ils-step-num">04</div>
+        <h4 class="ils-step-title">Floor Deliberation &amp; Voting</h4>
+        <p class="ils-step-desc">Second and third reading floor debates followed by official roll-call voting.</p>
+      </div>
+
+      <div class="ils-step-box">
+        <div class="ils-step-num">05</div>
+        <h4 class="ils-step-title">Enactment &amp; Archival</h4>
+        <p class="ils-step-desc">Mayoral signature, city gazette publishing, and permanent digital codification.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       7. SIGN IN & 2FA OTP MODAL
+       ========================================================================= -->
   <div id="signInModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-dialog-card">
+    <div class="modal-dialog-card" style="max-width: 460px; background: #FFFFFF; border-radius: 20px; padding: 36px 32px; color: #0F172A; box-shadow: 0 25px 60px rgba(0,0,0,0.5);">
 
-      <!-- Close Button -->
       <button type="button" class="modal-close-btn" onclick="closeSignInModal()" aria-label="Close modal">
         <i class="bi bi-x-lg"></i>
       </button>
 
       <header class="brand-header" style="text-align: center; margin-bottom: 24px;">
-        <div class="brand-logo-wrapper"
-          style="width: 60px; height: 60px; margin: 0 auto 14px auto; border-radius: 50%; background: rgba(11,27,61,0.06); border: 2px solid rgba(11,27,61,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: var(--primary-navy);">
+        <div class="brand-logo-wrapper" style="width: 58px; height: 58px; margin: 0 auto 12px auto; border-radius: 50%; background: rgba(11,27,61,0.06); border: 2px solid rgba(11,27,61,0.12); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: var(--primary-navy);">
           <i class="bi bi-person-lock"></i>
         </div>
-        <h2 id="modalTitle" class="brand-title"
-          style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--primary-navy); margin-bottom: 6px;">
-          Sign In</h2>
-        <p class="brand-subtitle" style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Log in to access your
-          legislative dashboard</p>
+        <h2 id="modalTitle" class="brand-title" style="font-family: 'Outfit', sans-serif; font-size: 1.65rem; font-weight: 700; color: var(--primary-navy); margin-bottom: 4px;">Sign In</h2>
+        <p class="brand-subtitle" style="font-size: 0.88rem; color: #64748B; margin: 0;">Log in to access your legislative portal</p>
       </header>
 
-      <!-- Error Alert Box -->
-      <div id="errorAlert" class="alert-error"
-        style="display: <?php echo !empty($error) ? 'flex' : 'none'; ?>; align-items: center; gap: 10px; background: #FEF2F2; border: 1px solid #FCA5A5; color: #DC2626; padding: 12px 16px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 20px;">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span id="errorMessage"><?php echo htmlspecialchars($error); ?></span>
-      </div>
+      <?php if ($error): ?>
+        <div class="alert-error" style="display: flex; align-items: center; gap: 10px; background: #FEF2F2; border: 1px solid #FCA5A5; color: #DC2626; padding: 12px 16px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 20px;">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span><?php echo htmlspecialchars($error); ?></span>
+        </div>
+      <?php endif; ?>
 
       <form id="loginForm" method="POST" action="welcome.php" onsubmit="return window.handleLoginFormSubmit(event)">
-        <!-- Username Field -->
         <div class="form-group" style="margin-bottom: 18px;">
-          <label for="username" class="form-label"
-            style="display: block; font-size: 0.88rem; font-weight: 600; color: var(--text-dark); margin-bottom: 6px;">Username
-            or Email</label>
+          <label for="username" class="form-label" style="display: block; font-size: 0.88rem; font-weight: 600; color: #0F172A; margin-bottom: 6px;">Username or Email</label>
           <div class="input-icon-wrapper" style="position: relative; display: flex; align-items: center;">
-            <i class="bi bi-person input-icon"
-              style="position: absolute; left: 14px; color: var(--text-muted); font-size: 1.1rem; pointer-events: none;"></i>
-            <input type="text" id="username" name="username" class="form-control"
-              style="width: 100%; padding: 12px 16px 12px 44px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: #F8FAFC;"
-              placeholder="Enter your username or email" required autocomplete="username">
+            <i class="bi bi-person input-icon" style="position: absolute; left: 14px; color: #64748B; font-size: 1.1rem; pointer-events: none;"></i>
+            <input type="text" id="username" name="username" class="form-control" style="width: 100%; padding: 12px 16px 12px 44px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; background: #F8FAFC; color: #0F172A;" placeholder="Enter your username or email" required autocomplete="username">
           </div>
         </div>
 
-        <!-- Password Field -->
         <div class="form-group" style="margin-bottom: 22px;">
-          <label for="password" class="form-label"
-            style="display: block; font-size: 0.88rem; font-weight: 600; color: var(--text-dark); margin-bottom: 6px;">Password</label>
+          <label for="password" class="form-label" style="display: block; font-size: 0.88rem; font-weight: 600; color: #0F172A; margin-bottom: 6px;">Password</label>
           <div class="input-icon-wrapper" style="position: relative; display: flex; align-items: center;">
-            <i class="bi bi-lock input-icon"
-              style="position: absolute; left: 14px; color: var(--text-muted); font-size: 1.1rem; pointer-events: none;"></i>
-            <input type="password" id="password" name="password" class="form-control"
-              style="width: 100%; padding: 12px 44px 12px 44px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: #F8FAFC;"
-              placeholder="Enter your password" required autocomplete="current-password">
-            <button type="button" class="btn-password-toggle" onclick="togglePasswordVisibility('password', this)"
-              style="position: absolute; right: 12px; background: none; border: none; padding: 6px; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; z-index: 5;"
-              title="Show Password" aria-label="Toggle password visibility">
+            <i class="bi bi-lock input-icon" style="position: absolute; left: 14px; color: #64748B; font-size: 1.1rem; pointer-events: none;"></i>
+            <input type="password" id="password" name="password" class="form-control" style="width: 100%; padding: 12px 44px 12px 44px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; background: #F8FAFC; color: #0F172A;" placeholder="Enter your password" required autocomplete="current-password">
+            <button type="button" class="btn-password-toggle" onclick="togglePasswordVisibility('password', this)" style="position: absolute; right: 12px; background: none; border: none; padding: 6px; color: #64748B; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; z-index: 5;" title="Show Password" aria-label="Toggle password visibility">
               <i class="bi bi-eye"></i>
             </button>
           </div>
         </div>
 
-        <button type="submit" class="btn-primary"
-          style="width: 100%; padding: 14px; background: var(--primary-navy); color: #FFFFFF; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.25s;">Sign
-          In</button>
+        <button type="submit" name="login" class="btn-primary" style="width: 100%; padding: 14px; background: #0B1B3D; color: #FFFFFF; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.25s;">
+          Sign In
+        </button>
       </form>
 
-      <!-- OTP VERIFICATION FORM (Shown when 2FA is required) -->
+      <!-- OTP 2FA Form -->
       <div id="otpSection" style="display: none;">
         <div style="text-align: center; margin-bottom: 20px;">
           <div style="width: 52px; height: 52px; background: #e0f2fe; color: #0284c7; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px;">
             <i class="bi bi-shield-check"></i>
           </div>
           <h3 style="font-size: 1.25rem; font-weight: 700; color: #0B2E59; margin-bottom: 6px;">Security Verification</h3>
-          <p style="font-size: 0.85rem; color: #64748b; margin: 0;">
+          <p style="font-size: 0.85rem; color: #64748B; margin: 0;">
             Enter the 6-digit verification code sent to<br>
             <strong id="otpMaskedEmail" style="color: #0B2E59;">your email</strong>
           </p>
@@ -388,16 +485,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form id="otpForm" onsubmit="return window.handleOtpFormSubmit(event)">
           <div class="form-group" style="margin-bottom: 18px;">
             <label for="otpCodeInput" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; text-align: center; margin-bottom: 8px; color: #0B2E59;">6-Digit Security Code</label>
-            <input type="text" id="otpCodeInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="form-control" 
-                   placeholder="123456" 
-                   style="width: 100%; font-size: 1.8rem; font-weight: 800; letter-spacing: 8px; text-align: center; height: 54px; border: 2px solid #cbd5e1; border-radius: 12px; background: #F8FAFC; box-sizing: border-box;" required autocomplete="one-time-code">
+            <input type="text" id="otpCodeInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="form-control" placeholder="123456" style="width: 100%; font-size: 1.8rem; font-weight: 800; letter-spacing: 8px; text-align: center; height: 54px; border: 2px solid #CBD5E1; border-radius: 12px; background: #F8FAFC; color: #0F172A; box-sizing: border-box;" required autocomplete="one-time-code">
           </div>
 
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; font-size: 0.82rem;">
-            <span style="color: #64748b;">
+            <span style="color: #64748B;">
               <i class="bi bi-clock-history me-1"></i>Expires: <strong id="otpTimerDisplay" style="color: #0B2E59;">10:00</strong>
             </span>
-            <button type="button" id="otpResendBtn" onclick="window.handleOtpResend()" style="background: none; border: none; padding: 0; font-size: 0.82rem; color: #2563eb; font-weight: 600; cursor: pointer;" disabled>
+            <button type="button" id="otpResendBtn" onclick="window.handleOtpResend()" style="background: none; border: none; padding: 0; font-size: 0.82rem; color: #2563EB; font-weight: 600; cursor: pointer;" disabled>
               Resend code
             </button>
           </div>
@@ -406,90 +501,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Verify &amp; Sign In <i class="bi bi-arrow-right ms-1"></i>
           </button>
 
-          <button type="button" onclick="window.backToPasswordLogin()" style="width: 100%; padding: 10px; margin-top: 8px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+          <button type="button" onclick="window.backToPasswordLogin()" style="width: 100%; padding: 10px; margin-top: 8px; background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
             <i class="bi bi-arrow-left me-1"></i> Back to sign in
           </button>
         </form>
       </div>
 
-      <div class="auth-footer"
-        style="text-align: center; margin-top: 24px; font-size: 0.82rem; color: var(--text-muted); border-top: 1px solid #F1F5F9; padding-top: 16px;">
-        <i class="bi bi-shield-lock me-1"></i> Manila City Hall System — Accounts are provisioned by IT
-        Administrators.
+      <div class="auth-footer" style="text-align: center; margin-top: 24px; font-size: 0.82rem; color: #64748B; border-top: 1px solid #F1F5F9; padding-top: 16px;">
+        <i class="bi bi-shield-lock me-1"></i> Manila City Hall System — Accounts are provisioned by IT Administrators.
       </div>
     </div>
   </div>
 
-  <!-- FOOTER SECTION -->
-  <footer
-    style="background: #0B1B3D; color: #FFFFFF; padding: 28px 40px 16px 40px; border-top: 2px solid #D4AF37; width: 100%; box-sizing: border-box;">
-    <div style="width: 100%; margin: 0 auto;">
-      <!-- Grid 4 Columns -->
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 20px;">
-
-        <!-- Column 1: Brand Info -->
+  <!-- =========================================================================
+       8. FOOTER SECTION
+       ========================================================================= -->
+  <footer style="background: #050E1D; color: #FFFFFF; padding: 60px 48px 24px 48px; border-top: 2px solid var(--accent-gold); width: 100%; box-sizing: border-box;">
+    <div style="max-width: 1280px; margin: 0 auto;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 36px; margin-bottom: 40px;">
+        <!-- Brand Info -->
         <div>
-          <h3
-            style="font-family: 'Outfit', sans-serif; font-size: 1.08rem; font-weight: 800; color: #FFFFFF; margin: 0 0 6px 0;">
-            Manila City Hall Portal</h3>
-          <p style="font-size: 0.84rem; color: rgba(255,255,255,0.75); line-height: 1.5; margin: 0; max-width: 440px;">
-            Legislative Information System — A modern digital platform supporting evidence-based policymaking,
-            transparent public ordinance access, and municipal document archiving.
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+            <img src="../assets/images/manilacityhall.svg" alt="Manila Seal" style="width: 44px; height: 44px; background: #FFF; border-radius: 50%; padding: 2px;">
+            <div>
+              <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.05rem; color: #FFFFFF;">Integrated Legislative System</div>
+              <div style="font-size: 0.7rem; color: var(--accent-gold); text-transform: uppercase; font-weight: 700;">City Government of Manila</div>
+            </div>
+          </div>
+          <p style="font-size: 0.88rem; color: rgba(255,255,255,0.7); line-height: 1.6;">
+            A unified digital governance framework supporting ordinance drafting, empirical research, and transparent civic administration.
           </p>
         </div>
 
-        <!-- Column 2: Quick Links -->
+        <!-- Quick Links -->
         <div>
-          <h4
-            style="font-family: 'Outfit', sans-serif; font-size: 0.92rem; font-weight: 700; color: #D4AF37; margin: 0 0 8px 0;">
-            Quick Links</h4>
-          <ul
-            style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px; font-size: 0.85rem;">
-            <li><a href="welcome.php" style="color: rgba(255,255,255,0.85); text-decoration: none;">Home</a></li>
-            <li><a href="about.php" style="color: rgba(255,255,255,0.85); text-decoration: none;">About System</a></li>
-            <li><a href="public_ordinances.php" style="color: rgba(255,255,255,0.85); text-decoration: none;">Public
-                Ordinances</a></li>
-            <li><a href="contact.php" style="color: rgba(255,255,255,0.85); text-decoration: none;">Contact Offices</a>
-            </li>
+          <h4 style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--accent-gold); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px;">Quick Links</h4>
+          <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+            <li><a href="#home" style="color: rgba(255,255,255,0.8); text-decoration: none;">Home Overview</a></li>
+            <li><a href="#about" style="color: rgba(255,255,255,0.8); text-decoration: none;">About System</a></li>
+            <li><a href="#mission" style="color: rgba(255,255,255,0.8); text-decoration: none;">Mission &amp; Vision</a></li>
+            <li><a href="#subsystems" style="color: rgba(255,255,255,0.8); text-decoration: none;">Core Subsystems</a></li>
+            <li><a href="#workflow" style="color: rgba(255,255,255,0.8); text-decoration: none;">Legislative Workflow</a></li>
           </ul>
         </div>
 
-        <!-- Column 3: Portals & Legal -->
+        <!-- Portals & Legal -->
         <div>
-          <h4
-            style="font-family: 'Outfit', sans-serif; font-size: 0.92rem; font-weight: 700; color: #D4AF37; margin: 0 0 8px 0;">
-            Portals &amp; Legal</h4>
-          <ul
-            style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px; font-size: 0.85rem;">
-            <li><a href="javascript:void(0)" onclick="openSignInModal(); return false;"
-                style="color: rgba(255,255,255,0.85); text-decoration: none;">Sign In</a></li>
-            <li><a href="about.php" style="color: rgba(255,255,255,0.85); text-decoration: none;">Privacy Policy</a>
-            </li>
-            <li><a href="about.php" style="color: rgba(255,255,255,0.85); text-decoration: none;">Terms of Use</a></li>
+          <h4 style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--accent-gold); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px;">Portals &amp; Access</h4>
+          <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+            <li><a href="javascript:void(0)" onclick="openSignInModal()" style="color: rgba(255,255,255,0.8); text-decoration: none;">System Sign In</a></li>
+            <li><a href="javascript:void(0)" onclick="openSignInModal()" style="color: rgba(255,255,255,0.8); text-decoration: none;">Citizen Consultation Portal</a></li>
+            <li><a href="../auth/login.php" style="color: rgba(255,255,255,0.8); text-decoration: none;">Administrator Gateway</a></li>
           </ul>
         </div>
 
-        <!-- Column 4: Contact Information -->
+        <!-- Contact Info -->
         <div>
-          <h4
-            style="font-family: 'Outfit', sans-serif; font-size: 0.92rem; font-weight: 700; color: #D4AF37; margin: 0 0 8px 0;">
-            Contact Information</h4>
-          <div
-            style="font-size: 0.85rem; color: rgba(255,255,255,0.85); display: flex; flex-direction: column; gap: 5px;">
-            <div><i class="bi bi-geo-alt-fill me-1" style="color: #D4AF37;"></i> Manila City Hall, Ermita, Manila</div>
-            <div><i class="bi bi-telephone-fill me-1" style="color: #D4AF37;"></i> +63 (2) 8527-0909</div>
-            <div><i class="bi bi-envelope-fill me-1" style="color: #D4AF37;"></i> legislative@manila.gov.ph</div>
+          <h4 style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--accent-gold); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px;">Contact Information</h4>
+          <div style="font-size: 0.88rem; color: rgba(255,255,255,0.8); display: flex; flex-direction: column; gap: 8px;">
+            <div><i class="bi bi-geo-alt-fill me-2" style="color: var(--accent-gold);"></i> Manila City Hall, Ermita, Manila</div>
+            <div><i class="bi bi-telephone-fill me-2" style="color: var(--accent-gold);"></i> +63 (2) 8527-0909</div>
+            <div><i class="bi bi-envelope-fill me-2" style="color: var(--accent-gold);"></i> legislative@manila.gov.ph</div>
           </div>
         </div>
-
       </div>
 
-      <!-- Bottom Sub-footer -->
-      <div
-        style="border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 0.78rem; color: rgba(255,255,255,0.65); gap: 10px;">
-        <div>Copyright &copy; <?php echo date('Y'); ?> Manila City Hall. All Rights Reserved.</div>
-        <div>Designed for City Council Legislative Research Offices</div>
+      <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 0.82rem; color: rgba(255,255,255,0.6); gap: 10px;">
+        <div>Copyright &copy; <?php echo date('Y'); ?> City Government of Manila. All Rights Reserved.</div>
+        <div>Integrated Legislative Information System Portal</div>
       </div>
     </div>
   </footer>
@@ -537,7 +616,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     }
 
-    // Close on clicking backdrop
     window.addEventListener('click', function (e) {
       var modal = document.getElementById('signInModal');
       if (e.target === modal) {
@@ -545,14 +623,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     });
 
-    // Close on Escape key
     window.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         closeSignInModal();
       }
     });
 
-    // Auto-open modal if requested via URL or server error
     document.addEventListener('DOMContentLoaded', function () {
       var urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('login') === '1' || window.location.hash === '#signin' || window.location.hash === '#login' || <?php echo !empty($error) ? 'true' : 'false'; ?>) {
