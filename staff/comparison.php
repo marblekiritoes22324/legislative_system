@@ -842,31 +842,31 @@ ksort($grouped_local_policies);
 
       if (isManila) {
         return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-xs" style="background:#ffffff; color:#0f172a; border: 1.5px solid #bfdbfe; font-size: 0.84rem; font-weight: 700; font-family: Arial, Helvetica, sans-serif;">' +
-          '<i class="bi bi-building-fill text-primary fs-6"></i>' +
+          '<i class="bi bi-bank2 text-primary fs-6"></i>' +
           '<span style="color:#0f172a;">City of Manila</span>' +
           '<span class="badge rounded-pill bg-primary text-white fw-bold px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.03em;">LOCAL LGU</span>' +
           '</span>';
       } else if (isMakati) {
         return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-xs" style="background:#ffffff; color:#0f172a; border: 1.5px solid #bbf7d0; font-size: 0.84rem; font-weight: 700; font-family: Arial, Helvetica, sans-serif;">' +
-          '<i class="bi bi-shield-fill-check text-success fs-6"></i>' +
+          '<i class="bi bi-buildings-fill text-success fs-6"></i>' +
           '<span style="color:#0f172a;">City of Makati</span>' +
           '<span class="badge rounded-pill bg-success text-white fw-bold px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.03em;">BENCHMARK</span>' +
           '</span>';
       } else if (isQC) {
         return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-xs" style="background:#ffffff; color:#0f172a; border: 1.5px solid #fecaca; font-size: 0.84rem; font-weight: 700; font-family: Arial, Helvetica, sans-serif;">' +
-          '<i class="bi bi-pin-map-fill text-danger fs-6"></i>' +
+          '<i class="bi bi-buildings-fill text-danger fs-6"></i>' +
           '<span style="color:#0f172a;">Quezon City</span>' +
           '<span class="badge rounded-pill bg-danger text-white fw-bold px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.03em;">BENCHMARK</span>' +
           '</span>';
       } else if (isPasig) {
         return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-xs" style="background:#ffffff; color:#0f172a; border: 1.5px solid #a5f3fc; font-size: 0.84rem; font-weight: 700; font-family: Arial, Helvetica, sans-serif;">' +
-          '<i class="bi bi-geo-alt-fill text-info fs-6"></i>' +
+          '<i class="bi bi-buildings-fill text-info fs-6"></i>' +
           '<span style="color:#0f172a;">Pasig City</span>' +
           '<span class="badge rounded-pill bg-info text-dark fw-bold px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.03em;">BENCHMARK</span>' +
           '</span>';
       }
       return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-xs" style="background:#ffffff; color:#0f172a; border: 1.5px solid #cbd5e1; font-size: 0.84rem; font-weight: 700; font-family: Arial, Helvetica, sans-serif;">' +
-        '<i class="bi bi-geo-alt-fill text-secondary fs-6"></i>' +
+        '<i class="bi bi-buildings-fill text-secondary fs-6"></i>' +
         '<span style="color:#0f172a;">' + esc(c) + '</span>' +
         '<span class="badge rounded-pill bg-secondary text-white fw-bold px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.03em;">BENCHMARK</span>' +
         '</span>';
