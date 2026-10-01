@@ -65,7 +65,8 @@ if (isset($_POST['verify_otp'])) {
     unset($_SESSION['login_otp_code'], $_SESSION['login_otp_user'], $_SESSION['login_otp_expiry']);
     $u_tbl = 'user_directory';
     $chk_u = @mysqli_query($conn, "SHOW TABLES LIKE 'user_directory'");
-    if (!$chk_u || mysqli_num_rows($chk_u) === 0) $u_tbl = 'users';
+    if (!$chk_u || mysqli_num_rows($chk_u) === 0)
+      $u_tbl = 'users';
     @mysqli_query($conn, "UPDATE $u_tbl SET otp_code = NULL, otp_expires_at = NULL WHERE LOWER(email) = LOWER('" . mysqli_real_escape_string($conn, $email_or_user) . "') OR LOWER(username) = LOWER('" . mysqli_real_escape_string($conn, $email_or_user) . "')");
 
     if (function_exists('log_audit_action')) {
@@ -91,7 +92,8 @@ if (isset($_POST['resend_otp'])) {
 
   $u_tbl = function_exists('get_user_table_name') ? get_user_table_name($conn) : 'user_directory';
   $chk_u = @mysqli_query($conn, "SHOW TABLES LIKE '$u_tbl'");
-  if (!$chk_u || mysqli_num_rows($chk_u) === 0) $u_tbl = 'users';
+  if (!$chk_u || mysqli_num_rows($chk_u) === 0)
+    $u_tbl = 'users';
 
   if (empty($targetEmail) && !empty($email_or_user)) {
     $q = mysqli_prepare($conn, "SELECT email, full_name, username FROM $u_tbl WHERE LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?) LIMIT 1");
@@ -194,12 +196,15 @@ if (isset($_POST['api_login'])) {
     if (function_exists('log_audit_action')) {
       log_audit_action($conn, $adminName, 'System', 'User login');
     }
-    echo json_encode(['success' => true, 'user' => [
-      'username' => 'admin',
-      'name' => $adminName !== 'Admin' ? $adminName : 'System Administrator',
-      'role' => 'admin',
-      'status' => 'approved'
-    ]]);
+    echo json_encode([
+      'success' => true,
+      'user' => [
+        'username' => 'admin',
+        'name' => $adminName !== 'Admin' ? $adminName : 'System Administrator',
+        'role' => 'admin',
+        'status' => 'approved'
+      ]
+    ]);
     exit;
   }
 
@@ -208,20 +213,25 @@ if (isset($_POST['api_login'])) {
     if (function_exists('log_audit_action')) {
       log_audit_action($conn, $staffName, 'System', 'User login');
     }
-    echo json_encode(['success' => true, 'user' => [
-      'username' => 'staff',
-      'name' => $staffName,
-      'role' => 'staff',
-      'department' => 'Legislative Secretariat',
-      'status' => 'approved'
-    ]]);
+    echo json_encode([
+      'success' => true,
+      'user' => [
+        'username' => 'staff',
+        'name' => $staffName,
+        'role' => 'staff',
+        'department' => 'Legislative Secretariat',
+        'status' => 'approved'
+      ]
+    ]);
     exit;
   }
 
   if (!function_exists('get_user_table_name')) {
-    function get_user_table_name($conn) {
+    function get_user_table_name($conn)
+    {
       static $cached = null;
-      if ($cached !== null) return $cached;
+      if ($cached !== null)
+        return $cached;
       $res = @mysqli_query($conn, "SHOW TABLES LIKE 'user_directory'");
       if ($res && mysqli_num_rows($res) > 0) {
         $cached = 'user_directory';
@@ -320,7 +330,8 @@ if (isset($_POST['login'])) {
     $adminDisplayName = 'Admin';
     $aq = @mysqli_query($conn, "SELECT full_name FROM $u_tbl WHERE LOWER(role) = 'admin' OR LOWER(username) = 'admin' LIMIT 1");
     if ($aq && $ar = mysqli_fetch_assoc($aq)) {
-      if (!empty($ar['full_name'])) $adminDisplayName = $ar['full_name'];
+      if (!empty($ar['full_name']))
+        $adminDisplayName = $ar['full_name'];
     }
     if (function_exists('log_audit_action')) {
       log_audit_action($conn, $adminDisplayName, 'System', 'User login');
@@ -375,13 +386,13 @@ if (isset($_POST['login'])) {
                   localStorage.setItem('admin_logged_in', 'true');
                   localStorage.removeItem('staff_logged_in');
                   localStorage.setItem('current_user', " . json_encode(json_encode([
-                    'username' => $_SESSION['username'],
-                    'name' => $user['full_name'],
-                    'email' => $user['email'] ?? 'admin@manila.gov.ph',
-                    'department' => $user['department'] ?? 'City Administration',
-                    'role' => 'admin',
-                    'created_at' => $createdAtFormatted
-                  ])) . ");
+              'username' => $_SESSION['username'],
+              'name' => $user['full_name'],
+              'email' => $user['email'] ?? 'admin@manila.gov.ph',
+              'department' => $user['department'] ?? 'City Administration',
+              'role' => 'admin',
+              'created_at' => $createdAtFormatted
+            ])) . ");
                   window.location.href = '../admin/admin_dashboard.php';
                 </script>";
           exit();
@@ -390,13 +401,13 @@ if (isset($_POST['login'])) {
                   localStorage.setItem('staff_logged_in', 'true');
                   localStorage.removeItem('admin_logged_in');
                   localStorage.setItem('current_user', " . json_encode(json_encode([
-                    'username' => $_SESSION['username'],
-                    'name' => $user['full_name'],
-                    'email' => $user['email'] ?? 'staff@manila.gov.ph',
-                    'department' => $user['department'] ?? 'Secretariat & Legal Affairs',
-                    'role' => 'staff',
-                    'created_at' => $createdAtFormatted
-                  ])) . ");
+              'username' => $_SESSION['username'],
+              'name' => $user['full_name'],
+              'email' => $user['email'] ?? 'staff@manila.gov.ph',
+              'department' => $user['department'] ?? 'Secretariat & Legal Affairs',
+              'role' => 'staff',
+              'created_at' => $createdAtFormatted
+            ])) . ");
                   window.location.href = '../staff/staff_dashboard.php';
                 </script>";
           exit();
@@ -407,13 +418,13 @@ if (isset($_POST['login'])) {
                   localStorage.removeItem('staff_logged_in');
                   localStorage.removeItem('admin_logged_in');
                   localStorage.setItem('current_user', " . json_encode(json_encode([
-                    'username' => $_SESSION['username'],
-                    'name' => $user['full_name'],
-                    'email' => $user['email'] ?? '',
-                    'department' => $user['department'] ?? 'City Council Secretariat',
-                    'role' => $userRole,
-                    'created_at' => $createdAtFormatted
-                  ])) . ");
+              'username' => $_SESSION['username'],
+              'name' => $user['full_name'],
+              'email' => $user['email'] ?? '',
+              'department' => $user['department'] ?? 'City Council Secretariat',
+              'role' => $userRole,
+              'created_at' => $createdAtFormatted
+            ])) . ");
                   window.location.href = " . json_encode($redirect_url) . ";
                 </script>";
           exit();
@@ -448,7 +459,7 @@ if (isset($_POST['login'])) {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
   <!-- Shared CSS -->
-  <link rel="stylesheet" href="../assets/css/welcome.css?v=<?= time() ?>">
+  <link rel="stylesheet" href="../assets/css/welcome.css?v=2.0">
 </head>
 
 <body>
@@ -543,40 +554,52 @@ if (isset($_POST['login'])) {
         <!-- OTP VERIFICATION FORM (Shown when 2FA is required) -->
         <div id="otpSection" style="display: none;">
           <div style="text-align: center; margin-bottom: 20px;">
-            <div style="width: 52px; height: 52px; background: #e0f2fe; color: #0284c7; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px;">
+            <div
+              style="width: 52px; height: 52px; background: #e0f2fe; color: #0284c7; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 12px;">
               <i class="bi bi-shield-check"></i>
             </div>
-            <h3 style="font-size: 1.25rem; font-weight: 700; color: #0B2E59; margin-bottom: 6px;">Security Verification</h3>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #0B2E59; margin-bottom: 6px;">Security Verification
+            </h3>
             <p style="font-size: 0.85rem; color: #64748b; margin: 0;">
               Enter the 6-digit verification code sent to<br>
               <strong id="otpMaskedEmail" style="color: #0B2E59;">your email</strong>
             </p>
           </div>
 
-          <div id="otpAlertBox" style="display: none; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 16px;"></div>
+          <div id="otpAlertBox"
+            style="display: none; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 16px;">
+          </div>
 
           <form id="otpForm" onsubmit="return window.handleOtpFormSubmit(event)">
             <div class="form-group mb-3">
-              <label for="otpCodeInput" class="form-label text-center d-block fw-semibold" style="font-size: 0.82rem;">6-Digit Security Code</label>
-              <input type="text" id="otpCodeInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="form-control" 
-                     placeholder="123456" 
-                     style="font-size: 1.8rem; font-weight: 800; letter-spacing: 8px; text-align: center; height: 54px; border: 2px solid #cbd5e1; border-radius: 12px;" required autocomplete="one-time-code">
+              <label for="otpCodeInput" class="form-label text-center d-block fw-semibold"
+                style="font-size: 0.82rem;">6-Digit Security Code</label>
+              <input type="text" id="otpCodeInput" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                class="form-control" placeholder="123456"
+                style="font-size: 1.8rem; font-weight: 800; letter-spacing: 8px; text-align: center; height: 54px; border: 2px solid #cbd5e1; border-radius: 12px;"
+                required autocomplete="one-time-code">
             </div>
 
             <div class="d-flex align-items-center justify-content-between mb-3" style="font-size: 0.82rem;">
               <span style="color: #64748b;">
-                <i class="bi bi-clock-history me-1"></i>Expires: <strong id="otpTimerDisplay" style="color: #0B2E59;">10:00</strong>
+                <i class="bi bi-clock-history me-1"></i>Expires: <strong id="otpTimerDisplay"
+                  style="color: #0B2E59;">10:00</strong>
               </span>
-              <button type="button" id="otpResendBtn" onclick="window.handleOtpResend()" class="btn btn-link p-0 text-decoration-none fw-semibold" style="font-size: 0.82rem; color: #2563eb;" disabled>
+              <button type="button" id="otpResendBtn" onclick="window.handleOtpResend()"
+                class="btn btn-link p-0 text-decoration-none fw-semibold" style="font-size: 0.82rem; color: #2563eb;"
+                disabled>
                 Resend code
               </button>
             </div>
 
-            <button type="submit" id="otpSubmitBtn" class="btn-primary w-100 py-2.5" style="border-radius: 10px; font-weight: 600;">
+            <button type="submit" id="otpSubmitBtn" class="btn-primary w-100 py-2.5"
+              style="border-radius: 10px; font-weight: 600;">
               Verify &amp; Sign In <i class="bi bi-arrow-right ms-1"></i>
             </button>
 
-            <button type="button" onclick="window.backToPasswordLogin()" class="btn btn-light w-100 py-2 mt-2 text-muted fw-semibold" style="border-radius: 10px; font-size: 0.82rem;">
+            <button type="button" onclick="window.backToPasswordLogin()"
+              class="btn btn-light w-100 py-2 mt-2 text-muted fw-semibold"
+              style="border-radius: 10px; font-size: 0.82rem;">
               <i class="bi bi-arrow-left me-1"></i> Back to sign in
             </button>
           </form>

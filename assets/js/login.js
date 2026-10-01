@@ -69,16 +69,7 @@
       }
     } catch(e) {}
 
-    function getAppBasePath() {
-      var path = window.location.pathname;
-      if (path.indexOf('/auth/') !== -1 || path.indexOf('/frontend/') !== -1) {
-        return '../';
-      }
-      return '';
-    }
-
-    var basePath = getAppBasePath();
-    var authUrl = window.location.pathname.includes('/auth/') ? 'login.php' : basePath + 'auth/login.php';
+    var authUrl = window.location.pathname.includes('/auth/') ? 'login.php' : '../auth/login.php';
 
     fetch(authUrl, {
       method: 'POST',
@@ -106,11 +97,11 @@
             localStorage.setItem('staff_logged_in', 'true');
             localStorage.removeItem('admin_logged_in');
             localStorage.setItem('current_user', JSON.stringify(matchedLocal));
-            window.location.href = basePath + 'staff/staff_dashboard.php';
+            window.location.href = '../staff/staff_dashboard.php';
           } else {
             localStorage.setItem('user_logged_in', 'true');
             localStorage.setItem('current_user', JSON.stringify(matchedLocal));
-            window.location.href = basePath + 'users/user_dashboard.php?username=' + encodeURIComponent(matchedLocal.username) + '&name=' + encodeURIComponent(matchedLocal.name || '') + '&email=' + encodeURIComponent(matchedLocal.email || '');
+            window.location.href = '../users/user_dashboard.php?username=' + encodeURIComponent(matchedLocal.username) + '&name=' + encodeURIComponent(matchedLocal.name || '') + '&email=' + encodeURIComponent(matchedLocal.email || '');
           }
         } else {
           alert(data.error || 'Invalid credentials or account does not exist.');
@@ -126,11 +117,11 @@
           localStorage.setItem('staff_logged_in', 'true');
           localStorage.removeItem('admin_logged_in');
           localStorage.setItem('current_user', JSON.stringify(matchedLocal));
-          window.location.href = basePath + 'staff/staff_dashboard.php';
+          window.location.href = '../staff/staff_dashboard.php';
         } else {
           localStorage.setItem('user_logged_in', 'true');
           localStorage.setItem('current_user', JSON.stringify(matchedLocal));
-          window.location.href = basePath + 'users/user_dashboard.php?username=' + encodeURIComponent(matchedLocal.username) + '&name=' + encodeURIComponent(matchedLocal.name || '') + '&email=' + encodeURIComponent(matchedLocal.email || '');
+          window.location.href = '../users/user_dashboard.php?username=' + encodeURIComponent(matchedLocal.username) + '&name=' + encodeURIComponent(matchedLocal.name || '') + '&email=' + encodeURIComponent(matchedLocal.email || '');
         }
       } else {
         alert('Unable to connect to server. Please check your credentials and try again.');
@@ -266,8 +257,7 @@
     formData.append('username', window.pendingOtpUsername || '');
     formData.append('otp_code', code);
 
-    var basePath = (window.location.pathname.indexOf('/auth/') !== -1 || window.location.pathname.indexOf('/frontend/') !== -1) ? '../' : '';
-    var authUrl = window.location.pathname.includes('/auth/') ? 'login.php' : basePath + 'auth/login.php';
+    var authUrl = window.location.pathname.includes('/auth/') ? 'login.php' : '../auth/login.php';
 
     fetch(authUrl, {
       method: 'POST',
@@ -315,8 +305,7 @@
     formData.append('resend_otp', '1');
     formData.append('username', window.pendingOtpUsername || '');
 
-    var basePath = (window.location.pathname.indexOf('/auth/') !== -1 || window.location.pathname.indexOf('/frontend/') !== -1) ? '../' : '';
-    var authUrl = window.location.pathname.includes('/auth/') ? 'login.php' : basePath + 'auth/login.php';
+    var authUrl = window.location.pathname.includes('/auth/') ? 'login.php' : '../auth/login.php';
 
     fetch(authUrl, {
       method: 'POST',
@@ -359,22 +348,20 @@
     var displayName = u.name || username;
     sessionStorage.setItem('pending_login_audit', displayName);
 
-    var basePath = (window.location.pathname.indexOf('/auth/') !== -1 || window.location.pathname.indexOf('/frontend/') !== -1) ? '../' : '';
-
     if (role === 'admin' || role === 'administrator') {
       localStorage.setItem('admin_logged_in', 'true');
       localStorage.removeItem('staff_logged_in');
       localStorage.setItem('current_user', JSON.stringify(u));
-      window.location.href = basePath + 'admin/admin_dashboard.php';
+      window.location.href = '../admin/admin_dashboard.php';
     } else if (role === 'staff' || role === 'legislative staff') {
       localStorage.setItem('staff_logged_in', 'true');
       localStorage.removeItem('admin_logged_in');
       localStorage.setItem('current_user', JSON.stringify(u));
-      window.location.href = basePath + 'staff/staff_dashboard.php';
+      window.location.href = '../staff/staff_dashboard.php';
     } else {
       localStorage.setItem('user_logged_in', 'true');
       localStorage.setItem('current_user', JSON.stringify(u));
-      window.location.href = basePath + 'users/user_dashboard.php?username=' + encodeURIComponent(u.username) + '&name=' + encodeURIComponent(u.name || '') + '&email=' + encodeURIComponent(u.email || '');
+      window.location.href = '../users/user_dashboard.php?username=' + encodeURIComponent(u.username) + '&name=' + encodeURIComponent(u.name || '') + '&email=' + encodeURIComponent(u.email || '');
     }
   };
 })();
