@@ -855,38 +855,36 @@ ksort($grouped_local_policies);
       var isMakati = (c.toLowerCase().indexOf('makati') !== -1);
       var isPasig = (c.toLowerCase().indexOf('pasig') !== -1);
 
-      var authBadge = ' <span class="d-inline-flex align-items-center gap-1 px-2.5 py-1 rounded-pill shadow-sm ms-1.5" style="background: rgba(15, 23, 42, 0.75); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.55); font-size: 0.72rem; font-weight: 700; backdrop-filter: blur(6px); letter-spacing: 0.02em;" title="Researched Official LGU Benchmark from Official City Council records"><i class="bi bi-patch-check-fill text-info me-1"></i>Official Researched Data</span>';
-
       if (isManila) {
-        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, rgba(30, 64, 175, 0.85) 0%, rgba(37, 99, 235, 0.75) 100%); color: #ffffff; border: 1.5px solid rgba(147, 197, 253, 0.7); font-size: 0.84rem; font-weight: 700; font-family: Arial, sans-serif; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);">' +
-          '<i class="bi bi-building-fill text-warning fs-6"></i>' +
-          '<span>City of Manila</span>' +
-          '<span class="badge rounded-pill bg-warning text-dark fw-bolder px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.04em;">LOCAL LGU</span>' +
+        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-xs" style="background:#ffffff; color:#0f172a; border: 1.5px solid #bfdbfe; font-size: 0.84rem; font-weight: 700; font-family: Arial, Helvetica, sans-serif;">' +
+          '<i class="bi bi-building-fill text-primary fs-6"></i>' +
+          '<span style="color:#0f172a;">City of Manila</span>' +
+          '<span class="badge rounded-pill bg-primary text-white fw-bold px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.03em;">LOCAL LGU</span>' +
+          '</span>';
+      } else if (isMakati) {
+        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-xs" style="background:#ffffff; color:#0f172a; border: 1.5px solid #bbf7d0; font-size: 0.84rem; font-weight: 700; font-family: Arial, Helvetica, sans-serif;">' +
+          '<i class="bi bi-shield-fill-check text-success fs-6"></i>' +
+          '<span style="color:#0f172a;">City of Makati</span>' +
+          '<span class="badge rounded-pill bg-success text-white fw-bold px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.03em;">BENCHMARK</span>' +
           '</span>';
       } else if (isQC) {
-        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, rgba(159, 18, 57, 0.85) 0%, rgba(225, 29, 72, 0.75) 100%); color: #ffffff; border: 1.5px solid rgba(253, 164, 175, 0.7); font-size: 0.84rem; font-weight: 700; font-family: Arial, sans-serif; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);">' +
-          '<i class="bi bi-pin-map-fill text-warning fs-6"></i>' +
-          '<span>Quezon City</span>' +
-          '<span class="badge rounded-pill bg-danger text-white fw-bolder px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.04em;">BENCHMARK</span>' +
-          '</span>' + authBadge;
-      } else if (isMakati) {
-        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, rgba(88, 28, 135, 0.85) 0%, rgba(126, 34, 206, 0.75) 100%); color: #ffffff; border: 1.5px solid rgba(216, 180, 254, 0.7); font-size: 0.84rem; font-weight: 700; font-family: Arial, sans-serif; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(126, 34, 206, 0.35);">' +
-          '<i class="bi bi-shield-check text-info fs-6"></i>' +
-          '<span>City of Makati</span>' +
-          '<span class="badge rounded-pill bg-info text-dark fw-bolder px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.04em;">BENCHMARK</span>' +
-          '</span>' + authBadge;
+        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-xs" style="background:#ffffff; color:#0f172a; border: 1.5px solid #fecaca; font-size: 0.84rem; font-weight: 700; font-family: Arial, Helvetica, sans-serif;">' +
+          '<i class="bi bi-pin-map-fill text-danger fs-6"></i>' +
+          '<span style="color:#0f172a;">Quezon City</span>' +
+          '<span class="badge rounded-pill bg-danger text-white fw-bold px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.03em;">BENCHMARK</span>' +
+          '</span>';
       } else if (isPasig) {
-        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, rgba(6, 78, 59, 0.85) 0%, rgba(16, 185, 129, 0.75) 100%); color: #ffffff; border: 1.5px solid rgba(110, 231, 183, 0.7); font-size: 0.84rem; font-weight: 700; font-family: Arial, sans-serif; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);">' +
-          '<i class="bi bi-geo-alt-fill text-warning fs-6"></i>' +
-          '<span>Pasig City</span>' +
-          '<span class="badge rounded-pill bg-success text-white fw-bolder px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.04em;">BENCHMARK</span>' +
-          '</span>' + authBadge;
+        return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-xs" style="background:#ffffff; color:#0f172a; border: 1.5px solid #a5f3fc; font-size: 0.84rem; font-weight: 700; font-family: Arial, Helvetica, sans-serif;">' +
+          '<i class="bi bi-geo-alt-fill text-info fs-6"></i>' +
+          '<span style="color:#0f172a;">Pasig City</span>' +
+          '<span class="badge rounded-pill bg-info text-dark fw-bold px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.03em;">BENCHMARK</span>' +
+          '</span>';
       }
-      return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(51, 65, 85, 0.75) 100%); color: #ffffff; border: 1.5px solid rgba(203, 213, 225, 0.6); font-size: 0.84rem; font-weight: 700; font-family: Arial, sans-serif; backdrop-filter: blur(6px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);">' +
-        '<i class="bi bi-geo-alt-fill text-info fs-6"></i>' +
-        '<span>' + esc(c) + '</span>' +
-        '<span class="badge rounded-pill bg-secondary text-white fw-bolder px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.04em;">BENCHMARK</span>' +
-        '</span>' + authBadge;
+      return '<span class="d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-xs" style="background:#ffffff; color:#0f172a; border: 1.5px solid #cbd5e1; font-size: 0.84rem; font-weight: 700; font-family: Arial, Helvetica, sans-serif;">' +
+        '<i class="bi bi-geo-alt-fill text-secondary fs-6"></i>' +
+        '<span style="color:#0f172a;">' + esc(c) + '</span>' +
+        '<span class="badge rounded-pill bg-secondary text-white fw-bold px-2 py-0.5 ms-1" style="font-size:0.65rem; letter-spacing:0.03em;">BENCHMARK</span>' +
+        '</span>';
     }
 
 
