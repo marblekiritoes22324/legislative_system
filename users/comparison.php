@@ -1577,22 +1577,24 @@ ksort($u_grouped_local_policies);
         '</div>' +
         '</div>';
 
-      var tableHtml = '<div class="border rounded-3 overflow-hidden shadow-sm mt-4 bg-white" style="font-family: Arial, Helvetica, sans-serif;">';
-      tableHtml += '<table class="table table-bordered align-middle mb-0" style="border-color:#e2e8f0;">';
+      var tableHtml = '<div class="table-responsive border rounded-4 overflow-hidden shadow-sm mt-4 bg-white" style="font-family: Arial, Helvetica, sans-serif;">';
+      tableHtml += '<table class="table table-bordered align-middle mb-0" style="border-color:#cbd5e1;">';
 
-      // Header Row
-      tableHtml += '<thead><tr style="background:#f8fafc;">';
-      tableHtml += '<th class="py-3 px-3 fw-bold text-uppercase" style="width:20%; font-size:0.75rem; letter-spacing:0.5px; color:#000;">Feature / Metric</th>';
+      // Deep Manila Navy Header Row (matching Data Collection / Evaluation tables)
+      tableHtml += '<thead><tr style="background-color: #0B2E59;">';
+      tableHtml += '<th class="py-3.5 px-3 fw-bold text-uppercase align-middle" style="width:20%; background-color: #0B2E59 !important; color: #FFFFFF !important; font-size:0.8rem; font-weight:800; letter-spacing:0.05em; border-bottom: 2.5px solid #082242 !important; border-top: none !important;">' +
+        '<div class="d-flex align-items-center gap-1.5 text-white"><i class="bi bi-list-check text-info fs-6"></i> FEATURE / METRIC</div>' +
+        '</th>';
 
       // Policy A Header
-      tableHtml += '<th class="py-3 px-3 text-center" style="width:40%; border-top:3px solid #2563eb; background:#f8fafc;">' +
-        '<div class="fw-bold text-primary text-uppercase mb-1" style="font-size:0.9rem; letter-spacing:0.5px;">' + (isCrossCity ? 'Policy A (Local / Proposed)' : 'Policy A') + '</div>' +
+      tableHtml += '<th class="py-3 px-3 text-center align-middle" style="width:40%; background-color: #0B2E59 !important; color: #FFFFFF !important; border-bottom: 2.5px solid #082242 !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.15) !important;">' +
+        '<div class="fw-bold text-uppercase mb-1.5 text-white" style="font-size:0.88rem; letter-spacing:0.05em;">' + (isCrossCity ? 'POLICY A (LOCAL / PROPOSED)' : 'POLICY A') + '</div>' +
         '<div>' + cleanCityBadge(a.city_origin, a.title) + '</div>' +
         '</th>';
 
       // Policy B Header
-      tableHtml += '<th class="py-3 px-3 text-center" style="width:40%; border-top:3px solid #16a34a; background:#f8fafc;">' +
-        '<div class="fw-bold text-success text-uppercase mb-1" style="font-size:0.9rem; letter-spacing:0.5px;">' + (isCrossCity ? 'Policy B (Enacted Benchmark)' : 'Policy B / Benchmark') + '</div>' +
+      tableHtml += '<th class="py-3 px-3 text-center align-middle" style="width:40%; background-color: #0B2E59 !important; color: #FFFFFF !important; border-bottom: 2.5px solid #082242 !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.15) !important;">' +
+        '<div class="fw-bold text-uppercase mb-1.5 text-white" style="font-size:0.88rem; letter-spacing:0.05em;">' + (isCrossCity ? 'POLICY B (ENACTED BENCHMARK)' : 'POLICY B / BENCHMARK') + '</div>' +
         '<div>' + cleanCityBadge(b.city_origin, b.title) + '</div>' +
         '</th>';
       tableHtml += '</tr></thead>';
@@ -1782,27 +1784,29 @@ ksort($u_grouped_local_policies);
       var oldest = record.oldest_version;
       var newest = record.newest_version;
 
-      var html = '<div class="border rounded-3 overflow-hidden shadow-sm mt-4 bg-white" style="font-family: Arial, Helvetica, sans-serif;">';
-      html += '<table class="table table-bordered align-middle mb-0" style="border-color:#e2e8f0;">';
+      var html = '<div class="table-responsive border rounded-4 overflow-hidden shadow-sm mt-4 bg-white" style="font-family: Arial, Helvetica, sans-serif;">';
+      html += '<table class="table table-bordered align-middle mb-0" style="border-color:#cbd5e1;">';
 
-      // Header Row
-      html += '<thead><tr style="background:#f8fafc;">';
-      html += '<th class="py-3 px-3 fw-bold text-uppercase" style="width:22%; font-size:0.75rem; letter-spacing:0.5px; color:#000;">Evaluation Dimension</th>';
+      // Deep Manila Navy Header Row: Initial Version (Oldest) vs Latest Version (Newest)
+      html += '<thead><tr style="background-color: #0B2E59;">';
+      html += '<th class="py-3.5 px-3 fw-bold text-uppercase align-middle" style="width:22%; background-color: #0B2E59 !important; color: #FFFFFF !important; font-size:0.8rem; font-weight:800; letter-spacing:0.05em; border-bottom: 2.5px solid #082242 !important; border-top: none !important;">' +
+        '<div class="d-flex align-items-center gap-1.5 text-white"><i class="bi bi-clock-history text-info fs-6"></i> EVALUATION DIMENSION</div>' +
+        '</th>';
 
       // Version A (Oldest)
-      html += '<th class="py-3 px-3 text-center" style="width:39%; border-top:3px solid #64748b; background:#f8fafc;">' +
-        '<div class="fw-bold text-secondary text-uppercase mb-1" style="font-size:0.85rem; letter-spacing:0.5px;">' +
-        '<i class="bi bi-clock-history me-1"></i> Initial Baseline (' + esc(oldest.version_label) + ')' +
+      html += '<th class="py-3 px-3 text-center align-middle" style="width:39%; background-color: #0B2E59 !important; color: #FFFFFF !important; border-bottom: 2.5px solid #082242 !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.15) !important;">' +
+        '<div class="fw-bold text-uppercase mb-1.5 text-white" style="font-size:0.88rem; letter-spacing:0.05em;">' +
+        '<i class="bi bi-arrow-counterclockwise me-1 text-secondary-emphasis"></i> Initial Baseline (' + esc(oldest.version_label) + ')' +
         '</div>' +
-        '<div class="small text-muted">' + (oldest.approved_at ? 'Evaluated ' + esc(oldest.approved_at) : 'Original Approved Version') + '</div>' +
+        '<div class="badge rounded-pill bg-white text-dark border px-2.5 py-1 shadow-2xs" style="font-size:0.75rem;">' + (oldest.approved_at ? 'Evaluated ' + esc(oldest.approved_at) : 'Original Approved Version') + '</div>' +
         '</th>';
 
       // Version B (Newest)
-      html += '<th class="py-3 px-3 text-center" style="width:39%; border-top:3px solid #2563eb; background:#f8fafc;">' +
-        '<div class="fw-bold text-primary text-uppercase mb-1" style="font-size:0.85rem; letter-spacing:0.5px;">' +
-        '<i class="bi bi-patch-check-fill me-1"></i> Latest Revision (' + esc(newest.version_label) + ')' +
+      html += '<th class="py-3 px-3 text-center align-middle" style="width:39%; background-color: #0B2E59 !important; color: #FFFFFF !important; border-bottom: 2.5px solid #082242 !important; border-top: none !important; border-left: 1px solid rgba(255,255,255,0.15) !important;">' +
+        '<div class="fw-bold text-uppercase mb-1.5 text-white" style="font-size:0.88rem; letter-spacing:0.05em;">' +
+        '<i class="bi bi-stars me-1 text-warning"></i> Latest Revision (' + esc(newest.version_label) + ')' +
         '</div>' +
-        '<div class="small text-muted">' + (newest.approved_at ? 'Evaluated ' + esc(newest.approved_at) : 'Current Approved Version') + '</div>' +
+        '<div class="badge rounded-pill bg-primary text-white px-2.5 py-1 shadow-2xs" style="font-size:0.75rem;">' + (newest.approved_at ? 'Evaluated ' + esc(newest.approved_at) : 'Current Approved Version') + '</div>' +
         '</th>';
       html += '</tr></thead>';
 
