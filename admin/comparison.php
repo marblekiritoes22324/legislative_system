@@ -1725,7 +1725,7 @@ ksort($grouped_local_policies);
         '</div>' +
         '<div class="pt-2.5 border-top mt-auto">' +
         '<button type="button" class="btn btn-sm text-white fw-bold shadow-2xs w-100 d-flex align-items-center justify-content-center gap-1.5 rounded-3 py-2" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); border:none; font-size:0.82rem;" onclick="generateAIAmendmentLanguage()">' +
-        '<i class="bi bi-stars"></i> Suggest Amendment Language' +
+        '<i class="bi bi-stars"></i> Suggest Policy Improvements' +
         '</button>' +
         '</div>' +
         '</div>' +
@@ -1824,7 +1824,7 @@ ksort($grouped_local_policies);
             '<i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i> Benchmark Provision Gap Identified' +
             '</span>' +
             '<button type="button" class="btn btn-xs text-white rounded-pill px-2.5 py-1 fw-bold shadow-2xs d-inline-flex align-items-center gap-1 hover-lift" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); font-size:0.75rem; border:none;" onclick="generateAIAmendmentLanguage()">' +
-            '<i class="bi bi-stars"></i> Suggest Amendment Language' +
+            '<i class="bi bi-stars"></i> Suggest Policy Improvements' +
             '</button>' +
             '</div>' : '')
         },
@@ -2219,13 +2219,13 @@ ksort($grouped_local_policies);
       container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
       var pref = window.getAIEnginePreference();
-      var loadingTitle = 'AI Dual-Engine is analyzing statutory gaps &amp; drafting municipal amendment clause...';
-      var loadingSubtitle = 'Synthesizing benchmark provisions from <strong>' + esc(b.title) + '</strong> (' + esc(b.city_name || b.city_origin || 'Peer City') + ') to address draft gaps in <strong>' + esc(a.title) + '</strong> using Philippine ordinance drafting conventions.';
+      var loadingTitle = 'AI Dual-Engine is analyzing policy gaps &amp; drafting recommended improvements...';
+      var loadingSubtitle = 'Synthesizing benchmark provisions from <strong>' + esc(b.title) + '</strong> (' + esc(b.city_name || b.city_origin || 'Peer City') + ') to address draft gaps in <strong>' + esc(a.title) + '</strong> with practical legislative enhancements.';
 
       if (pref === 'ollama') {
-        loadingTitle = '🦙 Ollama Local (Llama 3.2) is analyzing statutory gaps &amp; drafting offline clause...';
+        loadingTitle = '🦙 Ollama Local (Llama 3.2) is analyzing policy gaps &amp; drafting offline improvements...';
       } else if (pref === 'gemini') {
-        loadingTitle = '✨ Google Gemini Cloud is analyzing statutory gaps &amp; drafting municipal clause...';
+        loadingTitle = '✨ Google Gemini Cloud is analyzing policy gaps &amp; drafting recommended improvements...';
       }
 
       // 1. Render Pulsing Placeholder Loading Skeleton
@@ -2429,7 +2429,7 @@ ksort($grouped_local_policies);
         '</span>' +
         '<div>' +
         '<div class="d-flex align-items-center gap-2 flex-wrap">' +
-        '<h5 class="fw-bold text-dark mb-0" style="font-size:1.05rem;">AI-Suggested Draft Language (For Review)</h5>' +
+        '<h5 class="fw-bold text-dark mb-0" style="font-size:1.05rem;">AI-Suggested Policy Improvements (For Review)</h5>' +
         '<span class="badge rounded-pill ' + engine.badgeClass + ' border px-2.5 py-1" style="font-size:0.72rem;">' +
         '<i class="bi ' + engine.icon + ' me-1"></i> ' + esc(engine.badgeText) +
         '</span>' +
@@ -2450,7 +2450,7 @@ ksort($grouped_local_policies);
         '<div class="p-3.5 p-md-4 rounded-3 mb-3 shadow-2xs" style="background:#ffffff; border-left: 4px solid #2563eb; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">' +
         '<div class="d-flex align-items-center justify-content-between mb-2">' +
         '<span class="text-uppercase fw-bold text-primary font-monospace" style="font-size:0.75rem; letter-spacing:0.8px;">' +
-        '<i class="bi bi-file-earmark-ruled me-1"></i> Proposed Ordinance Amendment Language' +
+        '<i class="bi bi-file-earmark-ruled me-1"></i> Recommended Policy Addition &amp; Improvement' +
         '</span>' +
         '<span class="badge rounded-pill bg-light text-secondary border px-2 py-0.5" style="font-size:0.7rem;">Sangguniang Panlungsod Format</span>' +
         '</div>' +
