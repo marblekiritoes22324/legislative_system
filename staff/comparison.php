@@ -300,6 +300,28 @@ ksort($grouped_local_policies);
     transform: translateY(-3px) !important;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
   }
+  .policy-select-control {
+    border: 1.5px solid #cbd5e1 !important;
+    transition: all 0.2s ease !important;
+  }
+  .policy-select-control:focus-within {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+  }
+  .policy-select-control select optgroup {
+    font-weight: 700;
+    color: #0b2e59;
+    background-color: #f1f5f9;
+    padding: 6px 10px;
+    font-size: 0.84rem;
+  }
+  .policy-select-control select option {
+    font-weight: 500;
+    color: #0f172a;
+    background-color: #ffffff;
+    padding: 7px 12px;
+    font-size: 0.88rem;
+  }
 </style>
 
 <section id="comparativeAnalysisSection"
@@ -392,9 +414,7 @@ ksort($grouped_local_policies);
         </button>
       </div>
 
-    </div>
-
-    <!-- Mode 1: Cross-City Ordinance Benchmarking (CLEAN & BALANCED) -->
+      <!-- Mode 2: Cross-City Ordinance Benchmarking (CLEAN & BALANCED) -->
     <div class="row g-3 align-items-end mb-4" id="crossCityCompareForm">
 
       <!-- Manila Policy / Ordinance (Proposed / Local) -->
@@ -402,11 +422,11 @@ ksort($grouped_local_policies);
         <label for="crossCityPolicyA" class="form-label fw-semibold small mb-1.5 text-dark d-block">
           <i class="bi bi-building text-primary me-1.5"></i>Manila Proposed Policy Baseline
         </label>
-        <div class="input-group shadow-2xs">
-          <span class="input-group-text bg-white border-end-0 rounded-start-3" style="border-left:3px solid #1d4ed8;">
-            <i class="bi bi-file-earmark-text text-primary"></i>
+        <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
+          <span class="input-group-text bg-light border-0 px-3" style="color: #2563eb; font-size:1.05rem;">
+            <i class="bi bi-file-earmark-text"></i>
           </span>
-          <select id="crossCityPolicyA" class="form-select border-start-0 rounded-end-3" style="font-size:0.9rem;"
+          <select id="crossCityPolicyA" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;"
             onchange="autoSuggestCrossCityBenchmark()">
             <?php if (empty($local_policies)): ?>
               <option value="" disabled selected>— No Manila Approved Policies Available —</option>
@@ -417,7 +437,7 @@ ksort($grouped_local_policies);
                   <?php foreach ($pList as $p): ?>
                     <option value="<?= (int) $p['id'] ?>" data-category="<?= htmlspecialchars($p['category'] ?? $catName) ?>"
                       data-title="<?= htmlspecialchars($p['title']) ?>" <?= ($p === reset($local_policies)) ? 'selected' : '' ?>>
-                      [<?= htmlspecialchars($catName) ?>] <?= htmlspecialchars($p['title']) ?>
+                      <?= htmlspecialchars($p['title']) ?>
                     </option>
                   <?php endforeach; ?>
                 </optgroup>
@@ -432,11 +452,11 @@ ksort($grouped_local_policies);
         <label for="crossCityPolicyB" class="form-label fw-semibold small mb-1.5 text-dark d-block">
           <i class="bi bi-geo-alt-fill text-success me-1.5"></i>Peer City Enacted Benchmark
         </label>
-        <div class="input-group shadow-2xs">
-          <span class="input-group-text bg-white border-end-0 rounded-start-3" style="border-left:3px solid #15803d;">
-            <i class="bi bi-patch-check-fill text-success"></i>
+        <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
+          <span class="input-group-text bg-light border-0 px-3" style="color: #16a34a; font-size:1.05rem;">
+            <i class="bi bi-patch-check-fill"></i>
           </span>
-          <select id="crossCityPolicyB" class="form-select border-start-0 rounded-end-3" style="font-size:0.9rem;">
+          <select id="crossCityPolicyB" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;">
             <?php if (empty($external_benchmarks)): ?>
               <option value="" disabled selected>— No External City Benchmarks Available —</option>
             <?php else: ?>
@@ -453,8 +473,7 @@ ksort($grouped_local_policies);
                   <?php foreach ($bList as $eb): ?>
                     <option value="ext_<?= (int) $eb['id'] ?>" data-city="<?= htmlspecialchars($eb['city_name']) ?>"
                       data-category="<?= htmlspecialchars($eb['policy_area'] ?? '') ?>" <?= ($eb === reset($external_benchmarks)) ? 'selected' : '' ?>>
-                      [<?= htmlspecialchars($eb['city_name']) ?>] <?= htmlspecialchars($eb['ordinance_number']) ?>:
-                      <?= htmlspecialchars($eb['ordinance_title']) ?>
+                      <?= htmlspecialchars($eb['ordinance_number'] . ': ' . $eb['ordinance_title']) ?>
                     </option>
                   <?php endforeach; ?>
                 </optgroup>
@@ -467,7 +486,7 @@ ksort($grouped_local_policies);
       <!-- Prominent Benchmark Button -->
       <div class="col-12 col-lg-2 d-grid">
         <button type="button" id="crossCityCompareBtn"
-          class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1.5 rounded-3 py-2"
+          class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1.5 rounded-3 py-2 hover-lift"
           onclick="runCrossCityComparison()"
           style="background: linear-gradient(135deg, #0B2E59 0%, #1e40af 100%); border:none; height: 38px; font-size:0.9rem; transition:all 0.2s;">
           <i class="bi bi-stars"></i> Benchmark
@@ -486,11 +505,11 @@ ksort($grouped_local_policies);
           </span>
           <span class="text-muted fw-normal">— e.g., Local Manila Ordinance</span>
         </label>
-        <div class="input-group shadow-sm">
-          <span class="input-group-text bg-white border-end-0 rounded-start-3" style="border-left:3px solid #1d4ed8;">
-            <i class="bi bi-file-earmark-text text-primary"></i>
+        <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
+          <span class="input-group-text bg-light border-0 px-3" style="color: #2563eb; font-size:1.05rem;">
+            <i class="bi bi-file-earmark-text"></i>
           </span>
-          <select id="comparePolicyA" class="form-select border-start-0 rounded-end-3" style="font-size:0.9rem;">
+          <select id="comparePolicyA" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;">
             <?php if (empty($completed_policies)): ?>
               <option value="" disabled selected>— No Approved Evaluations Available —</option>
             <?php else: ?>
@@ -499,7 +518,7 @@ ksort($grouped_local_policies);
                 <optgroup label="🏛️ City of Manila (Local Ordinances)">
                   <?php foreach ($local_policies as $p): ?>
                     <option value="<?= (int) $p['id'] ?>" <?= ($p === reset($local_policies)) ? 'selected' : '' ?>>
-                      [Manila] <?= htmlspecialchars($p['title']) ?>
+                      <?= htmlspecialchars($p['title']) ?>
                     </option>
                   <?php endforeach; ?>
                 </optgroup>
@@ -534,11 +553,11 @@ ksort($grouped_local_policies);
           </span>
           <span class="text-muted fw-normal">— e.g., Local Manila Ordinance</span>
         </label>
-        <div class="input-group shadow-sm">
-          <span class="input-group-text bg-white border-end-0 rounded-start-3" style="border-left:3px solid #15803d;">
-            <i class="bi bi-file-earmark-text text-success"></i>
+        <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
+          <span class="input-group-text bg-light border-0 px-3" style="color: #16a34a; font-size:1.05rem;">
+            <i class="bi bi-file-earmark-text"></i>
           </span>
-          <select id="comparePolicyB" class="form-select border-start-0 rounded-end-3" style="font-size:0.9rem;">
+          <select id="comparePolicyB" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;">
             <?php if (empty($completed_policies)): ?>
               <option value="" disabled selected>— No Approved Evaluations Available —</option>
             <?php else: ?>
@@ -547,7 +566,7 @@ ksort($grouped_local_policies);
                 <optgroup label="🏛️ City of Manila (Local Ordinances)">
                   <?php foreach ($local_policies as $p): ?>
                     <option value="<?= (int) $p['id'] ?>" <?= (count($local_policies) > 1 && $p === $local_policies[1]) ? 'selected' : '' ?>>
-                      [Manila] <?= htmlspecialchars($p['title']) ?>
+                      <?= htmlspecialchars($p['title']) ?>
                     </option>
                   <?php endforeach; ?>
                 </optgroup>
@@ -568,11 +587,13 @@ ksort($grouped_local_policies);
 
       <!-- Compare Button -->
       <div class="col-lg-1 col-md-1 d-grid">
-        <button type="button" id="compareBtn"
-          class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1 rounded-3 py-2"
+        <button type="button" id="staffCompareBtn"
+          class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1 rounded-3 py-2 hover-lift"
           onclick="runPolicyComparison()"
           style="background:#0B2E59; border:none; font-size:0.88rem; transition:all 0.2s;">
           <i class="bi bi-scales fs-6 me-1"></i>Compare
+        </button>
+      </div> class="bi bi-scales fs-6 me-1"></i>Compare
         </button>
       </div>
 
