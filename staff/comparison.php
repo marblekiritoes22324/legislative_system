@@ -1325,7 +1325,7 @@ ksort($grouped_local_policies);
         '</div>' +
         '<div class="d-flex align-items-center justify-content-center gap-2 mb-2 flex-wrap">' +
         '<span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1 font-monospace" style="font-size:0.75rem;">' +
-        '<i class="bi bi-cpu me-1"></i> GEMINI AI LEGISLATIVE BENCHMARKER' +
+        '<i class="bi bi-cpu me-1"></i> DUAL-ENGINE AI LEGISLATIVE BENCHMARKER' +
         '</span>' +
         '<span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1" style="font-size:0.75rem;">' +
         '<i class="bi bi-shield-check me-1"></i> RA 7160 Comparative Engine' +
@@ -1361,96 +1361,175 @@ ksort($grouped_local_policies);
         if (phaseEl) phaseEl.innerHTML = '<i class="bi bi-stars me-1 text-warning"></i> Phase 3 of 3: Synthesizing alignment scores, policy gaps, and amendment clause...';
       }, 1000);
 
-      // 2. CALL GEMINI API (WITH DUAL-ENGINE FALLBACK)
+      // 2. DUAL-ENGINE AI BENCHMARKING & SYNTHESIS (OLLAMA LOCAL + GEMINI CLOUD + DETERMINISTIC FALLBACK)
       var startTime = Date.now();
       var dynamicAI = buildDynamicAIComparisonInsights(a, b, isCrossCity);
       var preGeneratedClause = '';
+      var engineUsed = {
+        id: 'statutory',
+        name: '🏛️ Manila Statutory Baseline Rule Engine',
+        badgeClass: 'bg-secondary bg-opacity-10 text-secondary border-secondary border-opacity-25',
+        icon: 'bi-shield-check',
+        note: 'Synthesized via statutory alignment rules under RA 7160 (Local Government Code).'
+      };
 
-      var apiKey = (typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY && GEMINI_API_KEY !== 'PLACEHOLDER_KEY' && !GEMINI_API_KEY.includes('YOUR_'))
-        ? GEMINI_API_KEY
-        : (window.GEMINI_API_KEY || localStorage.getItem('gemini_api_key') || '');
-      var model = (typeof GEMINI_MODEL !== 'undefined' && GEMINI_MODEL) ? GEMINI_MODEL : 'gemini-1.5-flash';
+      var pref = (typeof window.getAIEnginePreference === 'function')
+        ? window.getAIEnginePreference()
+        : (localStorage.getItem('legislative_ai_engine') || 'auto');
 
-      if (apiKey) {
-        var controller = new AbortController();
-        var timeoutId = setTimeout(function () { controller.abort(); }, 7500);
+      var promptText = 'Role: Senior Legislative Benchmarking & Statutory Policy Analyst for the City of Manila (Sangguniang Panlungsod ng Maynila), Philippines.\n\n' +
+        'TASK: Perform a formal cross-city ordinance benchmark and comparative evaluation between Policy A (City of Manila proposed ordinance) and Policy B (' + cityBName + ' enacted benchmark ordinance).\n\n' +
+        'POLICY A (City of Manila):\n' +
+        'Title: ' + a.title + '\n' +
+        'Category: ' + (a.category || 'General') + '\n' +
+        'Provisions: ' + (a.key_provisions || a.description || 'Municipal ordinance proposal') + '\n\n' +
+        'POLICY B (' + cityBName + '):\n' +
+        'Title: ' + b.title + '\n' +
+        'Area: ' + (b.policy_area || b.category || 'General') + '\n' +
+        'Provisions: ' + (b.key_provisions || b.description || 'Enacted municipal code') + '\n\n' +
+        'OUTPUT CONSTRAINTS:\n' +
+        'Respond with ONLY a raw valid JSON object (no markdown formatting, no backticks, no code block fence) with these exact keys:\n' +
+        '{\n' +
+        '  "verdict_title": "Short executive verdict (e.g. Synergistic Framework with Policy Gap)",\n' +
+        '  "verdict_note": "2-3 sentence strategic summary comparing Manila\'s draft with ' + cityBName + ' citing relevant Philippine statutes (e.g. RA 7160).",\n' +
+        '  "economic_score_a": 85,\n' +
+        '  "economic_score_b": 90,\n' +
+        '  "social_score_a": 88,\n' +
+        '  "social_score_b": 82,\n' +
+        '  "env_score_a": 78,\n' +
+        '  "env_score_b": 92,\n' +
+        '  "legal_score_a": 91,\n' +
+        '  "legal_score_b": 89,\n' +
+        '  "strengthA": "Detailed core legislative strength of Manila\'s draft tailored to its districts and barangays",\n' +
+        '  "bestPracticeB": "Detailed adoptable best practice and operational mechanism from ' + cityBName + '",\n' +
+        '  "takeaway": "Actionable Manila City Council directive addressing the identified gap and specifying responsible department (e.g. MHD, MTPB, DPS, MDSW)",\n' +
+        '  "suggested_amendment": "SECTION ___. [Title] — [Drafted statutory clause in Sangguniang Panlungsod format referencing RA 7160 and appropriate Manila city department]"\n' +
+        '}';
 
-        var promptText = 'Role: Senior Legislative Benchmarking & Statutory Policy Analyst for the City of Manila (Sangguniang Panlungsod ng Maynila), Philippines.\n\n' +
-          'TASK: Perform a formal cross-city ordinance benchmark and comparative evaluation between Policy A (City of Manila proposed ordinance) and Policy B (' + cityBName + ' enacted benchmark ordinance).\n\n' +
-          'POLICY A (City of Manila):\n' +
-          'Title: ' + a.title + '\n' +
-          'Category: ' + (a.category || 'General') + '\n' +
-          'Provisions: ' + (a.key_provisions || a.description || 'Municipal ordinance proposal') + '\n\n' +
-          'POLICY B (' + cityBName + '):\n' +
-          'Title: ' + b.title + '\n' +
-          'Area: ' + (b.policy_area || b.category || 'General') + '\n' +
-          'Provisions: ' + (b.key_provisions || b.description || 'Enacted municipal code') + '\n\n' +
-          'OUTPUT CONSTRAINTS:\n' +
-          'Respond with ONLY a raw valid JSON object (no markdown, no backticks, no code block fence) with these exact keys:\n' +
-          '{\n' +
-          '  "verdict_title": "Short executive verdict (e.g. Synergistic Framework with Policy Gap)",\n' +
-          '  "verdict_note": "2-3 sentence strategic summary comparing Manila\'s draft with ' + cityBName + '.",\n' +
-          '  "economic_score_a": 85,\n' +
-          '  "economic_score_b": 90,\n' +
-          '  "social_score_a": 88,\n' +
-          '  "social_score_b": 82,\n' +
-          '  "env_score_a": 78,\n' +
-          '  "env_score_b": 92,\n' +
-          '  "legal_score_a": 91,\n' +
-          '  "legal_score_b": 89,\n' +
-          '  "strengthA": "Specific core legislative strength of Manila\'s draft",\n' +
-          '  "bestPracticeB": "Adoptable best practice from ' + cityBName + '",\n' +
-          '  "takeaway": "Actionable Manila City Council directive addressing the identified gap",\n' +
-          '  "suggested_amendment": "SECTION ___. [Title] — [Drafted statutory clause in Sangguniang Panlungsod format referencing RA 7160 and appropriate Manila city department]"\n' +
-          '}';
+      var aiParsed = null;
 
+      // ── ATTEMPT 1: OLLAMA LOCAL (Llama 3.2 - Offline First)
+      if (pref === 'ollama' || pref === 'auto') {
         try {
-          var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(apiKey), {
+          var ollamaCtrl = new AbortController();
+          var ollamaTimer = setTimeout(function () { ollamaCtrl.abort(); }, 12000);
+          var ollamaUrl = (typeof OLLAMA_BASE_URL !== 'undefined') ? OLLAMA_BASE_URL : 'http://localhost:11434';
+          var ollamaMdl = (typeof OLLAMA_MODEL !== 'undefined') ? OLLAMA_MODEL : 'llama3.2';
+
+          var ollamaRes = await fetch(ollamaUrl + '/api/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            signal: controller.signal,
+            signal: ollamaCtrl.signal,
             body: JSON.stringify({
-              contents: [{ parts: [{ text: promptText }] }],
-              generationConfig: {
+              model: ollamaMdl,
+              prompt: promptText,
+              format: 'json',
+              stream: false,
+              options: {
                 temperature: 0.2,
-                maxOutputTokens: 900
+                num_predict: 900
               }
             })
           });
-          clearTimeout(timeoutId);
+          clearTimeout(ollamaTimer);
 
-          if (response.ok) {
-            var data = await response.json();
-            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
-              var rawText = data.candidates[0].content.parts[0].text.trim();
-              var cleanJson = rawText.replace(/^```json\s*|^```\s*|```$/gi, '').trim();
+          if (ollamaRes.ok) {
+            var oData = await ollamaRes.json();
+            if (oData && oData.response) {
+              var cleanJson = oData.response.trim().replace(/^```json\s*|^```\s*|```$/gi, '').trim();
               var parsed = JSON.parse(cleanJson);
-
-              if (parsed.verdict_title) dynamicAI.verdictTitle = parsed.verdict_title;
-              if (parsed.verdict_note) dynamicAI.verdictNote = parsed.verdict_note;
-              if (parsed.strengthA) dynamicAI.strengthA = parsed.strengthA;
-              if (parsed.bestPracticeB) dynamicAI.bestPracticeB = parsed.bestPracticeB;
-              if (parsed.takeaway) dynamicAI.takeaway = parsed.takeaway;
-              if (parsed.suggested_amendment) preGeneratedClause = parsed.suggested_amendment;
-
-              // Store dynamic AI scores directly on policy objects
-              a._ai_scores = {
-                economic: parsed.economic_score_a,
-                social: parsed.social_score_a,
-                env: parsed.env_score_a,
-                legal: parsed.legal_score_a
-              };
-              b._ai_scores = {
-                economic: parsed.economic_score_b,
-                social: parsed.social_score_b,
-                env: parsed.env_score_b,
-                legal: parsed.legal_score_b
-              };
+              if (parsed && (parsed.verdict_title || parsed.strengthA || parsed.takeaway)) {
+                aiParsed = parsed;
+                engineUsed = {
+                  id: 'ollama',
+                  name: '🦙 Ollama Local (Llama 3.2 Offline)',
+                  badgeClass: 'bg-success bg-opacity-10 text-success border-success border-opacity-25',
+                  icon: 'bi-hdd-network-fill',
+                  note: 'Benchmarked and synthesized locally via Ollama Llama 3.2 — zero cloud latency, 100% private.'
+                };
+              }
             }
           }
-        } catch (err) {
-          clearTimeout(timeoutId);
-          console.warn('Gemini API benchmark call timed out or failed, using contextual legislative heuristic engine:', err);
+        } catch (oErr) {
+          console.warn('Ollama benchmark synthesis bypassed or offline:', oErr);
+        }
+      }
+
+      // ── ATTEMPT 2: GOOGLE GEMINI CLOUD (If preferred or auto fallback)
+      if (!aiParsed && (pref === 'gemini' || pref === 'auto')) {
+        var apiKey = (typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY && GEMINI_API_KEY !== 'PLACEHOLDER_KEY' && !GEMINI_API_KEY.includes('YOUR_'))
+          ? GEMINI_API_KEY
+          : (window.GEMINI_API_KEY || localStorage.getItem('gemini_api_key') || '');
+        var model = (typeof GEMINI_MODEL !== 'undefined' && GEMINI_MODEL) ? GEMINI_MODEL : 'gemini-1.5-flash';
+
+        if (apiKey) {
+          try {
+            var geminiCtrl = new AbortController();
+            var geminiTimer = setTimeout(function () { geminiCtrl.abort(); }, 9000);
+
+            var geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(apiKey), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              signal: geminiCtrl.signal,
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }],
+                generationConfig: {
+                  temperature: 0.2,
+                  maxOutputTokens: 900
+                }
+              })
+            });
+            clearTimeout(geminiTimer);
+
+            if (geminiRes.ok) {
+              var gData = await geminiRes.json();
+              if (gData.candidates && gData.candidates[0] && gData.candidates[0].content && gData.candidates[0].content.parts[0]) {
+                var rawText = gData.candidates[0].content.parts[0].text.trim();
+                var cleanJson = rawText.replace(/^```json\s*|^```\s*|```$/gi, '').trim();
+                var parsed = JSON.parse(cleanJson);
+                if (parsed && (parsed.verdict_title || parsed.strengthA || parsed.takeaway)) {
+                  aiParsed = parsed;
+                  engineUsed = {
+                    id: 'gemini',
+                    name: '✨ Google Gemini (gemini-1.5-flash Cloud)',
+                    badgeClass: 'bg-primary bg-opacity-10 text-primary border-primary border-opacity-25',
+                    icon: 'bi-stars',
+                    note: 'Benchmarked and synthesized via Google Gemini Cloud intelligence engine.'
+                  };
+                }
+              }
+            }
+          } catch (gErr) {
+            console.warn('Gemini cloud benchmark call failed or timed out:', gErr);
+          }
+        }
+      }
+
+      // ── APPLY AI BENCHMARK RESULTS (WITH RESILIENT MERGE)
+      if (aiParsed) {
+        if (aiParsed.verdict_title) dynamicAI.verdictTitle = aiParsed.verdict_title;
+        if (aiParsed.verdict_note) dynamicAI.verdictNote = aiParsed.verdict_note;
+        if (aiParsed.strengthA) dynamicAI.strengthA = aiParsed.strengthA;
+        if (aiParsed.bestPracticeB) dynamicAI.bestPracticeB = aiParsed.bestPracticeB;
+        if (aiParsed.takeaway) dynamicAI.takeaway = aiParsed.takeaway;
+        if (aiParsed.suggested_amendment) preGeneratedClause = aiParsed.suggested_amendment;
+
+        // Store dynamic AI scores directly on policy objects
+        if (typeof aiParsed.economic_score_a === 'number') {
+          a._ai_scores = {
+            economic: aiParsed.economic_score_a,
+            social: aiParsed.social_score_a,
+            env: aiParsed.env_score_a,
+            legal: aiParsed.legal_score_a
+          };
+        }
+        if (typeof aiParsed.economic_score_b === 'number') {
+          b._ai_scores = {
+            economic: aiParsed.economic_score_b,
+            social: aiParsed.social_score_b,
+            env: aiParsed.env_score_b,
+            legal: aiParsed.legal_score_b
+          };
         }
       }
 
@@ -1549,6 +1628,9 @@ ksort($grouped_local_policies);
         '<h5 class="fw-bold mb-0 text-dark" style="font-size:clamp(0.98rem, 2.5vw, 1.15rem);">AI Executive Comparison Insights</h5>' +
         '<span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1 fw-semibold" style="font-size:0.75rem;">' +
         '<i class="bi bi-tag-fill me-1"></i> ' + esc(dynamicAI.topic) +
+        '</span>' +
+        '<span class="badge rounded-pill ' + engineUsed.badgeClass + ' px-2.5 py-1 font-monospace" style="font-size:0.75rem;" title="' + esc(engineUsed.note) + '">' +
+        '<i class="bi ' + engineUsed.icon + ' me-1"></i> ' + esc(engineUsed.name) +
         '</span>' +
         '</div>' +
         '<p class="text-muted small mb-0 mt-0.5">Automated multi-criteria comparison &amp; actionable recommendations</p>' +
