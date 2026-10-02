@@ -294,6 +294,13 @@ ksort($grouped_local_policies);
     border-color: #7e22ce !important;
     box-shadow: 0 2px 8px rgba(147, 51, 234, 0.35) !important;
   }
+  .hover-lift {
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
+  }
 </style>
 
 <section id="comparativeAnalysisSection"
@@ -1665,16 +1672,16 @@ ksort($grouped_local_policies);
         '</div>' +
         '</div>';
 
-      // --- STRUCTURED 3-CARD AI EXECUTIVE COMPARISON INSIGHTS (CLEAN & SPACIOUS) ---
-      var insightsCard = '<div class="card border-0 rounded-4 shadow-sm mt-4 p-3 p-md-4" style="background: linear-gradient(135deg, #f8fafc 0%, #f0fdfa 100%); border-left: 5px solid #0284c7 !important;">' +
-        '<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-3 pb-2 border-bottom">' +
+      // --- STRUCTURED 3-CARD AI EXECUTIVE COMPARISON INSIGHTS (VIBRANT, MODERN & PREMIUM) ---
+      var insightsCard = '<div class="card border-0 rounded-4 shadow-sm mt-4 p-3.5 p-md-4" style="background: #ffffff; border: 1.5px solid #e2e8f0 !important; box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;">' +
+        '<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-3.5 pb-3 border-bottom" style="border-color:#e2e8f0 !important;">' +
         '<div class="d-flex align-items-center gap-3">' +
-        '<span class="p-2.5 rounded-3 bg-white text-primary shadow-2xs flex-shrink-0" style="color:#0284c7; font-size:1.3rem;">' +
-        '<i class="bi bi-stars"></i>' +
+        '<span class="p-2.5 rounded-3 text-white shadow-2xs flex-shrink-0 d-inline-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); width: 44px; height: 44px;">' +
+        '<i class="bi bi-stars fs-5 text-white"></i>' +
         '</span>' +
         '<div>' +
         '<div class="d-flex flex-wrap align-items-center gap-2">' +
-        '<h5 class="fw-bold mb-0 text-dark" style="font-size:clamp(0.98rem, 2.5vw, 1.15rem);">AI Executive Comparison Insights</h5>' +
+        '<h5 class="fw-bold mb-0 text-dark" style="font-size:clamp(1rem, 2.5vw, 1.18rem);">AI Executive Comparison Insights</h5>' +
         '<span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1 fw-semibold" style="font-size:0.75rem;">' +
         '<i class="bi bi-tag-fill me-1"></i> ' + esc(dynamicAI.topic) +
         '</span>' +
@@ -1682,50 +1689,71 @@ ksort($grouped_local_policies);
         '<i class="bi ' + engineUsed.icon + ' me-1"></i> ' + esc(engineUsed.name) +
         '</span>' +
         '</div>' +
-        '<p class="text-muted small mb-0 mt-0.5">Automated multi-criteria comparison &amp; actionable recommendations</p>' +
+        '<p class="text-muted small mb-0 mt-0.5">Automated statutory benchmarking &amp; actionable policy intelligence for Manila City Council</p>' +
         '</div>' +
         '</div>' +
-        '<span class="badge rounded-pill bg-white text-dark border px-2.5 py-1 shadow-2xs small font-monospace align-self-start align-self-md-center">' +
+        '<span class="badge rounded-pill bg-light text-dark border px-3 py-1.5 shadow-2xs small font-monospace align-self-start align-self-md-center">' +
         '<i class="bi bi-check2-circle text-success me-1"></i> Synced to Reports' +
         '</span>' +
         '</div>' +
 
-        '<div class="row g-3 mt-1">' +
+        '<div class="row g-3.5 mt-0.5">' +
+        // Card 1: Manila Policy Strength
         '<div class="col-12 col-md-4">' +
-        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column" style="border-top: 3px solid #2563eb !important;">' +
-        '<div class="fw-bold text-primary small mb-2 d-flex align-items-center gap-1.5">' +
-        '<i class="bi bi-trophy-fill text-primary"></i> Manila Policy Strength' +
+        '<div class="p-3.5 p-md-4 rounded-4 border h-100 d-flex flex-column hover-lift" style="background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%); border: 1.5px solid #bfdbfe !important; box-shadow: 0 4px 14px rgba(37,99,235,0.05);">' +
+        '<div class="d-flex align-items-center justify-content-between mb-3 pb-2.5 border-bottom" style="border-color: rgba(37,99,235,0.15) !important;">' +
+        '<div class="d-flex align-items-center gap-2">' +
+        '<span class="rounded-3 text-white d-inline-flex align-items-center justify-content-center shadow-2xs" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); width: 32px; height: 32px;">' +
+        '<i class="bi bi-award-fill" style="font-size:0.95rem;"></i>' +
+        '</span>' +
+        '<span class="fw-bold text-dark" style="font-size: 0.9rem;">Manila Policy Strength</span>' +
         '</div>' +
-        '<p class="small mb-0" style="color: #0f172a !important; line-height:1.65; font-size: 0.86rem; font-weight: 500;">' +
+        '<span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-0.5 fw-bold" style="font-size:0.65rem; letter-spacing:0.04em;">LOCAL ASSET</span>' +
+        '</div>' +
+        '<p class="small mb-0" style="color: #0f172a !important; line-height:1.7; font-size: 0.88rem; font-weight: 500;">' +
         dynamicAI.strengthA +
         '</p>' +
         '</div>' +
         '</div>' +
 
+        // Card 2: Adoptable Best Practice
         '<div class="col-12 col-md-4">' +
-        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column" style="border-top: 3px solid #16a34a !important;">' +
-        '<div class="fw-bold text-success small mb-2 d-flex align-items-center gap-1.5">' +
-        '<i class="bi bi-lightbulb-fill text-success"></i> Adoptable Best Practice (' + shortCityB + ')' +
+        '<div class="p-3.5 p-md-4 rounded-4 border h-100 d-flex flex-column hover-lift" style="background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); border: 1.5px solid #bbf7d0 !important; box-shadow: 0 4px 14px rgba(22,163,74,0.05);">' +
+        '<div class="d-flex align-items-center justify-content-between mb-3 pb-2.5 border-bottom" style="border-color: rgba(22,163,74,0.15) !important;">' +
+        '<div class="d-flex align-items-center gap-2">' +
+        '<span class="rounded-3 text-white d-inline-flex align-items-center justify-content-center shadow-2xs" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); width: 32px; height: 32px;">' +
+        '<i class="bi bi-lightbulb-fill" style="font-size:0.95rem;"></i>' +
+        '</span>' +
+        '<span class="fw-bold text-dark" style="font-size: 0.9rem;">Adoptable Best Practice</span>' +
         '</div>' +
-        '<p class="small mb-0" style="color: #0f172a !important; line-height:1.65; font-size: 0.86rem; font-weight: 500;">' +
+        '<span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-0.5 fw-bold" style="font-size:0.65rem; letter-spacing:0.04em;">' + esc(shortCityB).toUpperCase() + ' MODEL</span>' +
+        '</div>' +
+        '<p class="small mb-0" style="color: #0f172a !important; line-height:1.7; font-size: 0.88rem; font-weight: 500;">' +
         (b.benchmark_insight ? esc(b.benchmark_insight) : dynamicAI.bestPracticeB) +
         '</p>' +
         '</div>' +
         '</div>' +
 
+        // Card 3: Policy Gap & Council Directive
         '<div class="col-12 col-md-4">' +
-        '<div class="bg-white p-3 p-md-3.5 rounded-3 border shadow-2xs h-100 d-flex flex-column justify-content-between" style="border-top: 3px solid #d97706 !important;">' +
+        '<div class="p-3.5 p-md-4 rounded-4 border h-100 d-flex flex-column justify-content-between hover-lift" style="background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%); border: 1.5px solid #fed7aa !important; box-shadow: 0 4px 14px rgba(217,119,6,0.06);">' +
         '<div>' +
-        '<div class="fw-bold text-warning-emphasis small mb-2 d-flex align-items-center gap-1.5">' +
-        '<i class="bi bi-bullseye text-warning"></i> Policy Gap &amp; Council Directive' +
+        '<div class="d-flex align-items-center justify-content-between mb-3 pb-2.5 border-bottom" style="border-color: rgba(217,119,6,0.18) !important;">' +
+        '<div class="d-flex align-items-center gap-2">' +
+        '<span class="rounded-3 text-white d-inline-flex align-items-center justify-content-center shadow-2xs" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%); width: 32px; height: 32px;">' +
+        '<i class="bi bi-bullseye" style="font-size:0.95rem;"></i>' +
+        '</span>' +
+        '<span class="fw-bold text-dark" style="font-size: 0.9rem;">Policy Gap &amp; Directive</span>' +
         '</div>' +
-        '<p class="small mb-3" style="color: #0f172a !important; line-height:1.65; font-size: 0.86rem; font-weight: 500;">' +
+        '<span class="badge rounded-pill bg-warning bg-opacity-15 text-warning-emphasis border border-warning border-opacity-30 px-2 py-0.5 fw-bold" style="font-size:0.65rem; letter-spacing:0.04em;">ACTION DIRECTIVE</span>' +
+        '</div>' +
+        '<p class="small mb-3" style="color: #0f172a !important; line-height:1.7; font-size: 0.88rem; font-weight: 500;">' +
         dynamicAI.takeaway +
         '</p>' +
         '</div>' +
-        '<div class="pt-2.5 border-top mt-auto">' +
-        '<button type="button" class="btn btn-sm text-white fw-bold shadow-2xs w-100 d-flex align-items-center justify-content-center gap-1.5 rounded-3 py-2" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); border:none; font-size:0.82rem;" onclick="generateAIAmendmentLanguage()">' +
-        '<i class="bi bi-stars"></i> Suggest Policy Improvements' +
+        '<div class="pt-2.5 border-top border-warning border-opacity-20 mt-auto">' +
+        '<button type="button" class="btn btn-sm text-white fw-bold shadow-sm w-100 d-flex align-items-center justify-content-center gap-2 rounded-3 py-2.5 hover-lift" style="background: linear-gradient(135deg, #0284c7 0%, #1d4ed8 100%); border:none; font-size:0.84rem; letter-spacing:0.01em;" onclick="generateAIAmendmentLanguage()">' +
+        '<i class="bi bi-stars text-warning fs-6"></i> Suggest Policy Improvements' +
         '</button>' +
         '</div>' +
         '</div>' +
@@ -2421,48 +2449,59 @@ ksort($grouped_local_policies);
         note: 'AI legislative drafting suggestion.'
       };
 
-      var html = '<div class="card border-0 rounded-4 shadow-sm p-4 bg-white" style="border: 1px solid #bfdbfe !important; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);">' +
-        '<div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 mb-3 pb-3 border-bottom">' +
-        '<div class="d-flex align-items-center gap-2.5">' +
-        '<span class="p-2 rounded-3 text-white shadow-2xs" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); font-size:1.15rem;">' +
-        '<i class="bi bi-stars"></i>' +
+      var shortCityB = esc(b.city_name || b.city_origin || 'Peer City Benchmark').replace(/^City of\s*/i, '');
+
+      var html = '<div class="card border-0 rounded-4 shadow-sm p-4 p-md-4.5 bg-white mt-4" style="border: 1.5px solid #bfdbfe !important; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); box-shadow: 0 8px 30px rgba(2,132,199,0.08) !important;">' +
+        '<div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 mb-3.5 pb-3 border-bottom" style="border-color:#e2e8f0 !important;">' +
+        '<div class="d-flex align-items-center gap-3">' +
+        '<span class="p-2.5 rounded-3 text-white shadow-sm flex-shrink-0 d-inline-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); width: 44px; height: 44px;">' +
+        '<i class="bi bi-file-earmark-text-fill fs-5"></i>' +
         '</span>' +
         '<div>' +
         '<div class="d-flex align-items-center gap-2 flex-wrap">' +
-        '<h5 class="fw-bold text-dark mb-0" style="font-size:1.05rem;">AI-Suggested Policy Improvements (For Review)</h5>' +
-        '<span class="badge rounded-pill ' + engine.badgeClass + ' border px-2.5 py-1" style="font-size:0.72rem;">' +
+        '<h5 class="fw-bold text-dark mb-0" style="font-size:1.1rem;">AI-Suggested Policy Improvements (For Review)</h5>' +
+        '<span class="badge rounded-pill ' + engine.badgeClass + ' border px-2.5 py-1 font-monospace" style="font-size:0.73rem;">' +
         '<i class="bi ' + engine.icon + ' me-1"></i> ' + esc(engine.badgeText) +
         '</span>' +
         '</div>' +
         '<span class="text-muted small">Generated based on cross-city benchmarking with <strong>' + esc(b.city_name || b.city_origin || 'Peer City Benchmark') + '</strong></span>' +
         '</div>' +
         '</div>' +
-        '<button type="button" id="copyAmendmentBtn" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1.5 fw-semibold d-flex align-items-center gap-1.5 shadow-2xs" onclick="copyAIAmendmentText(this)">' +
-        '<i class="bi bi-clipboard"></i> Copy to Clipboard' +
+        '<div class="d-flex align-items-center gap-2 flex-wrap align-self-stretch align-self-sm-auto">' +
+        '<button type="button" id="copyAmendmentBtn" class="btn btn-primary btn-sm rounded-pill px-3.5 py-2 fw-bold d-flex align-items-center gap-1.5 shadow-sm hover-lift" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); border:none; font-size:0.82rem;" onclick="copyAIAmendmentText(this)">' +
+        '<i class="bi bi-clipboard-check"></i> Copy Policy Text' +
         '</button>' +
         '</div>' +
-
-        '<div class="p-2.5 rounded-3 mb-3 d-flex align-items-center gap-2" style="background:#f1f5f9; font-size:0.8rem;">' +
-        '<i class="bi bi-info-circle-fill text-primary"></i>' +
-        '<span class="text-secondary">Target Policy Gap Addressed: <strong class="text-dark">' + esc(gap) + '</strong></span>' +
         '</div>' +
 
-        '<div class="p-3.5 p-md-4 rounded-3 mb-3 shadow-2xs" style="background:#ffffff; border-left: 4px solid #2563eb; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">' +
-        '<div class="d-flex align-items-center justify-content-between mb-2">' +
-        '<span class="text-uppercase fw-bold text-primary font-monospace" style="font-size:0.75rem; letter-spacing:0.8px;">' +
-        '<i class="bi bi-file-earmark-ruled me-1"></i> Recommended Policy Addition &amp; Improvement' +
-        '</span>' +
-        '<span class="badge rounded-pill bg-light text-secondary border px-2 py-0.5" style="font-size:0.7rem;">Sangguniang Panlungsod Format</span>' +
+        '<div class="p-3 rounded-3 mb-3.5 d-flex align-items-start gap-2.5 shadow-2xs" style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4.5px solid #2563eb;">' +
+        '<i class="bi bi-bullseye text-primary fs-5 flex-shrink-0 mt-0.5"></i>' +
+        '<div>' +
+        '<div class="fw-bold text-primary small mb-0.5" style="font-size:0.75rem; letter-spacing:0.04em;">TARGET POLICY GAP ADDRESSED</div>' +
+        '<div class="text-dark fw-medium" style="font-size:0.88rem; line-height:1.55;">' + esc(gap) + '</div>' +
         '</div>' +
-        '<div id="aiDraftedClauseText" class="text-dark fw-medium" style="font-family: Georgia, \'Times New Roman\', serif; font-size: 0.96rem; line-height: 1.75; white-space: pre-wrap;">' +
+        '</div>' +
+
+        '<div class="rounded-4 mb-3.5 shadow-sm overflow-hidden" style="background:#ffffff; border: 1.5px solid #cbd5e1;">' +
+        '<div class="py-2.5 px-3.5 bg-light d-flex align-items-center justify-content-between border-bottom" style="border-color:#e2e8f0;">' +
+        '<div class="d-flex align-items-center gap-2">' +
+        '<span class="badge rounded-pill bg-dark text-white fw-bold px-2.5 py-1" style="font-size:0.68rem; letter-spacing:0.05em;"><i class="bi bi-bank2 me-1 text-warning"></i> SANGGUNIANG PANLUNGSOD NG MAYNILA</span>' +
+        '<span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-0.5 fw-bold" style="font-size:0.68rem;">RA 7160 COMPLIANT</span>' +
+        '</div>' +
+        '<span class="text-muted small font-monospace d-none d-sm-inline" style="font-size:0.72rem;">Legislative Draft Preview</span>' +
+        '</div>' +
+        '<div class="p-4 p-md-4.5" style="background: #fafbfc;">' +
+        '<div id="aiDraftedClauseText" class="text-dark fw-medium" style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif; font-size: 0.94rem; line-height: 1.85; white-space: pre-wrap; color: #0f172a !important;">' +
         esc(clause) +
         '</div>' +
         '</div>' +
+        '</div>' +
 
-        '<div class="alert alert-warning border-0 rounded-3 p-2.5 mb-0 d-flex align-items-start gap-2.5 shadow-2xs" style="background:#fffbeb; color:#92400e; font-size:0.78rem; line-height:1.5;">' +
-        '<i class="bi bi-exclamation-triangle-fill fs-6 flex-shrink-0 text-warning mt-0.5"></i>' +
+        '<div class="alert border-0 rounded-3 p-3 mb-0 d-flex align-items-start gap-2.5 shadow-2xs" style="background:#fffbeb; color:#92400e; border: 1px solid #fde68a !important; font-size:0.8rem; line-height:1.55;">' +
+        '<i class="bi bi-shield-exclamation fs-5 flex-shrink-0 text-warning mt-0.5"></i>' +
         '<div>' +
-        'This is an AI-generated drafting aid, not legal advice. All suggested language must be reviewed and finalized by legislative staff and legal counsel before formal proposal. ' +
+        '<strong class="d-block mb-0.5 text-warning-emphasis">Legislative Review Advisory</strong>' +
+        'This AI-synthesized policy improvement provides statutory benchmarking assistance. All operative clauses should undergo formal committee review and legal refinement before City Council plenary sponsorship. ' +
         '<span class="text-muted fst-italic">(' + esc(engine.note) + ')</span>' +
         '</div>' +
         '</div>' +
