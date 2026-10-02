@@ -323,19 +323,94 @@ function viewPolicyDetails(title, category, date, desc) {
 
 // Open Policy View Modal with full details object
 window.openPolicyViewModal = function (policy) {
-    if (document.getElementById('modalPolicyTitle')) document.getElementById('modalPolicyTitle').innerText = policy.title || '';
-    if (document.getElementById('modalPolicyCategory')) document.getElementById('modalPolicyCategory').innerText = policy.category || '';
-    if (document.getElementById('modalPolicyStatus')) document.getElementById('modalPolicyStatus').innerText = policy.status || '';
-    if (document.getElementById('modalPolicyAuthor')) document.getElementById('modalPolicyAuthor').innerText = policy.author || 'N/A';
-    if (document.getElementById('modalPolicyDate')) document.getElementById('modalPolicyDate').innerText = policy.date || 'N/A';
-    if (document.getElementById('modalPolicyDesc')) document.getElementById('modalPolicyDesc').innerText = policy.desc || 'No description available.';
+    if (!policy) return;
+
+    const esc = (s) => {
+        const d = document.createElement('div');
+        d.textContent = s || '';
+        return d.innerHTML;
+    };
+
+    // Refined Civic Category Badges (Light Background + Dark Text)
+    const renderCategoryBadge = (category) => {
+        const cat = (category || 'General Legislation').trim();
+        const lower = cat.toLowerCase();
+        let bg = '#F1EFE8', text = '#444441', border = '#DCD7C9', icon = 'bi-tag-fill';
+
+        if (lower.includes('health') || lower.includes('sanitation') || lower.includes('medical')) {
+            bg = '#E1F5EE'; text = '#085041'; border = '#9FE1CB'; icon = 'bi-heart-pulse-fill';
+        } else if (lower.includes('infra') || lower.includes('traffic') || lower.includes('environment') || lower.includes('transport') || lower.includes('mobility')) {
+            bg = '#EAF3DE'; text = '#27500A'; border = '#C8E2AE'; icon = 'bi-buildings';
+        } else if (lower.includes('social') || lower.includes('welfare') || lower.includes('community')) {
+            bg = '#FAECE7'; text = '#712B13'; border = '#F3C4B6'; icon = 'bi-people-fill';
+        } else if (lower.includes('education') || lower.includes('employment') || lower.includes('school') || lower.includes('labor') || lower.includes('livelihood')) {
+            bg = '#EEEDFE'; text = '#3C3489'; border = '#CBC6FC'; icon = 'bi-mortarboard-fill';
+        } else if (lower.includes('civil') || lower.includes('registry') || lower.includes('public') || lower.includes('governance')) {
+            bg = '#E6F1FB'; text = '#0C447C'; border = '#B5D7F8'; icon = 'bi-file-earmark-person-fill';
+        }
+
+        return `<span class="category-badge-pill" style="background-color: ${bg} !important; color: ${text} !important; border: 1px solid ${border} !important; padding: 4.5px 13px !important; border-radius: 9999px !important; font-size: 0.78rem !important; font-weight: 600 !important; display: inline-flex !important; align-items: center !important; gap: 6.5px !important; box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;">
+            <i class="bi ${icon}" style="color: ${text} !important; opacity: 0.9;"></i>
+            <span>${esc(cat)}</span>
+        </span>`;
+    };
+
+    // Executive Status Badges
+    const renderStatusBadge = (status) => {
+        const st = (status || 'Approved').trim();
+        const lower = st.toLowerCase();
+        let bg = '#DCFCE7', text = '#15803D', border = '#86EFAC', icon = 'bi-check-circle-fill';
+
+        if (lower.includes('review') || lower.includes('pending') || lower.includes('draft')) {
+            bg = '#FEF3C7'; text = '#B45309'; border = '#FDE68A'; icon = 'bi-hourglass-split';
+        } else if (lower.includes('archive')) {
+            bg = '#F1F5F9'; text = '#475569'; border = '#CBD5E1'; icon = 'bi-archive-fill';
+        } else if (lower.includes('reject') || lower.includes('disapproved')) {
+            bg = '#FEE2E2'; text = '#B91C1C'; border = '#FCA5A5'; icon = 'bi-x-circle-fill';
+        }
+
+        return `<span class="badge rounded-pill fw-semibold" style="background: ${bg} !important; color: ${text} !important; border: 1px solid ${border} !important; padding: 4.5px 12px !important; font-size: 0.78rem !important; display: inline-flex !important; align-items: center !important; gap: 5.5px !important;">
+            <i class="bi ${icon}"></i>
+            <span>${esc(st)}</span>
+        </span>`;
+    };
+
+    // Populate category badge
+    const catWrapper = document.getElementById('modalPolicyCategoryWrapper');
+    if (catWrapper) {
+        catWrapper.innerHTML = renderCategoryBadge(policy.category);
+    } else if (document.getElementById('modalPolicyCategory')) {
+        document.getElementById('modalPolicyCategory').innerText = policy.category || 'General Legislation';
+    }
+
+    // Populate status badge
+    const stWrapper = document.getElementById('modalPolicyStatusWrapper');
+    if (stWrapper) {
+        stWrapper.innerHTML = renderStatusBadge(policy.status);
+    } else if (document.getElementById('modalPolicyStatus')) {
+        document.getElementById('modalPolicyStatus').innerText = policy.status || 'Approved';
+    }
+
+    // Populate Policy Record ID
+    const policyId = policy.id || policy.policy_id || '';
+    const idTextEl = document.getElementById('modalPolicyIdText');
+    if (idTextEl) {
+        idTextEl.innerText = policyId ? `Record #${policyId}` : 'Official Record';
+    }
+
+    // Populate text fields
+    if (document.getElementById('modalPolicyTitle')) document.getElementById('modalPolicyTitle').innerText = policy.title || 'Untitled Policy';
+    if (document.getElementById('modalPolicyAuthor')) document.getElementById('modalPolicyAuthor').innerText = policy.author || 'City Council of Manila';
+    if (document.getElementById('modalPolicyDate')) document.getElementById('modalPolicyDate').innerText = policy.date || 'Recent Enactment';
+    if (document.getElementById('modalPolicyDesc')) document.getElementById('modalPolicyDesc').innerText = policy.desc || 'Manila City Ordinance official provisions and guidelines.';
 
     const fileWrapper = document.getElementById('modalPolicyFileWrapper');
     const fileLink = document.getElementById('modalPolicyFileLink');
     const downloadBtn = document.getElementById('modalDownloadBtn');
 
-    const policyId = policy.id || policy.policy_id || '';
-    const hasPhysicalFile = Boolean(policy.file && policy.file.trim() !== '');
+    const hasPhysicalFile = Boolean(policy.file && String(policy.file).trim() !== '');
+
+    const modalFooter = document.querySelector('#policyDetailModal .modal-footer');
 
     if (policyId || hasPhysicalFile) {
         const viewUrl = policyId
@@ -349,15 +424,20 @@ window.openPolicyViewModal = function (policy) {
             } else {
                 downloadBtn.href = '../backend/view_policy_document.php?id=' + encodeURIComponent(policyId) + '&download=1';
             }
-            downloadBtn.style.display = '';
+            downloadBtn.style.display = 'inline-flex';
         }
+        if (modalFooter) modalFooter.style.display = 'flex';
     } else {
         if (fileWrapper) fileWrapper.style.display = 'none';
         if (downloadBtn) downloadBtn.style.display = 'none';
+        if (modalFooter) modalFooter.style.display = 'none';
     }
 
     const modalEl = document.getElementById('policyDetailModal');
-    if (modalEl) new bootstrap.Modal(modalEl).show();
+    if (modalEl) {
+        const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        bsModal.show();
+    }
 };
 
 // Open AI Summary Modal — parses saved JSON and renders full official report layout

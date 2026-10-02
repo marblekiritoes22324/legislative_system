@@ -1625,3 +1625,78 @@ body.dark-mode .quick-action-label {
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 10px rgba(220, 38, 38, 0.22) !important;
 }
+
+/* Modern Rounded Pill Search Bar with Outline Focus State */
+.policy-search-box {
+  background: #FFFFFF !important;
+  border: 1.5px solid #CBD5E1 !important;
+  border-radius: 9999px !important;
+  height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 16px !important;
+  gap: 10px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.policy-search-box:hover {
+  border-color: #94A3B8 !important;
+}
+
+.policy-search-box:focus-within {
+  background: #FFFFFF !important;
+  border-color: #3B82F6 !important;
+  box-shadow: 0 0 0 3.5px rgba(59, 130, 246, 0.18) !important;
+}
+
+.policy-search-box:focus-within .policy-search-icon {
+  color: #2563EB !important;
+  transform: scale(1.06);
+}
+
+.policy-search-icon {
+  color: #94A3B8 !important;
+  font-size: 0.92rem !important;
+  flex-shrink: 0 !important;
+  transition: color 0.2s ease, transform 0.2s ease !important;
+}
+
+.policy-search-input {
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+  width: 100% !important;
+  font-size: 0.88rem !important;
+  color: #0F172A !important;
+  padding: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.policy-search-input::placeholder {
+  color: #94A3B8 !important;
+  font-size: 0.86rem !important;
+  font-weight: 400 !important;
+}
+
+.policy-search-clear {
+  border: none !important;
+  background: transparent !important;
+  color: #94A3B8 !important;
+  padding: 0 !important;
+  font-size: 0.78rem !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  transition: all 0.15s ease !important;
+}
+
+.policy-search-clear:hover {
+  color: #0F172A !important;
+  background-color: #F1F5F9 !important;
+}

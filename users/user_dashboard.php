@@ -24,6 +24,68 @@ if (!function_exists('get_policy_table_name')) {
 }
 $policy_tbl = get_policy_table_name($conn);
 
+if (!function_exists('renderUserPolicyCategoryBadge')) {
+  function renderUserPolicyCategoryBadge($category)
+  {
+    $cat = trim($category ?? '');
+    $lower = strtolower($cat);
+
+    // 1. Health and Sanitation (#E1F5EE, #085041)
+    if (strpos($lower, 'health') !== false || strpos($lower, 'sanitation') !== false || strpos($lower, 'medical') !== false) {
+      $bg = '#E1F5EE';
+      $text = '#085041';
+      $border = '#9FE1CB';
+      $icon = 'bi-heart-pulse-fill';
+      $label = !empty($cat) ? $cat : 'Health and Sanitation';
+    }
+    // 2. Civil Registry and Public Services (#E6F1FB, #0C447C)
+    elseif (strpos($lower, 'civil') !== false || strpos($lower, 'registry') !== false || strpos($lower, 'public') !== false || strpos($lower, 'governance') !== false || strpos($lower, 'legal') !== false) {
+      $bg = '#E6F1FB';
+      $text = '#0C447C';
+      $border = '#B5D7F8';
+      $icon = 'bi-file-earmark-person-fill';
+      $label = !empty($cat) ? $cat : 'Civil Registry and Public Services';
+    }
+    // 3. Education and Employment (#EEEDFE, #3C3489)
+    elseif (strpos($lower, 'education') !== false || strpos($lower, 'employment') !== false || strpos($lower, 'school') !== false || strpos($lower, 'labor') !== false || strpos($lower, 'livelihood') !== false) {
+      $bg = '#EEEDFE';
+      $text = '#3C3489';
+      $border = '#CBC6FC';
+      $icon = 'bi-mortarboard-fill';
+      $label = !empty($cat) ? $cat : 'Education and Employment';
+    }
+    // 4. Social Welfare and Community Affairs (#FAECE7, #712B13)
+    elseif (strpos($lower, 'social') !== false || strpos($lower, 'welfare') !== false || strpos($lower, 'community') !== false) {
+      $bg = '#FAECE7';
+      $text = '#712B13';
+      $border = '#F3C4B6';
+      $icon = 'bi-people-fill';
+      $label = !empty($cat) ? $cat : 'Social Welfare and Community Affairs';
+    }
+    // 5. Infrastructure, Traffic and Environment (#EAF3DE, #27500A)
+    elseif (strpos($lower, 'infrastructure') !== false || strpos($lower, 'traffic') !== false || strpos($lower, 'environment') !== false || strpos($lower, 'transport') !== false || strpos($lower, 'mobility') !== false) {
+      $bg = '#EAF3DE';
+      $text = '#27500A';
+      $border = '#C8E2AE';
+      $icon = 'bi-buildings';
+      $label = !empty($cat) ? $cat : 'Infrastructure, Traffic and Environment';
+    }
+    // 6. Other (#F1EFE8, #444441)
+    else {
+      $bg = '#F1EFE8';
+      $text = '#444441';
+      $border = '#DCD7C9';
+      $icon = 'bi-tag-fill';
+      $label = !empty($cat) ? $cat : 'Other';
+    }
+
+    return '<span class="category-badge-pill" style="background-color: ' . $bg . ' !important; color: ' . $text . ' !important; border: 1px solid ' . $border . ' !important;" title="' . htmlspecialchars($label) . '">' .
+      '<i class="bi ' . $icon . '" style="color: ' . $text . ' !important; opacity: 0.9;"></i>' .
+      '<span>' . htmlspecialchars($label) . '</span>' .
+      '</span>';
+  }
+}
+
 $active_section = $_GET['section'] ?? 'userDashboardSection';
 $message = '';
 $messageType = '';
@@ -621,103 +683,384 @@ if (!empty($conn)) {
   <link rel="stylesheet" href="../assets/css/Manila City Hall.css?v=<?= time() ?>">
   <link rel="stylesheet" href="../assets/css/Admin.css?v=<?= time() ?>">
   <style>
-    /* Polished Featured Ordinances & Recent Updates Styles Matching Admin Theme */
+    /* Refined Civic Category Badges (Light Background + Dark Text) */
+    .category-badge-pill {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6.5px !important;
+      padding: 4px 12px !important;
+      border-radius: 9999px !important;
+      font-size: 0.78rem !important;
+      font-weight: 600 !important;
+      white-space: nowrap !important;
+      letter-spacing: -0.01em !important;
+      line-height: 1.35 !important;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    .category-badge-pill i {
+      font-size: 0.82rem !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* Civic Slate Metadata Chip */
+    .report-date-cell,
+    .report-date-badge {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      font-size: 0.78rem !important;
+      color: #334155 !important;
+      font-weight: 600 !important;
+      font-variant-numeric: tabular-nums !important;
+      white-space: nowrap !important;
+      letter-spacing: -0.01em !important;
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 7px !important;
+      padding: 3.5px 9px !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .report-date-cell i,
+    .report-date-badge i {
+      color: #0B2E59 !important;
+      opacity: 0.85 !important;
+      font-size: 0.82rem !important;
+    }
+
+    /* Executive View All Pill Button */
+    .btn-view-all-pill {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      background: #EFF6FF !important;
+      color: #0B2E59 !important;
+      border: 1px solid #BFDBFE !important;
+      border-radius: 9999px !important;
+      padding: 5px 14px !important;
+      font-size: 0.78rem !important;
+      font-weight: 600 !important;
+      text-decoration: none !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .btn-view-all-pill:hover {
+      background: #0B2E59 !important;
+      color: #FFFFFF !important;
+      border-color: #0B2E59 !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 3px 8px rgba(11, 46, 89, 0.2) !important;
+    }
+
+    .btn-view-all-pill i {
+      transition: transform 0.2s ease !important;
+    }
+
+    .btn-view-all-pill:hover i {
+      transform: translateX(2px) !important;
+    }
+
+    .min-w-0 {
+      min-width: 0 !important;
+    }
+
+    /* Rich & Executive Featured Ordinance Card */
     .featured-policy-card {
       background: #FFFFFF !important;
       border: 1px solid #E2E8F0 !important;
+      border-left: 3.5px solid #CBD5E1 !important;
       border-radius: 14px !important;
       padding: 16px 18px !important;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      box-shadow: 0 2px 6px rgba(11, 46, 89, 0.03) !important;
+      position: relative !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
     }
 
     .featured-policy-card:hover {
       transform: translateY(-2px) !important;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06) !important;
-      border-color: #CBD5E1 !important;
+      box-shadow: 0 10px 24px rgba(11, 46, 89, 0.09) !important;
+      border-color: #94A3B8 !important;
+      border-left-color: #0B2E59 !important;
+      background: #FFFFFF !important;
+    }
+
+    .featured-policy-card:hover .policy-card-title {
+      color: #0B2E59 !important;
     }
 
     .featured-icon-box {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      flex-shrink: 0;
-    }
-
-    .btn-read-ordinance {
-      background: #EFF6FF !important;
-      color: #2563EB !important;
-      border: 1px solid #BFDBFE !important;
-      border-radius: 8px !important;
-      padding: 7px 15px !important;
-      font-size: 0.8rem !important;
-      font-weight: 600 !important;
-      transition: all 0.2s ease !important;
-      box-shadow: none !important;
-      white-space: nowrap !important;
+      width: 44px !important;
+      height: 44px !important;
+      border-radius: 12px !important;
       display: inline-flex !important;
       align-items: center !important;
-      gap: 6px !important;
+      justify-content: center !important;
+      font-size: 1.25rem !important;
+      flex-shrink: 0 !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+      transition: transform 0.2s ease !important;
+    }
+
+    .featured-policy-card:hover .featured-icon-box {
+      transform: scale(1.06) !important;
+    }
+
+    .policy-card-title {
+      color: #0F172A !important;
+      font-weight: 700 !important;
+      font-size: 0.94rem !important;
+      line-height: 1.35 !important;
+      transition: color 0.18s ease !important;
+      text-decoration: none !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 2 !important;
+      -webkit-box-orient: vertical !important;
+      overflow: hidden !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+      white-space: normal !important;
+    }
+
+    /* Executive Manila Navy & Gold Action Button */
+    .btn-read-ordinance {
+      background: #0B2E59 !important;
+      color: #FFFFFF !important;
+      border: 1px solid #082242 !important;
+      border-radius: 8px !important;
+      padding: 7.5px 16px !important;
+      font-size: 0.81rem !important;
+      font-weight: 600 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 7px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      margin-left: auto !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      text-decoration: none !important;
+      box-shadow: 0 1px 3px rgba(11, 46, 89, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    }
+
+    .btn-read-ordinance i.bi-file-earmark-text {
+      color: #FCD34D !important;
+      font-size: 0.88rem !important;
+      transition: transform 0.2s ease !important;
+    }
+
+    .btn-read-ordinance i.bi-arrow-right-short {
+      font-size: 1.05rem !important;
+      transition: transform 0.2s ease !important;
+      margin-left: -2px !important;
     }
 
     .btn-read-ordinance:hover {
-      background: #2563EB !important;
+      background: #123E75 !important;
+      border-color: #123E75 !important;
       color: #FFFFFF !important;
-      border-color: #2563EB !important;
+      box-shadow: 0 4px 12px rgba(11, 46, 89, 0.3) !important;
       transform: translateY(-1px) !important;
-      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25) !important;
     }
 
+    .btn-read-ordinance:hover i.bi-file-earmark-text {
+      transform: scale(1.1) !important;
+    }
+
+    .btn-read-ordinance:hover i.bi-arrow-right-short {
+      transform: translateX(2px) !important;
+    }
+
+    /* Sleek Activity Feed for Recent Updates */
     .update-timeline-item {
       background: #FFFFFF !important;
       border: 1px solid #E2E8F0 !important;
+      border-left: 3.5px solid #CBD5E1 !important;
       border-radius: 12px !important;
-      padding: 12px 15px !important;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      padding: 12px 14px !important;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      box-shadow: 0 1px 4px rgba(11, 46, 89, 0.02) !important;
+      cursor: pointer !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
     }
 
     .update-timeline-item:hover {
-      transform: translateY(-1px) !important;
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05) !important;
-      border-color: #CBD5E1 !important;
+      transform: translateY(-1.5px) !important;
+      box-shadow: 0 8px 18px rgba(11, 46, 89, 0.07) !important;
+      border-color: #94A3B8 !important;
+      border-left-color: #0B2E59 !important;
+      background: #FFFFFF !important;
     }
 
     .update-icon-dot {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.88rem;
-      flex-shrink: 0;
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 10px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 0.95rem !important;
+      flex-shrink: 0 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+      transition: transform 0.2s ease !important;
     }
 
-    .badge-cat-infra {
-      background: #ECFDF5 !important;
-      color: #047857 !important;
-      border: 1px solid #A7F3D0 !important;
+    .update-timeline-item:hover .update-icon-dot {
+      transform: scale(1.08) !important;
     }
 
-    .badge-cat-health {
-      background: #FFF1F2 !important;
-      color: #BE123C !important;
-      border: 1px solid #FECDD3 !important;
+    .update-policy-title {
+      color: #0F172A !important;
+      font-weight: 700 !important;
+      font-size: 0.88rem !important;
+      line-height: 1.35 !important;
+      transition: color 0.18s ease !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 2 !important;
+      -webkit-box-orient: vertical !important;
+      overflow: hidden !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+      white-space: normal !important;
     }
 
-    .badge-cat-energy {
-      background: #FFFBEB !important;
-      color: #B45309 !important;
-      border: 1px solid #FDE68A !important;
+    .update-timeline-item:hover .update-policy-title {
+      color: #0B2E59 !important;
     }
 
-    .badge-cat-general {
-      background: #EEF2FF !important;
-      color: #2563EB !important;
-      border: 1px solid #BFDBFE !important;
+    /* Refined Policy Record Modal Styling */
+    .policy-modal-dialog {
+      max-width: 780px !important;
+    }
+    .policy-modal-content {
+      border: 1px solid rgba(226, 232, 240, 0.95) !important;
+      border-radius: 18px !important;
+      box-shadow: 0 25px 60px -15px rgba(11, 46, 89, 0.3) !important;
+      background: #F8FAFC !important;
+      overflow: hidden !important;
+    }
+    .policy-modal-header {
+      background: linear-gradient(135deg, #071D3A 0%, #0B2E59 55%, #123E75 100%) !important;
+      border-bottom: 3px solid #F59E0B !important;
+      padding: 18px 24px !important;
+    }
+    .policy-modal-close-btn {
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 50% !important;
+      background: rgba(255, 255, 255, 0.14) !important;
+      color: #FFFFFF !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      opacity: 0.9 !important;
+      transition: all 0.2s ease !important;
+      cursor: pointer !important;
+    }
+    .policy-modal-close-btn:hover {
+      background: rgba(255, 255, 255, 0.28) !important;
+      transform: scale(1.08) !important;
+      opacity: 1 !important;
+      color: #FFFFFF !important;
+    }
+    .policy-hero-card {
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 14px !important;
+      padding: 20px 22px !important;
+      box-shadow: 0 2px 10px rgba(11, 46, 89, 0.04) !important;
+      margin-bottom: 14px !important;
+    }
+    .policy-hero-title {
+      font-size: 1.30rem !important;
+      font-weight: 800 !important;
+      line-height: 1.38 !important;
+      letter-spacing: -0.02em !important;
+      color: #0F172A !important;
+      margin-top: 12px !important;
+      margin-bottom: 14px !important;
+    }
+    .policy-meta-pill {
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 10px !important;
+      padding: 9px 13px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      transition: border-color 0.2s ease !important;
+    }
+    .policy-meta-pill:hover {
+      border-color: #CBD5E1 !important;
+    }
+    .policy-summary-card {
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-left: 4px solid #0B2E59 !important;
+      border-radius: 12px !important;
+      padding: 16px 18px !important;
+      box-shadow: 0 1px 4px rgba(11, 46, 89, 0.02) !important;
+      margin-bottom: 14px !important;
+    }
+    .policy-doc-card {
+      background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%) !important;
+      border: 1px solid #86EFAC !important;
+      border-radius: 14px !important;
+      padding: 14px 18px !important;
+      box-shadow: 0 2px 8px rgba(22, 101, 52, 0.05) !important;
+    }
+    .btn-modal-preview {
+      background: #16A34A !important;
+      color: #FFFFFF !important;
+      border: 1px solid #15803D !important;
+      font-weight: 600 !important;
+      font-size: 0.82rem !important;
+      padding: 7px 16px !important;
+      border-radius: 8px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 7px !important;
+      transition: all 0.2s ease !important;
+      box-shadow: 0 2px 6px rgba(22, 101, 52, 0.18) !important;
+      text-decoration: none !important;
+    }
+    .btn-modal-preview:hover {
+      background: #15803D !important;
+      color: #FFFFFF !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 4px 12px rgba(22, 101, 52, 0.25) !important;
+    }
+    .btn-modal-download {
+      background: linear-gradient(135deg, #0B2E59 0%, #15437F 100%) !important;
+      color: #FFFFFF !important;
+      border: 1px solid #082242 !important;
+      font-weight: 700 !important;
+      font-size: 0.85rem !important;
+      padding: 9px 22px !important;
+      border-radius: 9px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      box-shadow: 0 4px 14px rgba(11, 46, 89, 0.25) !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      text-decoration: none !important;
+    }
+    .btn-modal-download:hover {
+      background: linear-gradient(135deg, #123E75 0%, #1E4E8C 100%) !important;
+      color: #FFFFFF !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 6px 18px rgba(11, 46, 89, 0.35) !important;
     }
 
     body:not(.sidebar-collapsed) .sidebar {
@@ -1107,20 +1450,6 @@ if (!empty($conn)) {
                   Official executive decision hub &bull; Review ordinances, policy evaluations, and legislative reports.
                 </p>
               </div>
-              <div class="d-flex flex-wrap align-items-center gap-2">
-                <button type="button"
-                  class="btn btn-outline-primary rounded-3 px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 shadow-2xs"
-                  onclick="showSection('policyLibrarySection')">
-                  <i class="bi bi-search"></i>
-                  <span>Explore Repository</span>
-                </button>
-                <button type="button"
-                  class="btn btn-primary rounded-3 px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 shadow-sm"
-                  onclick="showSection('reportsSection')">
-                  <i class="bi bi-file-earmark-pdf-fill"></i>
-                  <span>Council Reports</span>
-                </button>
-              </div>
             </div>
           </div>
 
@@ -1278,84 +1607,93 @@ if (!empty($conn)) {
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Featured Policies & Recent Updates -->
+            <!-- Featured Policies & Recent Updates -->
           <div class="row g-4 mb-4">
             <!-- Featured Ordinances Card -->
             <div class="col-lg-7">
-              <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                  <div class="d-flex align-items-center gap-2">
+              <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 d-flex flex-column" style="border: 1px solid rgba(226, 232, 240, 0.8) !important; box-shadow: 0 4px 20px -2px rgba(11, 46, 89, 0.05) !important;">
+                <div class="d-flex align-items-center justify-content-between mb-3.5 pb-1">
+                  <div class="d-flex align-items-center gap-2.5">
                     <div
-                      class="rounded-3 p-1.5 bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-center"
-                      style="width: 34px; height: 34px;">
-                      <i class="bi bi-star-fill fs-6 text-warning"></i>
+                      class="rounded-3 p-2 d-flex align-items-center justify-content-center shadow-2xs"
+                      style="width: 36px; height: 36px; background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); color: #B45309;">
+                      <i class="bi bi-star-fill fs-6"></i>
                     </div>
                     <div>
-                      <h3 class="h6 fw-bold text-dark mb-0">Featured Ordinances</h3>
-                      <span class="text-muted small" style="font-size: 0.78rem;">Key enactments and policy
-                        frameworks</span>
+                      <h3 class="h6 fw-bold text-dark mb-0" style="font-size: 1.02rem;">Featured Ordinances</h3>
+                      <span class="text-muted small" style="font-size: 0.76rem;">Key enactments and policy frameworks</span>
                     </div>
                   </div>
-                  <button class="btn btn-sm btn-link text-primary fw-semibold text-decoration-none p-0"
-                    onclick="showSection('policyLibrarySection')">View All <i class="bi bi-arrow-right"></i></button>
+                  <a href="#" class="btn-view-all-pill" onclick="showSection('policyLibrarySection'); return false;">
+                    <span>View All</span> <i class="bi bi-arrow-right"></i>
+                  </a>
                 </div>
-                <div class="d-flex flex-column gap-3">
+                <div class="d-flex flex-column gap-3 flex-grow-1">
                   <?php foreach ($featured_policies as $policy):
-                    $cat = strtoupper($policy['category'] ?? 'GENERAL');
-                    $iconClass = 'bi-file-earmark-text-fill';
-                    $badgeClass = 'badge-cat-general';
-                    $iconBgStyle = 'background: #EEF2FF; color: #2563EB;';
+                    $cat = trim($policy['category'] ?? 'General Legislation');
+                    $lowerCat = strtolower($cat);
 
-                    if (strpos($cat, 'WELFARE') !== false || strpos($cat, 'HEALTH') !== false || strpos($cat, 'SOCIAL') !== false) {
+                    // Curated vibrant icon styling
+                    if (strpos($lowerCat, 'health') !== false || strpos($lowerCat, 'sanitation') !== false || strpos($lowerCat, 'medical') !== false) {
                       $iconClass = 'bi-heart-pulse-fill';
-                      $badgeClass = 'badge-cat-health';
-                      $iconBgStyle = 'background: #FFF1F2; color: #BE123C;';
-                    } elseif (strpos($cat, 'INFRA') !== false || strpos($cat, 'ZONING') !== false || strpos($cat, 'ENVIRONMENT') !== false) {
-                      $iconClass = 'bi-building-fill-check';
-                      $badgeClass = 'badge-cat-infra';
-                      $iconBgStyle = 'background: #ECFDF5; color: #047857;';
-                    } elseif (strpos($cat, 'ENERGY') !== false || strpos($cat, 'CLEAN') !== false) {
-                      $iconClass = 'bi-lightning-charge-fill';
-                      $badgeClass = 'badge-cat-energy';
-                      $iconBgStyle = 'background: #FFFBEB; color: #B45309;';
+                      $iconBg = 'background: linear-gradient(135deg, #E1F5EE 0%, #C4ECE0 100%); color: #085041; border: 1px solid #9FE1CB;';
+                    } elseif (strpos($lowerCat, 'infra') !== false || strpos($lowerCat, 'traffic') !== false || strpos($lowerCat, 'environment') !== false || strpos($lowerCat, 'transport') !== false) {
+                      $iconClass = 'bi-buildings';
+                      $iconBg = 'background: linear-gradient(135deg, #EAF3DE 0%, #D8EAC2 100%); color: #27500A; border: 1px solid #C8E2AE;';
+                    } elseif (strpos($lowerCat, 'social') !== false || strpos($lowerCat, 'welfare') !== false || strpos($lowerCat, 'community') !== false) {
+                      $iconClass = 'bi-people-fill';
+                      $iconBg = 'background: linear-gradient(135deg, #FAECE7 0%, #F6DDD3 100%); color: #712B13; border: 1px solid #F3C4B6;';
+                    } elseif (strpos($lowerCat, 'education') !== false || strpos($lowerCat, 'employment') !== false || strpos($lowerCat, 'school') !== false) {
+                      $iconClass = 'bi-mortarboard-fill';
+                      $iconBg = 'background: linear-gradient(135deg, #EEEDFE 0%, #DFDCFD 100%); color: #3C3489; border: 1px solid #CBC6FC;';
+                    } elseif (strpos($lowerCat, 'civil') !== false || strpos($lowerCat, 'registry') !== false || strpos($lowerCat, 'public') !== false || strpos($lowerCat, 'governance') !== false) {
+                      $iconClass = 'bi-file-earmark-person-fill';
+                      $iconBg = 'background: linear-gradient(135deg, #E6F1FB 0%, #D1E5F7 100%); color: #0C447C; border: 1px solid #B5D7F8;';
+                    } else {
+                      $iconClass = 'bi-tag-fill';
+                      $iconBg = 'background: linear-gradient(135deg, #F1EFE8 0%, #E5E0D5 100%); color: #444441; border: 1px solid #DCD7C9;';
                     }
-                    $pubDate = !empty($policy['publication_date']) ? date('M d, Y', strtotime($policy['publication_date'])) : '2026';
+
+                    $pubDate = !empty($policy['publication_date']) ? date('M d, Y', strtotime($policy['publication_date'])) : (!empty($policy['created_at']) ? date('M d, Y', strtotime($policy['created_at'])) : 'Recent');
+                    $policyJson = json_encode([
+                      "id" => (int) ($policy["id"] ?? 0),
+                      "title" => $policy["title"],
+                      "category" => $policy["category"] ?? "General Legislation",
+                      "author" => $policy["author"] ?? "City Council of Manila",
+                      "status" => $policy["status"] ?? "Published",
+                      "date" => $pubDate,
+                      "desc" => $policy["description"] ?? "Manila City Ordinance official provisions and guidelines.",
+                      "file" => $policy["file_path"] ?? ""
+                    ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
                     ?>
-                    <div
-                      class="featured-policy-card d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
-                      <div class="d-flex align-items-start gap-3">
-                        <div class="featured-icon-box" style="<?= $iconBgStyle ?>">
+                    <div class="featured-policy-card d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
+                      <div class="d-flex align-items-start gap-3 flex-grow-1 min-w-0" style="min-width: 0; max-width: 100%; overflow: hidden;">
+                        <div class="featured-icon-box flex-shrink-0" style="<?= $iconBg ?>">
                           <i class="bi <?= $iconClass ?>"></i>
                         </div>
-                        <div>
-                          <div class="d-flex align-items-center gap-2 mb-1">
-                            <span class="badge rounded-pill fw-semibold <?= $badgeClass ?>"
-                              style="font-size: 0.72rem; letter-spacing: 0.3px;"><?= htmlspecialchars($cat) ?></span>
-                            <span class="text-muted small d-none d-md-inline" style="font-size: 0.75rem;"><i
-                                class="bi bi-calendar3 me-1 text-secondary opacity-75"></i><?= $pubDate ?></span>
+                        <div class="flex-grow-1 min-w-0" style="min-width: 0; max-width: 100%; overflow: hidden;">
+                          <div class="d-flex flex-wrap align-items-center gap-2 mb-1.5">
+                            <?= renderUserPolicyCategoryBadge($policy['category'] ?? '') ?>
+                            <div class="report-date-cell flex-shrink-0">
+                              <i class="bi bi-calendar3"></i>
+                              <span class="report-date-text"><?= $pubDate ?></span>
+                            </div>
                           </div>
-                          <div class="fw-bold text-dark mb-1" style="font-size: 0.92rem; line-height: 1.35;">
-                            <?= htmlspecialchars($policy['title']) ?>
+                          <div class="mb-1" style="min-width: 0; max-width: 100%;">
+                            <a href="javascript:void(0)" class="policy-card-title d-block" onclick='openPolicyViewModal(<?= $policyJson ?>)'>
+                              <?= htmlspecialchars($policy['title']) ?>
+                            </a>
                           </div>
-                          <p class="text-secondary mb-0" style="font-size: 0.82rem; line-height: 1.45;">
+                          <p class="text-secondary mb-0" style="font-size: 0.82rem; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; overflow-wrap: break-word;">
                             <?= htmlspecialchars($policy['description'] ?? 'Manila City Ordinance official provisions and guidelines.') ?>
                           </p>
                         </div>
                       </div>
-                      <button type="button" class="btn btn-read-ordinance flex-shrink-0 align-self-sm-center"
-                        onclick='openPolicyViewModal(<?= json_encode([
-                          "id" => (int) ($policy["id"] ?? 0),
-                          "title" => $policy["title"],
-                          "category" => $policy["category"],
-                          "author" => $policy["author"] ?? "City Council of Manila",
-                          "status" => $policy["status"] ?? "Published",
-                          "date" => !empty($policy["publication_date"]) ? date("M d, Y", strtotime($policy["publication_date"])) : "N/A",
-                          "desc" => $policy["description"] ?? "Manila City Ordinance official provisions and guidelines.",
-                          "file" => $policy["file_path"] ?? ""
-                        ]) ?>)'>
-                        <i class="bi bi-file-earmark-text"></i> Read Details
+                      <button type="button" class="btn btn-read-ordinance flex-shrink-0 align-self-sm-center ms-auto"
+                        onclick='openPolicyViewModal(<?= $policyJson ?>)'>
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>Read Details</span>
+                        <i class="bi bi-arrow-right-short"></i>
                       </button>
                     </div>
                   <?php endforeach; ?>
@@ -1365,55 +1703,85 @@ if (!empty($conn)) {
 
             <!-- Recent Updates Card -->
             <div class="col-lg-5">
-              <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                  <div class="d-flex align-items-center gap-2">
+              <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 d-flex flex-column" style="border: 1px solid rgba(226, 232, 240, 0.8) !important; box-shadow: 0 4px 20px -2px rgba(11, 46, 89, 0.05) !important;">
+                <div class="d-flex align-items-center justify-content-between mb-3.5 pb-1">
+                  <div class="d-flex align-items-center gap-2.5">
                     <div
-                      class="rounded-3 p-1.5 bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center"
-                      style="width: 34px; height: 34px;">
-                      <i class="bi bi-clock-history fs-6 text-primary"></i>
+                      class="rounded-3 p-2 d-flex align-items-center justify-content-center shadow-2xs"
+                      style="width: 36px; height: 36px; background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%); color: #0284C7;">
+                      <i class="bi bi-clock-history fs-6"></i>
                     </div>
                     <div>
-                      <h3 class="h6 fw-bold text-dark mb-0">Recent Updates</h3>
-                      <span class="text-muted small" style="font-size: 0.78rem;">Real-time legislative activity
-                        feed</span>
+                      <h3 class="h6 fw-bold text-dark mb-0" style="font-size: 1.02rem;">Recent Updates</h3>
+                      <span class="text-muted small" style="font-size: 0.76rem;">Real-time legislative activity feed</span>
                     </div>
                   </div>
-                  <button class="btn btn-sm btn-link text-primary fw-semibold text-decoration-none p-0"
-                    onclick="showSection('policyLibrarySection')">View All <i class="bi bi-arrow-right"></i></button>
+                  <a href="#" class="btn-view-all-pill" onclick="showSection('policyLibrarySection'); return false;">
+                    <span>View All</span> <i class="bi bi-arrow-right"></i>
+                  </a>
                 </div>
-                <div class="d-flex flex-column gap-2.5">
+                <div class="d-flex flex-column gap-2.5 flex-grow-1">
                   <?php foreach ($recent_updates as $idx => $upd):
                     $rawDate = !empty($upd['publication_date']) ? $upd['publication_date'] : ($upd['created_at'] ?? date('Y-m-d'));
                     $formattedDate = date('M d, Y', strtotime($rawDate));
-                    $updCat = strtoupper($upd['category'] ?? 'GENERAL');
+                    $updCat = trim($upd['category'] ?? 'General Legislation');
+                    $lowerUpdCat = strtolower($updCat);
 
-                    $dotStyles = [
-                      ['bg' => '#EFF6FF', 'color' => '#2563EB', 'icon' => 'bi-file-earmark-plus-fill'],
-                      ['bg' => '#ECFDF5', 'color' => '#059669', 'icon' => 'bi-check-circle-fill'],
-                      ['bg' => '#FFFBEB', 'color' => '#D97706', 'icon' => 'bi-clock-fill'],
-                      ['bg' => '#F3E8FF', 'color' => '#9333EA', 'icon' => 'bi-journal-text'],
-                      ['bg' => '#FFF1F2', 'color' => '#E11D48', 'icon' => 'bi-shield-check']
-                    ];
-                    $st = $dotStyles[$idx % count($dotStyles)];
+                    if (strpos($lowerUpdCat, 'health') !== false || strpos($lowerUpdCat, 'sanitation') !== false) {
+                      $dotIcon = 'bi-heart-pulse-fill';
+                      $dotBg = 'background: linear-gradient(135deg, #E1F5EE 0%, #C4ECE0 100%); color: #085041; border: 1px solid #9FE1CB;';
+                    } elseif (strpos($lowerUpdCat, 'infra') !== false || strpos($lowerUpdCat, 'traffic') !== false || strpos($lowerUpdCat, 'environment') !== false) {
+                      $dotIcon = 'bi-buildings';
+                      $dotBg = 'background: linear-gradient(135deg, #EAF3DE 0%, #D8EAC2 100%); color: #27500A; border: 1px solid #C8E2AE;';
+                    } elseif (strpos($lowerUpdCat, 'social') !== false || strpos($lowerUpdCat, 'welfare') !== false) {
+                      $dotIcon = 'bi-people-fill';
+                      $dotBg = 'background: linear-gradient(135deg, #FAECE7 0%, #F6DDD3 100%); color: #712B13; border: 1px solid #F3C4B6;';
+                    } elseif (strpos($lowerUpdCat, 'education') !== false || strpos($lowerUpdCat, 'employment') !== false) {
+                      $dotIcon = 'bi-mortarboard-fill';
+                      $dotBg = 'background: linear-gradient(135deg, #EEEDFE 0%, #DFDCFD 100%); color: #3C3489; border: 1px solid #CBC6FC;';
+                    } elseif (strpos($lowerUpdCat, 'civil') !== false || strpos($lowerUpdCat, 'registry') !== false) {
+                      $dotIcon = 'bi-file-earmark-person-fill';
+                      $dotBg = 'background: linear-gradient(135deg, #E6F1FB 0%, #D1E5F7 100%); color: #0C447C; border: 1px solid #B5D7F8;';
+                    } else {
+                      $dotIcon = 'bi-file-earmark-check-fill';
+                      $dotBg = 'background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); color: #1E40AF; border: 1px solid #BFDBFE;';
+                    }
+
+                    $updJson = json_encode([
+                      "id" => (int) ($upd["id"] ?? 0),
+                      "title" => $upd["title"],
+                      "category" => $upd["category"] ?? "General Legislation",
+                      "author" => $upd["author"] ?? "City Council of Manila",
+                      "status" => $upd["status"] ?? "Published",
+                      "date" => $formattedDate,
+                      "desc" => $upd["description"] ?? "Manila City Ordinance official provisions and guidelines.",
+                      "file" => $upd["file_path"] ?? ""
+                    ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
                     ?>
-                    <div class="update-timeline-item d-flex align-items-start gap-3">
-                      <div class="update-icon-dot" style="background: <?= $st['bg'] ?>; color: <?= $st['color'] ?>;">
-                        <i class="bi <?= $st['icon'] ?>"></i>
+                    <div class="update-timeline-item d-flex align-items-start gap-3" onclick='openPolicyViewModal(<?= $updJson ?>)'>
+                      <div class="update-icon-dot flex-shrink-0" style="<?= $dotBg ?>">
+                        <i class="bi <?= $dotIcon ?>"></i>
                       </div>
-                      <div class="flex-grow-1">
-                        <div class="fw-semibold text-dark mb-0.5" style="font-size: 0.86rem; line-height: 1.35;">
-                          New policy uploaded: <span class="fw-bold"><?= htmlspecialchars($upd['title']) ?></span>
+                      <div class="flex-grow-1 min-w-0" style="min-width: 0; max-width: 100%; overflow: hidden;">
+                        <div class="d-flex flex-wrap align-items-center gap-1.5 mb-1">
+                          <span class="badge rounded-pill px-2 py-0.5 fw-semibold flex-shrink-0" style="background: rgba(11, 46, 89, 0.08); color: #0B2E59; font-size: 0.68rem; letter-spacing: 0.2px;">
+                            <i class="bi bi-file-earmark-plus-fill me-1 text-primary"></i>New Policy
+                          </span>
+                          <?= renderUserPolicyCategoryBadge($upd['category'] ?? '') ?>
+                        </div>
+                        <div class="fw-bold update-policy-title mb-1" style="font-size: 0.88rem; line-height: 1.35; color: #0F172A;">
+                          <?= htmlspecialchars($upd['title']) ?>
                         </div>
                         <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.76rem;">
-                          <span><i class="bi bi-calendar3 me-1 text-primary opacity-75"></i><?= $formattedDate ?></span>
-                          <?php if (!empty($upd['category'])): ?>
-                            <span>&bull;</span>
-                            <span class="badge bg-light text-secondary border px-2 py-0.5 rounded-pill"
-                              style="font-weight: 500; font-size: 0.68rem;"><?= htmlspecialchars($upd['category']) ?></span>
-                          <?php endif; ?>
+                          <div class="report-date-cell flex-shrink-0" style="padding: 2px 7px; font-size: 0.72rem;">
+                            <i class="bi bi-calendar3"></i>
+                            <span class="report-date-text"><?= $formattedDate ?></span>
+                          </div>
+                          <span class="text-muted opacity-50">&bull;</span>
+                          <span class="text-secondary opacity-75 text-truncate" style="font-size: 0.74rem;">City Council Record</span>
                         </div>
                       </div>
+                      <i class="bi bi-chevron-right text-muted opacity-50 align-self-center fs-6 flex-shrink-0 ms-auto"></i>
                     </div>
                   <?php endforeach; ?>
                 </div>
@@ -1620,38 +1988,125 @@ if (!empty($conn)) {
       </div>
     </div>
   </div>
+  <!-- 1. Official Policy Record Details Modal (Executive Manila Design) -->
   <div class="modal fade" id="policyDetailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border-0 shadow rounded-4">
-        <div class="modal-header border-0 pb-0 bg-primary bg-opacity-5 rounded-top-4">
-          <h5 class="modal-title fw-bold text-dark"><i class="bi bi-journal-text text-primary me-2"></i> Policy Record
-            Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body p-4">
-          <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-            <span class="badge bg-primary py-2 px-3 fw-bold fs-7" id="modalPolicyCategory">Category</span>
-            <span class="badge bg-secondary py-2 px-3 fw-bold fs-7" id="modalPolicyStatus">Status</span>
+    <div class="modal-dialog modal-dialog-centered policy-modal-dialog">
+      <div class="modal-content border-0 policy-modal-content">
+        
+        <!-- Executive Manila Navy Header with Gold Accent -->
+        <div class="modal-header border-0 policy-modal-header d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-3">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-3 shadow-2xs" style="width: 44px; height: 44px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #FCD34D;">
+              <i class="bi bi-bank2 fs-5"></i>
+            </div>
+            <div>
+              <div class="text-uppercase fw-bold" style="color: #FCD34D; font-size: 0.68rem; letter-spacing: 1.2px;">Republic of the Philippines &bull; City of Manila</div>
+              <h5 class="modal-title fw-bold text-white mb-0" style="font-size: 1.15rem; letter-spacing: -0.01em;">Policy Record Details</h5>
+              <div class="small" style="color: #BAE6FD; font-size: 0.74rem;">City Council Legislative Archive &bull; Official Record</div>
+            </div>
           </div>
-          <h4 class="fw-bold text-dark mb-1" id="modalPolicyTitle">Title</h4>
-          <div class="small text-muted mb-1"><i class="bi bi-person me-1"></i> Author: <span id="modalPolicyAuthor"
-              class="fw-semibold text-dark">-</span></div>
-          <div class="small text-muted mb-3"><i class="bi bi-calendar3 me-1"></i> Publication Date: <span
-              id="modalPolicyDate" class="fw-semibold text-dark">-</span></div>
-          <hr>
-          <h6 class="fw-bold text-dark mb-2">Executive Summary &amp; Purpose:</h6>
-          <p class="text-muted" id="modalPolicyDesc">Description</p>
-          <div id="modalPolicyFileWrapper" class="mt-3" style="display:none;">
-            <a id="modalPolicyFileLink" href="#" target="_blank" class="btn btn-sm btn-outline-primary rounded-3">
-              <i class="bi bi-file-earmark-pdf me-1"></i> View Document File
-            </a>
+          <button type="button" class="policy-modal-close-btn shadow-none" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x-lg" style="font-size: 0.85rem;"></i>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body p-4 p-md-4.5" style="background: #F8FAFC;">
+          
+          <!-- Hero Policy & Metadata Card -->
+          <div class="policy-hero-card">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-1">
+              <div class="d-flex align-items-center gap-2 flex-wrap" id="modalPolicyBadges">
+                <span id="modalPolicyCategoryWrapper">
+                  <span class="category-badge-pill" id="modalPolicyCategory" style="background: #E1F5EE; color: #085041; border: 1px solid #9FE1CB;">
+                    <i class="bi bi-tag-fill me-1"></i><span>Category</span>
+                  </span>
+                </span>
+                <span id="modalPolicyStatusWrapper">
+                  <span class="badge py-1.5 px-3 rounded-pill fw-semibold" id="modalPolicyStatus" style="background: #DCFCE7; color: #15803D; border: 1px solid #86EFAC; font-size: 0.78rem;">
+                    <i class="bi bi-check-circle-fill me-1"></i>Approved
+                  </span>
+                </span>
+              </div>
+              <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-1 rounded-pill" style="background: #EFF6FF; border: 1px solid #BFDBFE; font-size: 0.75rem; font-weight: 700; color: #1E40AF;">
+                <i class="bi bi-shield-check text-primary"></i> <span id="modalPolicyIdText">Record #107</span>
+              </div>
+            </div>
+
+            <!-- Policy Title -->
+            <h3 class="policy-hero-title" id="modalPolicyTitle">
+              Title
+            </h3>
+
+            <!-- Metadata Chips Strip -->
+            <div class="d-flex flex-column flex-sm-row align-items-stretch gap-2.5 pt-2.5 border-top" style="border-color: #F1F5F9 !important;">
+              <div class="policy-meta-pill">
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; background: #EFF6FF; color: #0B2E59; border: 1px solid #DBEAFE;">
+                  <i class="bi bi-person-fill-check fs-6"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Sponsoring Body / Author</div>
+                  <div class="fw-bold text-dark text-truncate" id="modalPolicyAuthor" style="font-size: 0.86rem;">-</div>
+                </div>
+              </div>
+
+              <div class="policy-meta-pill">
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;">
+                  <i class="bi bi-calendar-event-fill fs-6"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Publication Date</div>
+                  <div class="fw-bold text-dark text-truncate" id="modalPolicyDate" style="font-size: 0.86rem;">-</div>
+                </div>
+              </div>
+            </div>
           </div>
+
+          <!-- Executive Summary & Purpose Card -->
+          <div class="policy-summary-card">
+            <div class="d-flex align-items-center justify-content-between mb-2.5 pb-2 border-bottom" style="border-color: #F1F5F9 !important;">
+              <div class="d-flex align-items-center gap-2">
+                <div class="rounded-2 d-flex align-items-center justify-content-center" style="background: #EFF6FF; color: #0B2E59; width: 28px; height: 28px;">
+                  <i class="bi bi-card-text fs-6"></i>
+                </div>
+                <span class="fw-bold text-dark" style="font-size: 0.88rem; letter-spacing: -0.01em;">Executive Summary &amp; Purpose</span>
+              </div>
+              <span class="badge" style="background: #F1F5F9; color: #64748B; font-size: 0.70rem; font-weight: 600; padding: 4px 8px; border-radius: 6px;">Official Enactment</span>
+            </div>
+            <p class="mb-0 text-secondary" id="modalPolicyDesc" style="font-size: 0.90rem; line-height: 1.68; color: #334155 !important; font-weight: 450; white-space: pre-line;">
+              Description
+            </p>
+          </div>
+
+          <!-- Official Document File Attachment Card -->
+          <div id="modalPolicyFileWrapper" style="display:none;" class="mt-2.5">
+            <div class="policy-doc-card d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+              <div class="d-flex align-items-center gap-3 min-w-0">
+                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="width: 44px; height: 44px; background: #FFFFFF; color: #16A34A; border: 1px solid #BBF7D0;">
+                  <i class="bi bi-file-earmark-pdf-fill fs-4"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="fw-bold text-truncate" style="font-size: 0.90rem; color: #14532D !important;">Official Enacted Document File</div>
+                  <div class="small fw-medium" style="font-size: 0.76rem; color: #15803D;">Legislative Council PDF Record Available &bull; Verified Electronic Copy</div>
+                </div>
+              </div>
+              <a id="modalPolicyFileLink" href="#" target="_blank" class="btn btn-modal-preview flex-shrink-0">
+                <i class="bi bi-eye-fill"></i>
+                <span>Preview Document</span>
+              </a>
+            </div>
+          </div>
+
         </div>
-        <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Close</button>
-          <a id="modalDownloadBtn" href="#" download class="btn btn-success rounded-3" style="display:none;"><i
-              class="bi bi-download me-1"></i> Download Document</a>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer border-0 px-4 py-3 bg-white d-flex align-items-center justify-content-end" style="border-top: 1px solid #E2E8F0 !important;">
+          <a id="modalDownloadBtn" href="#" download class="btn-modal-download" style="display: none;">
+            <i class="bi bi-cloud-arrow-down-fill text-warning fs-6"></i>
+            <span>Download Official Document</span>
+          </a>
         </div>
+
       </div>
     </div>
   </div>

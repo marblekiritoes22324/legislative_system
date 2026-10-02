@@ -47,6 +47,60 @@ $num_departments = count($departments_map);
     border-top: none !important;
     vertical-align: middle !important;
   }
+
+  /* Policy & Datasets Search Box with Outline Focus State */
+  .policy-search-box {
+    background-color: #FFFFFF !important;
+    border: 1.5px solid #CBD5E1 !important;
+    border-radius: 9999px !important;
+    height: 40px !important;
+    padding: 0 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 9px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  .policy-search-box:hover {
+    border-color: #94A3B8 !important;
+  }
+
+  .policy-search-box:focus-within {
+    border-color: #3B82F6 !important;
+    background-color: #FFFFFF !important;
+    box-shadow: 0 0 0 3.5px rgba(59, 130, 246, 0.18) !important;
+  }
+
+  .policy-search-box:focus-within .policy-search-icon {
+    color: #2563EB !important;
+    transform: scale(1.06);
+  }
+
+  .policy-search-icon {
+    color: #94A3B8 !important;
+    font-size: 0.9rem !important;
+    flex-shrink: 0 !important;
+    transition: color 0.2s ease, transform 0.2s ease !important;
+  }
+
+  .policy-search-input {
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    font-size: 0.86rem !important;
+    color: #0F172A !important;
+    padding: 0 !important;
+    line-height: 1.4 !important;
+  }
+
+  .policy-search-input::placeholder {
+    color: #94A3B8 !important;
+    font-size: 0.85rem !important;
+    font-weight: 400 !important;
+  }
 </style>
 
 <section id="dataCollectionSection" class="content-section <?= ($active_section ?? 'staffDashboardSection') !== 'dataCollectionSection' ? 'd-none' : '' ?>">
@@ -151,11 +205,11 @@ $num_departments = count($departments_map);
           <option value="Other">Other</option>
         </select>
 
-        <div class="position-relative" style="width: 250px;">
-          <input type="search" id="researchDataSearch"
-            class="form-control form-control-sm pe-4 ps-3 py-2 rounded-3 border-light-subtle shadow-2xs"
-            placeholder="Search datasets..." onkeyup="filterResearchDataTable()" style="font-size: 0.84rem;">
-          <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-2.5 text-muted small"></i>
+        <!-- Search Bar with Outline Focus State -->
+        <div class="policy-search-box" style="width: 250px;">
+          <i class="bi bi-search policy-search-icon"></i>
+          <input type="search" id="researchDataSearch" class="policy-search-input"
+            placeholder="Search datasets..." oninput="filterResearchDataTable()" onkeyup="filterResearchDataTable()">
         </div>
       </div>
     </div>

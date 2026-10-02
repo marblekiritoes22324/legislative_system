@@ -139,7 +139,8 @@ ksort($grouped_local_policies);
 ?>
 <style>
   /* Rich & Vibrant Filter Button Palette */
-  .filter-cat-btn, .filter-city-btn {
+  .filter-cat-btn,
+  .filter-city-btn {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 0.76rem !important;
     font-weight: 600;
@@ -149,51 +150,58 @@ ksort($grouped_local_policies);
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
-  .filter-cat-btn:hover, .filter-city-btn:hover {
+
+  .filter-cat-btn:hover,
+  .filter-city-btn:hover {
     transform: translateY(-1.5px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
-  
+
   /* Category Button Colors */
   .cat-btn-all {
     background-color: #f1f5f9;
     color: #334155;
     border: 1.5px solid #cbd5e1 !important;
   }
+
   .cat-btn-all.active {
     background: linear-gradient(135deg, #0B2E59 0%, #1e40af 100%) !important;
     color: #ffffff !important;
     border-color: #0B2E59 !important;
     box-shadow: 0 2px 8px rgba(11, 46, 89, 0.35) !important;
   }
-  
+
   .cat-btn-infra {
     background-color: #ecfdf5;
     color: #047857;
     border: 1.5px solid #a7f3d0 !important;
   }
+
   .cat-btn-infra:hover {
     background-color: #d1fae5;
     color: #065f46;
   }
+
   .cat-btn-infra.active {
     background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
     color: #ffffff !important;
     border-color: #047857 !important;
     box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35) !important;
   }
-  
+
   .cat-btn-social {
     background-color: #fdf2f8;
     color: #be185d;
     border: 1.5px solid #fbcfe8 !important;
   }
+
   .cat-btn-social:hover {
     background-color: #fce7f3;
     color: #9d174d;
   }
+
   .cat-btn-social.active {
     background: linear-gradient(135deg, #db2777 0%, #be185d 100%) !important;
     color: #ffffff !important;
@@ -206,10 +214,12 @@ ksort($grouped_local_policies);
     color: #1d4ed8;
     border: 1.5px solid #bfdbfe !important;
   }
+
   .cat-btn-health:hover {
     background-color: #dbeafe;
     color: #1e40af;
   }
+
   .cat-btn-health.active {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
     color: #ffffff !important;
@@ -222,10 +232,12 @@ ksort($grouped_local_policies);
     color: #a16207;
     border: 1.5px solid #fef08a !important;
   }
+
   .cat-btn-default:hover {
     background-color: #fef9c3;
     color: #854d0e;
   }
+
   .cat-btn-default.active {
     background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%) !important;
     color: #ffffff !important;
@@ -239,6 +251,7 @@ ksort($grouped_local_policies);
     color: #334155;
     border: 1.5px solid #cbd5e1 !important;
   }
+
   .city-btn-all.active {
     background: linear-gradient(135deg, #0B2E59 0%, #1e40af 100%) !important;
     color: #ffffff !important;
@@ -251,10 +264,12 @@ ksort($grouped_local_policies);
     color: #1d4ed8;
     border: 1.5px solid #bfdbfe !important;
   }
+
   .city-btn-qc:hover {
     background-color: #dbeafe;
     color: #1e40af;
   }
+
   .city-btn-qc.active {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
     color: #ffffff !important;
@@ -267,10 +282,12 @@ ksort($grouped_local_policies);
     color: #15803d;
     border: 1.5px solid #bbf7d0 !important;
   }
+
   .city-btn-makati:hover {
     background-color: #dcfce7;
     color: #166534;
   }
+
   .city-btn-makati.active {
     background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
     color: #ffffff !important;
@@ -283,31 +300,38 @@ ksort($grouped_local_policies);
     color: #7e22ce;
     border: 1.5px solid #e9d5ff !important;
   }
+
   .city-btn-pasig:hover {
     background-color: #f3e8ff;
     color: #6b21a8;
   }
+
   .city-btn-pasig.active {
     background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%) !important;
     color: #ffffff !important;
     border-color: #7e22ce !important;
     box-shadow: 0 2px 8px rgba(147, 51, 234, 0.35) !important;
   }
+
   .hover-lift {
     transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
+
   .hover-lift:hover {
     transform: translateY(-3px) !important;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
   }
+
   .policy-select-control {
     border: 1.5px solid #cbd5e1 !important;
     transition: all 0.2s ease !important;
   }
+
   .policy-select-control:focus-within {
     border-color: #2563eb !important;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
   }
+
   .policy-select-control select optgroup {
     font-weight: 700;
     color: #0b2e59;
@@ -315,6 +339,7 @@ ksort($grouped_local_policies);
     padding: 6px 10px;
     font-size: 0.84rem;
   }
+
   .policy-select-control select option {
     font-weight: 500;
     color: #0f172a;
@@ -331,8 +356,9 @@ ksort($grouped_local_policies);
     <!-- Header -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
       <div class="d-flex align-items-center">
-        <span class="p-2.5 rounded-3 me-3" style="background:#e0f2fe; color:#0284c7;">
-          <i class="bi bi-layout-sidebar-inset-reverse fs-4"></i>
+        <span class="p-2.5 rounded-3 me-3 d-inline-flex align-items-center justify-content-center shadow-sm"
+          style="background-color: #0B2E59; color:#ffffff; width:44px; height:44px;">
+          <i class="bi bi-arrow-left-right fs-5 text-white"></i>
         </span>
         <div>
           <h2 class="h4 fw-bold text-dark mb-1">Benchmarking &amp; Comparative Analysis</h2>
@@ -345,18 +371,25 @@ ksort($grouped_local_policies);
       </div>
       <!-- Dual AI Engine Selector & Live Status -->
       <div class="d-flex align-items-center gap-2 flex-wrap">
-        <div class="input-group input-group-sm shadow-2xs rounded-3 overflow-hidden" style="border: 1px solid #cbd5e1; max-width: 270px;">
-          <label class="input-group-text bg-light text-dark fw-bold border-0" for="aiEngineSelector" style="font-size: 0.76rem;">
+        <div class="input-group input-group-sm shadow-2xs rounded-3 overflow-hidden"
+          style="border: 1px solid #cbd5e1; max-width: 270px;">
+          <label class="input-group-text bg-light text-dark fw-bold border-0" for="aiEngineSelector"
+            style="font-size: 0.76rem;">
             <i class="bi bi-cpu-fill text-primary me-1"></i> AI Engine:
           </label>
-          <select class="form-select form-select-sm border-0 bg-white fw-semibold text-dark shadow-none" id="aiEngineSelector" onchange="setAIEnginePreference(this.value)" style="font-size: 0.78rem; cursor: pointer;">
+          <select class="form-select form-select-sm border-0 bg-white fw-semibold text-dark shadow-none"
+            id="aiEngineSelector" onchange="setAIEnginePreference(this.value)"
+            style="font-size: 0.78rem; cursor: pointer;">
             <option value="auto">🔄 Auto (Ollama &rarr; Gemini)</option>
             <option value="ollama">🦙 Ollama Local (Llama 3.2)</option>
             <option value="gemini">✨ Google Gemini (Cloud)</option>
           </select>
         </div>
-        <span id="aiEngineStatusBadge" class="badge rounded-pill bg-light text-secondary border px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-2xs" style="font-size: 0.74rem;">
-          <span class="spinner-border spinner-border-sm text-primary" style="width: 0.6rem; height: 0.6rem;" role="status"></span>
+        <span id="aiEngineStatusBadge"
+          class="badge rounded-pill bg-light text-secondary border px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-2xs"
+          style="font-size: 0.74rem;">
+          <span class="spinner-border spinner-border-sm text-primary" style="width: 0.6rem; height: 0.6rem;"
+            role="status"></span>
           <span>Checking AI Engine...</span>
         </span>
       </div>
@@ -364,13 +397,14 @@ ksort($grouped_local_policies);
 
     <!-- Filter Row (Category & Peer City Scope without background box) -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-      
+
       <!-- Left: Category Filters -->
       <div class="d-flex align-items-center gap-1.5 flex-wrap" id="manilaCategoryFilterPills">
         <span class="small fw-bold text-dark d-flex align-items-center me-1" style="font-size:0.8rem;">
           <i class="bi bi-funnel-fill text-primary me-1"></i>Category:
         </span>
-        <button type="button" class="btn filter-cat-btn cat-btn-all active" data-cat="all" onclick="filterManilaPoliciesByCategory('all', this)">
+        <button type="button" class="btn filter-cat-btn cat-btn-all active" data-cat="all"
+          onclick="filterManilaPoliciesByCategory('all', this)">
           <i class="bi bi-grid-fill"></i> All
         </button>
         <?php foreach (array_keys($grouped_local_policies) as $catName): ?>
@@ -389,7 +423,8 @@ ksort($grouped_local_policies);
             $iconClass = 'bi-heart-pulse-fill';
           }
           ?>
-          <button type="button" class="btn filter-cat-btn <?= $btnClass ?>" data-cat="<?= htmlspecialchars($catName) ?>" onclick="filterManilaPoliciesByCategory(<?= json_encode($catName) ?>, this)" style="white-space:nowrap;">
+          <button type="button" class="btn filter-cat-btn <?= $btnClass ?>" data-cat="<?= htmlspecialchars($catName) ?>"
+            onclick="filterManilaPoliciesByCategory(<?= json_encode($catName) ?>, this)" style="white-space:nowrap;">
             <i class="bi <?= $iconClass ?>"></i> <?= htmlspecialchars($catName) ?>
           </button>
         <?php endforeach; ?>
@@ -400,200 +435,206 @@ ksort($grouped_local_policies);
         <span class="small fw-bold text-dark d-flex align-items-center me-1" style="font-size:0.8rem;">
           <i class="bi bi-geo-alt-fill text-success me-1"></i>Peer City:
         </span>
-        <button type="button" class="btn filter-city-btn city-btn-all active" data-city="all" onclick="filterCrossCityBenchmark('all', this)">
+        <button type="button" class="btn filter-city-btn city-btn-all active" data-city="all"
+          onclick="filterCrossCityBenchmark('all', this)">
           <i class="bi bi-buildings-fill"></i> All Cities
         </button>
-        <button type="button" class="btn filter-city-btn city-btn-qc" data-city="Quezon City" onclick="filterCrossCityBenchmark('Quezon City', this)">
+        <button type="button" class="btn filter-city-btn city-btn-qc" data-city="Quezon City"
+          onclick="filterCrossCityBenchmark('Quezon City', this)">
           <i class="bi bi-geo-alt-fill"></i> Quezon City
         </button>
-        <button type="button" class="btn filter-city-btn city-btn-makati" data-city="City of Makati" onclick="filterCrossCityBenchmark('City of Makati', this)">
+        <button type="button" class="btn filter-city-btn city-btn-makati" data-city="City of Makati"
+          onclick="filterCrossCityBenchmark('City of Makati', this)">
           <i class="bi bi-geo-alt-fill"></i> Makati
         </button>
-        <button type="button" class="btn filter-city-btn city-btn-pasig" data-city="Pasig City" onclick="filterCrossCityBenchmark('Pasig City', this)">
+        <button type="button" class="btn filter-city-btn city-btn-pasig" data-city="Pasig City"
+          onclick="filterCrossCityBenchmark('Pasig City', this)">
           <i class="bi bi-geo-alt-fill"></i> Pasig
         </button>
       </div>
 
       <!-- Mode 2: Cross-City Ordinance Benchmarking (CLEAN & BALANCED) -->
-    <div class="row g-3 align-items-end mb-4" id="crossCityCompareForm">
+      <div class="row g-3 align-items-end mb-4" id="crossCityCompareForm">
 
-      <!-- Manila Policy / Ordinance (Proposed / Local) -->
-      <div class="col-12 col-lg-5">
-        <label for="crossCityPolicyA" class="form-label fw-semibold small mb-1.5 text-dark d-block">
-          <i class="bi bi-building text-primary me-1.5"></i>Manila Proposed Policy Baseline
-        </label>
-        <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
-          <span class="input-group-text bg-light border-0 px-3" style="color: #2563eb; font-size:1.05rem;">
-            <i class="bi bi-file-earmark-text"></i>
-          </span>
-          <select id="crossCityPolicyA" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;"
-            onchange="autoSuggestCrossCityBenchmark()">
-            <?php if (empty($local_policies)): ?>
-              <option value="" disabled selected>— No Manila Approved Policies Available —</option>
-            <?php else: ?>
-              <option value="">— Select Manila Policy to Benchmark —</option>
-              <?php foreach ($grouped_local_policies as $catName => $pList): ?>
-                <optgroup label="📂 <?= htmlspecialchars($catName) ?>" data-category="<?= htmlspecialchars($catName) ?>">
-                  <?php foreach ($pList as $p): ?>
-                    <option value="<?= (int) $p['id'] ?>" data-category="<?= htmlspecialchars($p['category'] ?? $catName) ?>"
-                      data-title="<?= htmlspecialchars($p['title']) ?>" <?= ($p === reset($local_policies)) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($p['title']) ?>
-                    </option>
-                  <?php endforeach; ?>
-                </optgroup>
-              <?php endforeach; ?>
-            <?php endif; ?>
-          </select>
-        </div>
-      </div>
-
-      <!-- External City Benchmark Ordinance -->
-      <div class="col-12 col-lg-5">
-        <label for="crossCityPolicyB" class="form-label fw-semibold small mb-1.5 text-dark d-block">
-          <i class="bi bi-geo-alt-fill text-success me-1.5"></i>Peer City Enacted Benchmark
-        </label>
-        <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
-          <span class="input-group-text bg-light border-0 px-3" style="color: #16a34a; font-size:1.05rem;">
-            <i class="bi bi-patch-check-fill"></i>
-          </span>
-          <select id="crossCityPolicyB" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;">
-            <?php if (empty($external_benchmarks)): ?>
-              <option value="" disabled selected>— No External City Benchmarks Available —</option>
-            <?php else: ?>
-              <option value="">— Select Enacted City Benchmark —</option>
-              <?php
-              $grouped_benchmarks = [];
-              foreach ($external_benchmarks as $eb) {
-                $grouped_benchmarks[$eb['city_name']][] = $eb;
-              }
-              foreach ($grouped_benchmarks as $cityName => $bList):
-                ?>
-                <optgroup label="🏙️ <?= htmlspecialchars($cityName) ?> (Enacted Legislation)"
-                  data-city="<?= htmlspecialchars($cityName) ?>">
-                  <?php foreach ($bList as $eb): ?>
-                    <option value="ext_<?= (int) $eb['id'] ?>" data-city="<?= htmlspecialchars($eb['city_name']) ?>"
-                      data-category="<?= htmlspecialchars($eb['policy_area'] ?? '') ?>" <?= ($eb === reset($external_benchmarks)) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($eb['ordinance_number'] . ': ' . $eb['ordinance_title']) ?>
-                    </option>
-                  <?php endforeach; ?>
-                </optgroup>
-              <?php endforeach; ?>
-            <?php endif; ?>
-          </select>
-        </div>
-      </div>
-
-      <!-- Prominent Benchmark Button -->
-      <div class="col-12 col-lg-2 d-grid">
-        <button type="button" id="crossCityCompareBtn"
-          class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1.5 rounded-3 py-2 hover-lift"
-          onclick="runCrossCityComparison()"
-          style="background: linear-gradient(135deg, #0B2E59 0%, #1e40af 100%); border:none; height: 38px; font-size:0.9rem; transition:all 0.2s;">
-          <i class="bi bi-stars"></i> Benchmark
-        </button>
-      </div>
-
-    </div>
-    <!-- Mode 2: Manila vs Manila (Local Policy Comparison) -->
-    <div class="row g-3 align-items-end mb-4 d-none" id="staffPolicyCompareForm">
-
-      <!-- Policy A -->
-      <div class="col-lg-5 col-md-5">
-        <label for="comparePolicyA" class="form-label fw-semibold small mb-2">
-          <span class="badge rounded-pill px-2.5 py-1 me-1" style="background:#1d4ed8; font-size:0.75rem;">
-            <i class="bi bi-building me-1"></i>Policy / Ordinance A
-          </span>
-          <span class="text-muted fw-normal">— e.g., Local Manila Ordinance</span>
-        </label>
-        <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
-          <span class="input-group-text bg-light border-0 px-3" style="color: #2563eb; font-size:1.05rem;">
-            <i class="bi bi-file-earmark-text"></i>
-          </span>
-          <select id="comparePolicyA" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;">
-            <?php if (empty($completed_policies)): ?>
-              <option value="" disabled selected>— No Approved Evaluations Available —</option>
-            <?php else: ?>
-              <option value="">— Select Approved Policy / Ordinance A —</option>
-              <?php if (!empty($local_policies)): ?>
-                <optgroup label="🏛️ City of Manila (Local Ordinances)">
-                  <?php foreach ($local_policies as $p): ?>
-                    <option value="<?= (int) $p['id'] ?>" <?= ($p === reset($local_policies)) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($p['title']) ?>
-                    </option>
-                  <?php endforeach; ?>
-                </optgroup>
+        <!-- Manila Policy / Ordinance (Proposed / Local) -->
+        <div class="col-12 col-lg-5">
+          <label for="crossCityPolicyA" class="form-label fw-semibold small mb-1.5 text-dark d-block">
+            <i class="bi bi-building text-primary me-1.5"></i>Manila Proposed Policy Baseline
+          </label>
+          <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
+            <span class="input-group-text bg-light border-0 px-3" style="color: #2563eb; font-size:1.05rem;">
+              <i class="bi bi-file-earmark-text"></i>
+            </span>
+            <select id="crossCityPolicyA" class="form-select border-0 bg-white py-2"
+              style="font-size:0.88rem; font-weight:500; color:#0f172a;" onchange="autoSuggestCrossCityBenchmark()">
+              <?php if (empty($local_policies)): ?>
+                <option value="" disabled selected>— No Manila Approved Policies Available —</option>
+              <?php else: ?>
+                <?php foreach ($grouped_local_policies as $catName => $pList): ?>
+                  <optgroup label="📂 <?= htmlspecialchars($catName) ?>" data-category="<?= htmlspecialchars($catName) ?>">
+                    <?php foreach ($pList as $p): ?>
+                      <option value="<?= (int) $p['id'] ?>"
+                        data-category="<?= htmlspecialchars($p['category'] ?? $catName) ?>"
+                        data-title="<?= htmlspecialchars($p['title']) ?>" <?= ($p === reset($local_policies)) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($p['title']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </optgroup>
+                <?php endforeach; ?>
               <?php endif; ?>
-              <?php if (!empty($external_policies)): ?>
-                <optgroup label="🏙️ External LGU Benchmarks (Quezon City, Pasig, etc.)">
-                  <?php foreach ($external_policies as $p): ?>
-                    <option value="<?= (int) $p['id'] ?>">
-                      [<?= htmlspecialchars($p['city_origin'] ?? 'Benchmark') ?>] <?= htmlspecialchars($p['title']) ?>
-                    </option>
-                  <?php endforeach; ?>
-                </optgroup>
-              <?php endif; ?>
-            <?php endif; ?>
-          </select>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <!-- VS Badge -->
-      <div class="col-lg-1 col-md-1 d-flex justify-content-center align-items-center pb-1">
-        <span class="badge rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
-          style="width:36px; height:36px; background:#0B2E59 !important; font-size:0.72rem;">
-          VS
-        </span>
-      </div>
-
-      <!-- Policy B -->
-      <div class="col-lg-5 col-md-5">
-        <label for="comparePolicyB" class="form-label fw-semibold small mb-2">
-          <span class="badge rounded-pill px-2.5 py-1 me-1" style="background:#15803d; font-size:0.75rem;">
-            <i class="bi bi-pin-map-fill me-1"></i>Policy / Benchmark B
-          </span>
-          <span class="text-muted fw-normal">— e.g., Local Manila Ordinance</span>
-        </label>
-        <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
-          <span class="input-group-text bg-light border-0 px-3" style="color: #16a34a; font-size:1.05rem;">
-            <i class="bi bi-file-earmark-text"></i>
-          </span>
-          <select id="comparePolicyB" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;">
-            <?php if (empty($completed_policies)): ?>
-              <option value="" disabled selected>— No Approved Evaluations Available —</option>
-            <?php else: ?>
-              <option value="">— Select Policy B or Local Ordinance —</option>
-              <?php if (!empty($local_policies)): ?>
-                <optgroup label="🏛️ City of Manila (Local Ordinances)">
-                  <?php foreach ($local_policies as $p): ?>
-                    <option value="<?= (int) $p['id'] ?>" <?= (count($local_policies) > 1 && $p === $local_policies[1]) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($p['title']) ?>
-                    </option>
-                  <?php endforeach; ?>
-                </optgroup>
+        <!-- External City Benchmark Ordinance -->
+        <div class="col-12 col-lg-5">
+          <label for="crossCityPolicyB" class="form-label fw-semibold small mb-1.5 text-dark d-block">
+            <i class="bi bi-geo-alt-fill text-success me-1.5"></i>Peer City Enacted Benchmark
+          </label>
+          <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
+            <span class="input-group-text bg-light border-0 px-3" style="color: #16a34a; font-size:1.05rem;">
+              <i class="bi bi-patch-check-fill"></i>
+            </span>
+            <select id="crossCityPolicyB" class="form-select border-0 bg-white py-2"
+              style="font-size:0.88rem; font-weight:500; color:#0f172a;">
+              <?php if (empty($external_benchmarks)): ?>
+                <option value="" disabled selected>— No External City Benchmarks Available —</option>
+              <?php else: ?>
+                <?php
+                $grouped_benchmarks = [];
+                foreach ($external_benchmarks as $eb) {
+                  $grouped_benchmarks[$eb['city_name']][] = $eb;
+                }
+                foreach ($grouped_benchmarks as $cityName => $bList):
+                  ?>
+                  <optgroup label="🏙️ <?= htmlspecialchars($cityName) ?> (Enacted Legislation)"
+                    data-city="<?= htmlspecialchars($cityName) ?>">
+                    <?php foreach ($bList as $eb): ?>
+                      <option value="ext_<?= (int) $eb['id'] ?>" data-city="<?= htmlspecialchars($eb['city_name']) ?>"
+                        data-category="<?= htmlspecialchars($eb['policy_area'] ?? '') ?>"
+                        <?= ($eb === reset($external_benchmarks)) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($eb['ordinance_number'] . ': ' . $eb['ordinance_title']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </optgroup>
+                <?php endforeach; ?>
               <?php endif; ?>
-              <?php if (!empty($external_policies)): ?>
-                <optgroup label="🏙️ External LGU Benchmarks (Quezon City, Pasig, etc.)">
-                  <?php foreach ($external_policies as $p): ?>
-                    <option value="<?= (int) $p['id'] ?>">
-                      [<?= htmlspecialchars($p['city_origin'] ?? 'Benchmark') ?>] <?= htmlspecialchars($p['title']) ?>
-                    </option>
-                  <?php endforeach; ?>
-                </optgroup>
-              <?php endif; ?>
-            <?php endif; ?>
-          </select>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <!-- Compare Button -->
-      <div class="col-lg-1 col-md-1 d-grid">
-        <button type="button" id="staffCompareBtn"
-          class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1 rounded-3 py-2 hover-lift"
-          onclick="runPolicyComparison()"
-          style="background:#0B2E59; border:none; font-size:0.88rem; transition:all 0.2s;">
-          <i class="bi bi-scales fs-6 me-1"></i>Compare
-        </button>
-      </div> class="bi bi-scales fs-6 me-1"></i>Compare
+        <!-- Prominent Benchmark Button -->
+        <div class="col-12 col-lg-2 d-grid">
+          <button type="button" id="crossCityCompareBtn"
+            class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 rounded-3 py-2 hover-lift"
+            onclick="runCrossCityComparison()"
+            style="background-color: #0B2E59; border:none; height: 38px; font-size:0.88rem; transition:all 0.2s;">
+            <i class="bi bi-arrow-left-right"></i> Benchmark
+          </button>
+        </div>
+
+      </div>
+      <!-- Mode 2: Manila vs Manila (Local Policy Comparison) -->
+      <div class="row g-3 align-items-end mb-4 d-none" id="staffPolicyCompareForm">
+
+        <!-- Policy A -->
+        <div class="col-lg-5 col-md-5">
+          <label for="comparePolicyA" class="form-label fw-semibold small mb-2">
+            <span class="badge rounded-pill px-2.5 py-1 me-1" style="background:#1d4ed8; font-size:0.75rem;">
+              <i class="bi bi-building me-1"></i>Policy / Ordinance A
+            </span>
+            <span class="text-muted fw-normal">— e.g., Local Manila Ordinance</span>
+          </label>
+          <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
+            <span class="input-group-text bg-light border-0 px-3" style="color: #2563eb; font-size:1.05rem;">
+              <i class="bi bi-file-earmark-text"></i>
+            </span>
+            <select id="comparePolicyA" class="form-select border-0 bg-white py-2"
+              style="font-size:0.88rem; font-weight:500; color:#0f172a;">
+              <?php if (empty($completed_policies)): ?>
+                <option value="" disabled selected>— No Approved Evaluations Available —</option>
+              <?php else: ?>
+                <?php if (!empty($local_policies)): ?>
+                  <optgroup label="🏛️ City of Manila (Local Ordinances)">
+                    <?php foreach ($local_policies as $p): ?>
+                      <option value="<?= (int) $p['id'] ?>" <?= ($p === reset($local_policies)) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($p['title']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </optgroup>
+                <?php endif; ?>
+                <?php if (!empty($external_policies)): ?>
+                  <optgroup label="🏙️ External LGU Benchmarks (Quezon City, Pasig, etc.)">
+                    <?php foreach ($external_policies as $p): ?>
+                      <option value="<?= (int) $p['id'] ?>">
+                        [<?= htmlspecialchars($p['city_origin'] ?? 'Benchmark') ?>] <?= htmlspecialchars($p['title']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </optgroup>
+                <?php endif; ?>
+              <?php endif; ?>
+            </select>
+          </div>
+        </div>
+
+        <!-- VS Badge -->
+        <div class="col-lg-1 col-md-1 d-flex justify-content-center align-items-center pb-1">
+          <span
+            class="badge rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm"
+            style="width:36px; height:36px; background:#0B2E59 !important; font-size:0.72rem;">
+            VS
+          </span>
+        </div>
+
+        <!-- Policy B -->
+        <div class="col-lg-5 col-md-5">
+          <label for="comparePolicyB" class="form-label fw-semibold small mb-2">
+            <span class="badge rounded-pill px-2.5 py-1 me-1" style="background:#15803d; font-size:0.75rem;">
+              <i class="bi bi-pin-map-fill me-1"></i>Policy / Benchmark B
+            </span>
+            <span class="text-muted fw-normal">— e.g., Local Manila Ordinance</span>
+          </label>
+          <div class="input-group shadow-2xs rounded-3 overflow-hidden policy-select-control">
+            <span class="input-group-text bg-light border-0 px-3" style="color: #16a34a; font-size:1.05rem;">
+              <i class="bi bi-file-earmark-text"></i>
+            </span>
+            <select id="comparePolicyB" class="form-select border-0 bg-white py-2"
+              style="font-size:0.88rem; font-weight:500; color:#0f172a;">
+              <?php if (empty($completed_policies)): ?>
+                <option value="" disabled selected>— No Approved Evaluations Available —</option>
+              <?php else: ?>
+                <?php if (!empty($local_policies)): ?>
+                  <optgroup label="🏛️ City of Manila (Local Ordinances)">
+                    <?php foreach ($local_policies as $p): ?>
+                      <option value="<?= (int) $p['id'] ?>" <?= (count($local_policies) > 1 && $p === $local_policies[1]) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($p['title']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </optgroup>
+                <?php endif; ?>
+                <?php if (!empty($external_policies)): ?>
+                  <optgroup label="🏙️ External LGU Benchmarks (Quezon City, Pasig, etc.)">
+                    <?php foreach ($external_policies as $p): ?>
+                      <option value="<?= (int) $p['id'] ?>">
+                        [<?= htmlspecialchars($p['city_origin'] ?? 'Benchmark') ?>] <?= htmlspecialchars($p['title']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </optgroup>
+                <?php endif; ?>
+              <?php endif; ?>
+            </select>
+          </div>
+        </div>
+
+        <!-- Compare Button -->
+        <div class="col-lg-1 col-md-1 d-grid">
+          <button type="button" id="staffCompareBtn"
+            class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1 rounded-3 py-2 hover-lift"
+            onclick="runPolicyComparison()"
+            style="background:#0B2E59; border:none; font-size:0.88rem; transition:all 0.2s;">
+            <i class="bi bi-scales fs-6 me-1"></i>Compare
+          </button>
+        </div> class="bi bi-scales fs-6 me-1"></i>Compare
         </button>
       </div>
 

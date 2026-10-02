@@ -140,7 +140,8 @@ ksort($grouped_local_policies);
 ?>
 <style>
   /* Rich & Vibrant Filter Button Palette */
-  .filter-cat-btn, .filter-city-btn {
+  .filter-cat-btn,
+  .filter-city-btn {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 0.76rem !important;
     font-weight: 600;
@@ -150,51 +151,58 @@ ksort($grouped_local_policies);
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
-  .filter-cat-btn:hover, .filter-city-btn:hover {
+
+  .filter-cat-btn:hover,
+  .filter-city-btn:hover {
     transform: translateY(-1.5px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
-  
+
   /* Category Button Colors */
   .cat-btn-all {
     background-color: #f1f5f9;
     color: #334155;
     border: 1.5px solid #cbd5e1 !important;
   }
+
   .cat-btn-all.active {
     background: linear-gradient(135deg, #0B2E59 0%, #1e40af 100%) !important;
     color: #ffffff !important;
     border-color: #0B2E59 !important;
     box-shadow: 0 2px 8px rgba(11, 46, 89, 0.35) !important;
   }
-  
+
   .cat-btn-infra {
     background-color: #ecfdf5;
     color: #047857;
     border: 1.5px solid #a7f3d0 !important;
   }
+
   .cat-btn-infra:hover {
     background-color: #d1fae5;
     color: #065f46;
   }
+
   .cat-btn-infra.active {
     background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
     color: #ffffff !important;
     border-color: #047857 !important;
     box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35) !important;
   }
-  
+
   .cat-btn-social {
     background-color: #fdf2f8;
     color: #be185d;
     border: 1.5px solid #fbcfe8 !important;
   }
+
   .cat-btn-social:hover {
     background-color: #fce7f3;
     color: #9d174d;
   }
+
   .cat-btn-social.active {
     background: linear-gradient(135deg, #db2777 0%, #be185d 100%) !important;
     color: #ffffff !important;
@@ -207,10 +215,12 @@ ksort($grouped_local_policies);
     color: #1d4ed8;
     border: 1.5px solid #bfdbfe !important;
   }
+
   .cat-btn-health:hover {
     background-color: #dbeafe;
     color: #1e40af;
   }
+
   .cat-btn-health.active {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
     color: #ffffff !important;
@@ -223,10 +233,12 @@ ksort($grouped_local_policies);
     color: #a16207;
     border: 1.5px solid #fef08a !important;
   }
+
   .cat-btn-default:hover {
     background-color: #fef9c3;
     color: #854d0e;
   }
+
   .cat-btn-default.active {
     background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%) !important;
     color: #ffffff !important;
@@ -240,6 +252,7 @@ ksort($grouped_local_policies);
     color: #334155;
     border: 1.5px solid #cbd5e1 !important;
   }
+
   .city-btn-all.active {
     background: linear-gradient(135deg, #0B2E59 0%, #1e40af 100%) !important;
     color: #ffffff !important;
@@ -252,10 +265,12 @@ ksort($grouped_local_policies);
     color: #1d4ed8;
     border: 1.5px solid #bfdbfe !important;
   }
+
   .city-btn-qc:hover {
     background-color: #dbeafe;
     color: #1e40af;
   }
+
   .city-btn-qc.active {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
     color: #ffffff !important;
@@ -268,10 +283,12 @@ ksort($grouped_local_policies);
     color: #15803d;
     border: 1.5px solid #bbf7d0 !important;
   }
+
   .city-btn-makati:hover {
     background-color: #dcfce7;
     color: #166534;
   }
+
   .city-btn-makati.active {
     background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
     color: #ffffff !important;
@@ -284,31 +301,38 @@ ksort($grouped_local_policies);
     color: #7e22ce;
     border: 1.5px solid #e9d5ff !important;
   }
+
   .city-btn-pasig:hover {
     background-color: #f3e8ff;
     color: #6b21a8;
   }
+
   .city-btn-pasig.active {
     background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%) !important;
     color: #ffffff !important;
     border-color: #7e22ce !important;
     box-shadow: 0 2px 8px rgba(147, 51, 234, 0.35) !important;
   }
+
   .hover-lift {
     transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
+
   .hover-lift:hover {
     transform: translateY(-3px) !important;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
   }
+
   .policy-select-control {
     border: 1.5px solid #cbd5e1 !important;
     transition: all 0.2s ease !important;
   }
+
   .policy-select-control:focus-within {
     border-color: #2563eb !important;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
   }
+
   .policy-select-control select optgroup {
     font-weight: 700;
     color: #0b2e59;
@@ -316,6 +340,7 @@ ksort($grouped_local_policies);
     padding: 6px 10px;
     font-size: 0.84rem;
   }
+
   .policy-select-control select option {
     font-weight: 500;
     color: #0f172a;
@@ -332,8 +357,9 @@ ksort($grouped_local_policies);
     <!-- Header -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
       <div class="d-flex align-items-center">
-        <span class="p-2.5 rounded-3 me-3" style="background:#e0f2fe; color:#0284c7;">
-          <i class="bi bi-layout-sidebar-inset-reverse fs-4"></i>
+        <span class="p-2.5 rounded-3 me-3 d-inline-flex align-items-center justify-content-center shadow-sm"
+          style="background-color: #0B2E59; color:#ffffff; width:44px; height:44px;">
+          <i class="bi bi-arrow-left-right fs-5 text-white"></i>
         </span>
         <div>
           <h2 class="h4 fw-bold text-dark mb-1">Benchmarking &amp; Comparative Analysis</h2>
@@ -346,18 +372,25 @@ ksort($grouped_local_policies);
       </div>
       <!-- Dual AI Engine Selector & Live Status -->
       <div class="d-flex align-items-center gap-2 flex-wrap">
-        <div class="input-group input-group-sm shadow-2xs rounded-3 overflow-hidden" style="border: 1px solid #cbd5e1; max-width: 270px;">
-          <label class="input-group-text bg-light text-dark fw-bold border-0" for="aiEngineSelector" style="font-size: 0.76rem;">
+        <div class="input-group input-group-sm shadow-2xs rounded-3 overflow-hidden"
+          style="border: 1px solid #cbd5e1; max-width: 270px;">
+          <label class="input-group-text bg-light text-dark fw-bold border-0" for="aiEngineSelector"
+            style="font-size: 0.76rem;">
             <i class="bi bi-cpu-fill text-primary me-1"></i> AI Engine:
           </label>
-          <select class="form-select form-select-sm border-0 bg-white fw-semibold text-dark shadow-none" id="aiEngineSelector" onchange="setAIEnginePreference(this.value)" style="font-size: 0.78rem; cursor: pointer;">
+          <select class="form-select form-select-sm border-0 bg-white fw-semibold text-dark shadow-none"
+            id="aiEngineSelector" onchange="setAIEnginePreference(this.value)"
+            style="font-size: 0.78rem; cursor: pointer;">
             <option value="auto">🔄 Auto (Ollama &rarr; Gemini)</option>
             <option value="ollama">🦙 Ollama Local (Llama 3.2)</option>
             <option value="gemini">✨ Google Gemini (Cloud)</option>
           </select>
         </div>
-        <span id="aiEngineStatusBadge" class="badge rounded-pill bg-light text-secondary border px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-2xs" style="font-size: 0.74rem;">
-          <span class="spinner-border spinner-border-sm text-primary" style="width: 0.6rem; height: 0.6rem;" role="status"></span>
+        <span id="aiEngineStatusBadge"
+          class="badge rounded-pill bg-light text-secondary border px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-2xs"
+          style="font-size: 0.74rem;">
+          <span class="spinner-border spinner-border-sm text-primary" style="width: 0.6rem; height: 0.6rem;"
+            role="status"></span>
           <span>Checking AI Engine...</span>
         </span>
       </div>
@@ -365,13 +398,14 @@ ksort($grouped_local_policies);
 
     <!-- Filter Row (Category & Peer City Scope without background box) -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-      
+
       <!-- Left: Category Filters -->
       <div class="d-flex align-items-center gap-1.5 flex-wrap" id="manilaCategoryFilterPills">
         <span class="small fw-bold text-dark d-flex align-items-center me-1" style="font-size:0.8rem;">
           <i class="bi bi-funnel-fill text-primary me-1"></i>Category:
         </span>
-        <button type="button" class="btn filter-cat-btn cat-btn-all active" data-cat="all" onclick="filterManilaPoliciesByCategory('all', this)">
+        <button type="button" class="btn filter-cat-btn cat-btn-all active" data-cat="all"
+          onclick="filterManilaPoliciesByCategory('all', this)">
           <i class="bi bi-grid-fill"></i> All
         </button>
         <?php foreach (array_keys($grouped_local_policies) as $catName): ?>
@@ -390,7 +424,8 @@ ksort($grouped_local_policies);
             $iconClass = 'bi-heart-pulse-fill';
           }
           ?>
-          <button type="button" class="btn filter-cat-btn <?= $btnClass ?>" data-cat="<?= htmlspecialchars($catName) ?>" onclick="filterManilaPoliciesByCategory(<?= json_encode($catName) ?>, this)" style="white-space:nowrap;">
+          <button type="button" class="btn filter-cat-btn <?= $btnClass ?>" data-cat="<?= htmlspecialchars($catName) ?>"
+            onclick="filterManilaPoliciesByCategory(<?= json_encode($catName) ?>, this)" style="white-space:nowrap;">
             <i class="bi <?= $iconClass ?>"></i> <?= htmlspecialchars($catName) ?>
           </button>
         <?php endforeach; ?>
@@ -401,16 +436,20 @@ ksort($grouped_local_policies);
         <span class="small fw-bold text-dark d-flex align-items-center me-1" style="font-size:0.8rem;">
           <i class="bi bi-geo-alt-fill text-success me-1"></i>Peer City:
         </span>
-        <button type="button" class="btn filter-city-btn city-btn-all active" data-city="all" onclick="filterCrossCityBenchmark('all', this)">
+        <button type="button" class="btn filter-city-btn city-btn-all active" data-city="all"
+          onclick="filterCrossCityBenchmark('all', this)">
           <i class="bi bi-buildings-fill"></i> All Cities
         </button>
-        <button type="button" class="btn filter-city-btn city-btn-qc" data-city="Quezon City" onclick="filterCrossCityBenchmark('Quezon City', this)">
+        <button type="button" class="btn filter-city-btn city-btn-qc" data-city="Quezon City"
+          onclick="filterCrossCityBenchmark('Quezon City', this)">
           <i class="bi bi-geo-alt-fill"></i> Quezon City
         </button>
-        <button type="button" class="btn filter-city-btn city-btn-makati" data-city="City of Makati" onclick="filterCrossCityBenchmark('City of Makati', this)">
+        <button type="button" class="btn filter-city-btn city-btn-makati" data-city="City of Makati"
+          onclick="filterCrossCityBenchmark('City of Makati', this)">
           <i class="bi bi-geo-alt-fill"></i> Makati
         </button>
-        <button type="button" class="btn filter-city-btn city-btn-pasig" data-city="Pasig City" onclick="filterCrossCityBenchmark('Pasig City', this)">
+        <button type="button" class="btn filter-city-btn city-btn-pasig" data-city="Pasig City"
+          onclick="filterCrossCityBenchmark('Pasig City', this)">
           <i class="bi bi-geo-alt-fill"></i> Pasig
         </button>
       </div>
@@ -429,12 +468,11 @@ ksort($grouped_local_policies);
           <span class="input-group-text bg-light border-0 px-3" style="color: #2563eb; font-size:1.05rem;">
             <i class="bi bi-file-earmark-text"></i>
           </span>
-          <select id="crossCityPolicyA" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;"
-            onchange="autoSuggestCrossCityBenchmark()">
+          <select id="crossCityPolicyA" class="form-select border-0 bg-white py-2"
+            style="font-size:0.88rem; font-weight:500; color:#0f172a;" onchange="autoSuggestCrossCityBenchmark()">
             <?php if (empty($local_policies)): ?>
               <option value="" disabled selected>— No Manila Approved Policies Available —</option>
             <?php else: ?>
-              <option value="">— Select Manila Policy to Benchmark —</option>
               <?php foreach ($grouped_local_policies as $catName => $pList): ?>
                 <optgroup label="📂 <?= htmlspecialchars($catName) ?>" data-category="<?= htmlspecialchars($catName) ?>">
                   <?php foreach ($pList as $p): ?>
@@ -459,11 +497,11 @@ ksort($grouped_local_policies);
           <span class="input-group-text bg-light border-0 px-3" style="color: #16a34a; font-size:1.05rem;">
             <i class="bi bi-patch-check-fill"></i>
           </span>
-          <select id="crossCityPolicyB" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;">
+          <select id="crossCityPolicyB" class="form-select border-0 bg-white py-2"
+            style="font-size:0.88rem; font-weight:500; color:#0f172a;">
             <?php if (empty($external_benchmarks)): ?>
               <option value="" disabled selected>— No External City Benchmarks Available —</option>
             <?php else: ?>
-              <option value="">— Select Enacted City Benchmark —</option>
               <?php
               $grouped_benchmarks = [];
               foreach ($external_benchmarks as $eb) {
@@ -489,10 +527,10 @@ ksort($grouped_local_policies);
       <!-- Prominent Benchmark Button -->
       <div class="col-12 col-lg-2 d-grid">
         <button type="button" id="compareCrossCityBtn"
-          class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-1.5 rounded-3 py-2 hover-lift"
+          class="btn text-white fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 rounded-3 py-2 hover-lift"
           onclick="runCrossCityComparison()"
-          style="background: linear-gradient(135deg, #0B2E59 0%, #1e40af 100%); border:none; height: 38px; font-size:0.9rem; transition:all 0.2s;">
-          <i class="bi bi-stars"></i> Benchmark
+          style="background-color: #0B2E59; border:none; height: 38px; font-size:0.88rem; transition:all 0.2s;">
+          <i class="bi bi-arrow-left-right"></i> Benchmark
         </button>
       </div>
 
@@ -513,11 +551,11 @@ ksort($grouped_local_policies);
           <span class="input-group-text bg-light border-0 px-3" style="color: #2563eb; font-size:1.05rem;">
             <i class="bi bi-file-earmark-text"></i>
           </span>
-          <select id="comparePolicyA" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;">
+          <select id="comparePolicyA" class="form-select border-0 bg-white py-2"
+            style="font-size:0.88rem; font-weight:500; color:#0f172a;">
             <?php if (empty($completed_policies)): ?>
               <option value="" disabled selected>— No Approved Evaluations Available —</option>
             <?php else: ?>
-              <option value="">— Select Approved Policy / Ordinance A —</option>
               <?php if (!empty($local_policies)): ?>
                 <optgroup label="🏛️ City of Manila (Local Ordinances)">
                   <?php foreach ($local_policies as $p): ?>
@@ -561,11 +599,11 @@ ksort($grouped_local_policies);
           <span class="input-group-text bg-light border-0 px-3" style="color: #16a34a; font-size:1.05rem;">
             <i class="bi bi-file-earmark-text"></i>
           </span>
-          <select id="comparePolicyB" class="form-select border-0 bg-white py-2" style="font-size:0.88rem; font-weight:500; color:#0f172a;">
+          <select id="comparePolicyB" class="form-select border-0 bg-white py-2"
+            style="font-size:0.88rem; font-weight:500; color:#0f172a;">
             <?php if (empty($completed_policies)): ?>
               <option value="" disabled selected>— No Approved Evaluations Available —</option>
             <?php else: ?>
-              <option value="">— Select Policy B or City Benchmark —</option>
               <?php if (!empty($local_policies)): ?>
                 <optgroup label="🏛️ City of Manila (Local Ordinances)">
                   <?php foreach ($local_policies as $p): ?>
@@ -678,13 +716,13 @@ ksort($grouped_local_policies);
     function renderEmptyComparisonPlaceholder() {
       return '<div class="card border-0 rounded-4 shadow-sm p-4 p-md-5 text-center mt-3 bg-white" style="border: 1px dashed #cbd5e1 !important;">' +
         '<div class="mb-3">' +
-        '<span class="p-3 rounded-circle d-inline-flex align-items-center justify-content-center shadow-2xs" style="background:#f1f5f9; color:#64748b; width:54px; height:54px;">' +
-        '<i class="bi bi-layout-sidebar-inset-reverse fs-4 text-primary"></i>' +
+        '<span class="p-3 rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm" style="background-color: #0B2E59; color:#ffffff; width:58px; height:58px; box-shadow: 0 4px 14px rgba(11,46,89,0.2);">' +
+        '<i class="bi bi-arrow-left-right fs-3 text-white"></i>' +
         '</span>' +
         '</div>' +
         '<h6 class="fw-bold text-dark mb-1" style="font-size:1.02rem;">Ready for Comparative Analysis</h6>' +
         '<p class="text-muted small mb-0 mx-auto" style="max-width:520px; line-height:1.6;">' +
-        'Select ordinances above and click the <span class="badge px-2.5 py-1 text-white fw-bold shadow-2xs" style="background:#0B2E59;"><i class="bi bi-stars text-warning me-1"></i>Benchmark</span> button to evaluate multi-criteria viability scores, review best practices, and generate AI draft amendment clauses.' +
+        'Select ordinances above and click the <span class="badge px-2.5 py-1 text-white fw-bold shadow-2xs" style="background:#0B2E59;"><i class="bi bi-arrow-left-right me-1"></i>Benchmark</span> button to evaluate multi-criteria viability scores, review best practices, and generate draft policy improvement clauses.' +
         '</p>' +
         '</div>';
     }

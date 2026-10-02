@@ -278,30 +278,42 @@ unset($pol);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
     }
 
-    /* Policy & Reports Search Box */
+    /* Policy & Reports Search Box with Outline Focus State */
     .policy-search-box {
       background-color: #FFFFFF !important;
-      border: 1px solid #E2E8F0 !important;
-      border-radius: 8px !important;
-      height: 40px !important;
-      padding: 0 12px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9999px !important;
+      height: 42px !important;
+      padding: 0 16px !important;
       display: inline-flex !important;
       align-items: center !important;
-      gap: 9px !important;
-      box-shadow: none !important;
-      transition: all 0.18s ease !important;
+      gap: 10px !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      flex-grow: 1 !important;
+      min-width: 250px !important;
+    }
+
+    .policy-search-box:hover {
+      border-color: #94A3B8 !important;
     }
 
     .policy-search-box:focus-within {
-      border-color: #CBD5E1 !important;
+      border-color: #3B82F6 !important;
       background-color: #FFFFFF !important;
-      box-shadow: 0 0 0 3px rgba(11, 46, 89, 0.06) !important;
+      box-shadow: 0 0 0 3.5px rgba(59, 130, 246, 0.18) !important;
+    }
+
+    .policy-search-box:focus-within .policy-search-icon {
+      color: #2563EB !important;
+      transform: scale(1.06);
     }
 
     .policy-search-icon {
       color: #94A3B8 !important;
-      font-size: 0.88rem !important;
+      font-size: 0.92rem !important;
       flex-shrink: 0 !important;
+      transition: color 0.2s ease, transform 0.2s ease !important;
     }
 
     .policy-search-input {
@@ -310,14 +322,15 @@ unset($pol);
       outline: none !important;
       box-shadow: none !important;
       width: 100% !important;
-      font-size: 0.86rem !important;
-      color: #1E293B !important;
+      font-size: 0.88rem !important;
+      color: #0F172A !important;
       padding: 0 !important;
+      line-height: 1.4 !important;
     }
 
     .policy-search-input::placeholder {
       color: #94A3B8 !important;
-      font-size: 0.85rem !important;
+      font-size: 0.86rem !important;
       font-weight: 400 !important;
     }
 
@@ -326,15 +339,20 @@ unset($pol);
       background: transparent !important;
       color: #94A3B8 !important;
       padding: 0 !important;
-      font-size: 0.75rem !important;
+      font-size: 0.78rem !important;
       cursor: pointer !important;
       display: inline-flex !important;
       align-items: center !important;
-      transition: color 0.15s ease !important;
+      justify-content: center !important;
+      width: 20px !important;
+      height: 20px !important;
+      border-radius: 50% !important;
+      transition: all 0.15s ease !important;
     }
 
     .policy-search-clear:hover {
-      color: #334155 !important;
+      color: #0F172A !important;
+      background-color: #F1F5F9 !important;
     }
   </style>
 
@@ -1505,68 +1523,68 @@ unset($pol);
     var allRows = Array.from(document.querySelectorAll('#reportPolicyTableBody .report-policy-row'));
     if (!allRows.length) return;
 
-    var matchingRows = allRows.filter(functio n(r) {
+    var matchingRows = allRows.filter(function (r) {
       var state = r.getAttribute('data-eval-state');
-      return(_reportPolicyFilter === 'all' || state === _reportPolicyFilter);
-  });
-
-  var totalMatching = matchingRows.length;
-  var totalPages = Math.max(1, Math.ceil(totalMatching / _reportPolicyPageSize));
-
-  if (_reportPolicyCurrentPage < 1) _reportPolicyCurrentPage = 1;
-  if (_reportPolicyCurrentPage > totalPages) _reportPolicyCurrentPage = totalPages;
-
-  var startIdx = (_reportPolicyCurrentPage - 1) * _reportPolicyPageSize;
-  var endIdx = Math.min(startIdx + _reportPolicyPageSize, totalMatching);
-
-  allRows.forEach(functi on(r) {
-    var matchIdx = matchingRows.indexOf(r);
-    if(matchIdx >= startIdx && matchIdx < endIdx) {
-    r.style.display = '';
-  } else {
-    r.style.display = 'none';
-  }
+      return (_reportPolicyFilter === 'all' || state === _reportPolicyFilter);
     });
 
-  var summaryEl = document.getElementById('reportPoliciesSummaryText');
-  if (summaryEl) {
-    if (totalMatching === 0) {
-      summaryEl.textContent = 'Showing 0 records';
-    } else {
-      summaryEl.textContent = 'Showing ' + (startIdx + 1) + ' to ' + endIdx + ' of ' + totalMatching + ' records';
-    }
-  }
+    var totalMatching = matchingRows.length;
+    var totalPages = Math.max(1, Math.ceil(totalMatching / _reportPolicyPageSize));
 
-  var prevBtn = document.getElementById('reportPolicyPrevBtn');
-  if (prevBtn) {
-    prevBtn.disabled = (_reportPolicyCurrentPage <= 1);
-    if (_reportPolicyCurrentPage <= 1) {
-      prevBtn.classList.add('opacity-50');
-    } else {
-      prevBtn.classList.remove('opacity-50');
-    }
-  }
+    if (_reportPolicyCurrentPage < 1) _reportPolicyCurrentPage = 1;
+    if (_reportPolicyCurrentPage > totalPages) _reportPolicyCurrentPage = totalPages;
 
-  var nextBtn = document.getElementById('reportPolicyNextBtn');
-  if (nextBtn) {
-    nextBtn.disabled = (_reportPolicyCurrentPage >= totalPages);
-    if (_reportPolicyCurrentPage >= totalPages) {
-      nextBtn.classList.add('opacity-50');
-    } else {
-      nextBtn.classList.remove('opacity-50');
-    }
-  }
+    var startIdx = (_reportPolicyCurrentPage - 1) * _reportPolicyPageSize;
+    var endIdx = Math.min(startIdx + _reportPolicyPageSize, totalMatching);
 
-  var pagesContainer = document.getElementById('reportPolicyPageNumbers');
-  if (pagesContainer) {
-    var pagesHtml = '';
-    for (var p = 1; p <= totalPages; p++) {
-      var isActive = (p === _reportPolicyCurrentPage);
-      var cls = isActive ? 'btn-primary text-white fw-bold' : 'btn-light border text-dark';
-      pagesHtml += '<button type="button" class="btn btn-sm rounded-2 pagination-step-btn ' + cls + '" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;" onclick="goToReportPolicyPage(' + p + ')">' + p + '</button>';
+    allRows.forEach(function (r) {
+      var matchIdx = matchingRows.indexOf(r);
+      if (matchIdx >= startIdx && matchIdx < endIdx) {
+        r.style.display = '';
+      } else {
+        r.style.display = 'none';
+      }
+    });
+
+    var summaryEl = document.getElementById('reportPoliciesSummaryText');
+    if (summaryEl) {
+      if (totalMatching === 0) {
+        summaryEl.textContent = 'Showing 0 records';
+      } else {
+        summaryEl.textContent = 'Showing ' + (startIdx + 1) + ' to ' + endIdx + ' of ' + totalMatching + ' records';
+      }
     }
-    pagesContainer.innerHTML = pagesHtml;
-  }
+
+    var prevBtn = document.getElementById('reportPolicyPrevBtn');
+    if (prevBtn) {
+      prevBtn.disabled = (_reportPolicyCurrentPage <= 1);
+      if (_reportPolicyCurrentPage <= 1) {
+        prevBtn.classList.add('opacity-50');
+      } else {
+        prevBtn.classList.remove('opacity-50');
+      }
+    }
+
+    var nextBtn = document.getElementById('reportPolicyNextBtn');
+    if (nextBtn) {
+      nextBtn.disabled = (_reportPolicyCurrentPage >= totalPages);
+      if (_reportPolicyCurrentPage >= totalPages) {
+        nextBtn.classList.add('opacity-50');
+      } else {
+        nextBtn.classList.remove('opacity-50');
+      }
+    }
+
+    var pagesContainer = document.getElementById('reportPolicyPageNumbers');
+    if (pagesContainer) {
+      var pagesHtml = '';
+      for (var p = 1; p <= totalPages; p++) {
+        var isActive = (p === _reportPolicyCurrentPage);
+        var cls = isActive ? 'btn-primary text-white fw-bold' : 'btn-light border text-dark';
+        pagesHtml += '<button type="button" class="btn btn-sm rounded-2 pagination-step-btn ' + cls + '" style="width:32px!important; height:32px!important; min-width:32px!important; max-width:32px!important; padding:0!important; display:inline-flex!important; align-items:center!important; justify-content:center!important;" onclick="goToReportPolicyPage(' + p + ')">' + p + '</button>';
+      }
+      pagesContainer.innerHTML = pagesHtml;
+    }
   }
 
   window.filterReportPolicies = filterReportPolicies;
@@ -1640,17 +1658,17 @@ unset($pol);
       const pId = rep.id || rep.policy_id;
       if (pId) {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = funct ion() {
+        viewOrigBtn.onclick = function () {
           window.open('../backend/view_policy_document.php?id=' + encodeURIComponent(pId), '_blank');
         };
       } else if (rep.file_path && rep.file_path.trim() !== '') {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = func tion() {
+        viewOrigBtn.onclick = function () {
           window.open('../assets/uploads/policies/' + encodeURIComponent(rep.file_path), '_blank');
         };
       } else {
         viewOrigBtn.classList.remove('d-none');
-        viewOrigBtn.onclick = fun ction() {
+        viewOrigBtn.onclick = function () {
           alert('No uploaded source document attachment is associated with this policy record.');
         };
       }

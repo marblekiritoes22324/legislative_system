@@ -202,32 +202,43 @@ unset($pol);
       box-shadow: 0 1px 2px rgba(11, 46, 89, 0.15) !important;
     }
 
-    /* Clean Minimalist Policy Filter Toolbar */
+    /* Clean Minimalist Policy Filter Toolbar with Outline Focus State */
 
     .policy-search-box {
-      background: #F8FAFC !important;
-      border: 1px solid #E2E8F0 !important;
-      border-radius: 8px !important;
-      height: 40px !important;
-      display: flex !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9999px !important;
+      height: 42px !important;
+      display: inline-flex !important;
       align-items: center !important;
-      padding: 0 12px !important;
+      padding: 0 16px !important;
       gap: 10px !important;
-      transition: all 0.18s ease !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
       flex-grow: 1 !important;
       min-width: 250px !important;
     }
 
+    .policy-search-box:hover {
+      border-color: #94A3B8 !important;
+    }
+
     .policy-search-box:focus-within {
       background: #FFFFFF !important;
-      border-color: #CBD5E1 !important;
-      box-shadow: 0 0 0 3px rgba(11, 46, 89, 0.06) !important;
+      border-color: #3B82F6 !important;
+      box-shadow: 0 0 0 3.5px rgba(59, 130, 246, 0.18) !important;
+    }
+
+    .policy-search-box:focus-within .policy-search-icon {
+      color: #2563EB !important;
+      transform: scale(1.06);
     }
 
     .policy-search-icon {
       color: #94A3B8 !important;
-      font-size: 0.88rem !important;
+      font-size: 0.92rem !important;
       flex-shrink: 0 !important;
+      transition: color 0.2s ease, transform 0.2s ease !important;
     }
 
     .policy-search-input {
@@ -236,14 +247,15 @@ unset($pol);
       outline: none !important;
       box-shadow: none !important;
       width: 100% !important;
-      font-size: 0.86rem !important;
-      color: #1E293B !important;
+      font-size: 0.88rem !important;
+      color: #0F172A !important;
       padding: 0 !important;
+      line-height: 1.4 !important;
     }
 
     .policy-search-input::placeholder {
       color: #94A3B8 !important;
-      font-size: 0.85rem !important;
+      font-size: 0.86rem !important;
       font-weight: 400 !important;
     }
 
@@ -252,15 +264,20 @@ unset($pol);
       background: transparent !important;
       color: #94A3B8 !important;
       padding: 0 !important;
-      font-size: 0.75rem !important;
+      font-size: 0.78rem !important;
       cursor: pointer !important;
       display: inline-flex !important;
       align-items: center !important;
-      transition: color 0.15s ease !important;
+      justify-content: center !important;
+      width: 20px !important;
+      height: 20px !important;
+      border-radius: 50% !important;
+      transition: all 0.15s ease !important;
     }
 
     .policy-search-clear:hover {
-      color: #334155 !important;
+      color: #0F172A !important;
+      background-color: #F1F5F9 !important;
     }
 
     .policy-category-wrapper {
@@ -789,11 +806,11 @@ unset($pol);
     <!-- Clean Divider Merging Section 1 and Section 2 seamlessly -->
     <hr class="my-4" style="border-color: #e2e8f0; opacity: 0.7;">
 
-    <!-- 2. Generated Reports & Comparative Analyses -->
+    <!-- 2. Generated Reports & Comparative Analysis -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
       <div>
         <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2" style="font-size:1.05rem;">
-          <i class="bi bi-clock-history text-primary"></i> 2. Generated Reports &amp; Comparative Analyses
+          <i class="bi bi-clock-history text-primary"></i> 2. Generated Reports &amp; Comparative Analysis
         </h3>
         <p class="text-muted mb-0 small">Access, browse, search, and download legislative policy evaluations and
           cross-city benchmarks.</p>
@@ -917,8 +934,10 @@ unset($pol);
                 <i class="bi bi-shield-check"></i>
               </span>
               <span style="color: #065f46; letter-spacing: 0.2px;">Official Document</span>
-              <span style="display:inline-block; width: 4px; height: 4px; border-radius: 50%; background: #10b981; opacity: 0.7;"></span>
-              <span class="d-none d-sm-inline" style="font-weight: 500; color: #047857; font-size: 0.8rem;">City Council of Manila</span>
+              <span
+                style="display:inline-block; width: 4px; height: 4px; border-radius: 50%; background: #10b981; opacity: 0.7;"></span>
+              <span class="d-none d-sm-inline" style="font-weight: 500; color: #047857; font-size: 0.8rem;">City Council
+                of Manila</span>
             </div>
           </div>
           <div class="d-flex align-items-center justify-content-end flex-nowrap ms-auto" style="gap: 8px;">
