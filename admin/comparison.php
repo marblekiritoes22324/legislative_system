@@ -1685,9 +1685,6 @@ ksort($grouped_local_policies);
         '<span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1 fw-semibold" style="font-size:0.75rem;">' +
         '<i class="bi bi-tag-fill me-1"></i> ' + esc(dynamicAI.topic) +
         '</span>' +
-        '<span class="badge rounded-pill ' + engineUsed.badgeClass + ' px-2.5 py-1 font-monospace" style="font-size:0.75rem;" title="' + esc(engineUsed.note) + '">' +
-        '<i class="bi ' + engineUsed.icon + ' me-1"></i> ' + esc(engineUsed.name) +
-        '</span>' +
         '</div>' +
         '<p class="text-muted small mb-0 mt-0.5">Automated statutory benchmarking &amp; actionable policy intelligence for Manila City Council</p>' +
         '</div>' +
@@ -2458,12 +2455,7 @@ ksort($grouped_local_policies);
         '<i class="bi bi-file-earmark-text-fill fs-5"></i>' +
         '</span>' +
         '<div>' +
-        '<div class="d-flex align-items-center gap-2 flex-wrap">' +
-        '<h5 class="fw-bold text-dark mb-0" style="font-size:1.1rem;">AI-Suggested Policy Improvements (For Review)</h5>' +
-        '<span class="badge rounded-pill ' + engine.badgeClass + ' border px-2.5 py-1 font-monospace" style="font-size:0.73rem;">' +
-        '<i class="bi ' + engine.icon + ' me-1"></i> ' + esc(engine.badgeText) +
-        '</span>' +
-        '</div>' +
+        '<h5 class="fw-bold text-dark mb-1" style="font-size:1.1rem;">AI-Suggested Policy Improvements (For Review)</h5>' +
         '<span class="text-muted small">Generated based on cross-city benchmarking with <strong>' + esc(b.city_name || b.city_origin || 'Peer City Benchmark') + '</strong></span>' +
         '</div>' +
         '</div>' +
